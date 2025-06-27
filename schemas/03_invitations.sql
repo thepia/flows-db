@@ -2,17 +2,21 @@
 -- INVITATIONS TABLE - JWT-Based Invitation System
 -- =====================================================
 -- 
--- Purpose: Invitation tracking without PII storage
--- Security: All PII encrypted in JWT tokens, minimal metadata in DB
+-- Purpose: General invitation system for all Flows applications
+-- Use Cases: Onboarding, offboarding, access grants, form submissions, etc.
+-- Security: All PII (including dual emails) encrypted in JWT tokens, minimal metadata in DB
 -- Dependencies: clients, client_applications tables
 
-CREATE TABLE IF NOT EXISTS invitations (
+-- Set schema context
+SET search_path TO api, public;
+
+CREATE TABLE IF NOT EXISTS api.invitations (
   -- Primary identifier
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   
   -- Client and application relationship
-  client_id UUID NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
-  app_id UUID NOT NULL REFERENCES client_applications(id) ON DELETE CASCADE,
+  client_id UUID NOT NULL REFERENCES api.clients(id) ON DELETE CASCADE,
+  app_id UUID NOT NULL REFERENCES api.client_applications(id) ON DELETE CASCADE,
   
   -- Invitation identification
   invitation_code VARCHAR(100) UNIQUE NOT NULL,
@@ -472,10 +476,10 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- COMMENTS
 -- =====================================================
 
-COMMENT ON TABLE invitations IS 'JWT-based invitation system with minimal PII storage - all personal data encrypted in JWT tokens';
-COMMENT ON COLUMN invitations.invitation_code IS 'Human-readable invitation code (e.g., ACME-OFFBOARD-A1B2C3)';
-COMMENT ON COLUMN invitations.jwt_token_hash IS 'SHA-256 hash of the JWT token for secure lookup without storing the token';
-COMMENT ON COLUMN invitations.permissions IS 'Array of permissions granted by this invitation';
-COMMENT ON COLUMN invitations.restrictions IS 'Access restrictions (IP ranges, time windows, device limits) as JSON';
-COMMENT ON COLUMN invitations.client_data IS 'Non-PII client-specific data stored for convenience';
-COMMENT ON COLUMN invitations.usage_metadata IS 'Usage statistics and technical metadata for analytics';
+COMMENT ON TABLE invitations IS 'General invitation system for all Flows applications with JWT-based security - all PII including dual emails encrypted in tokens';
+COMMENT ON COLUMN invitations.invitation_code IS 'Human-readable invitation code (e.g., ACME-ONBOARD-A1B2C3, CORP-SURVEY-X9Y8Z7)';
+COMMENT ON COLUMN invitations.jwt_token_hash IS 'SHA-256 hash of the JWT token containing encrypted PII (company email, private email, personal details)';
+COMMENT ON COLUMN invitations.permissions IS 'Array of permissions granted by this invitation (form access, application features, etc.)';
+COMMENT ON COLUMN invitations.restrictions IS 'Access restrictions (IP ranges, time windows, device limits, usage limits) as JSON';
+COMMENT ON COLUMN invitations.client_data IS 'Non-PII client-specific metadata for invitation context';
+COMMENT ON COLUMN invitations.usage_metadata IS 'Analytics and usage tracking for invitation effectiveness';

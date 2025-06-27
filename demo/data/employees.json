@@ -1,0 +1,405 @@
+{
+  "employees": [
+    {
+      "id": "emp-nets-001",
+      "firstName": "Anna",
+      "lastName": "Hansen", 
+      "companyEmail": "anna.hansen@nets.eu",
+      "privateEmail": "anna.h.dev@gmail.com",
+      "department": "Engineering",
+      "position": "Senior Software Engineer",
+      "location": "Copenhagen, Denmark",
+      "phone": "+45 12 34 56 78",
+      "manager": "Lars Nielsen",
+      "startDate": "2024-01-15",
+      "status": "active",
+      "securityClearance": "high",
+      "employmentType": "full_time",
+      "workLocation": "hybrid",
+      "skills": ["JavaScript", "TypeScript", "React", "Node.js", "Payment APIs"],
+      "languages": ["Danish", "English", "Swedish"],
+      "onboarding": {
+        "completed": true,
+        "completionDate": "2024-01-20",
+        "completionPercentage": 100,
+        "mentor": "Lars Nielsen",
+        "buddyProgram": true
+      },
+      "documents": [
+        {
+          "type": "employment_contract",
+          "status": "verified",
+          "uploadedAt": "2024-01-10T10:00:00Z",
+          "reviewedAt": "2024-01-12T14:30:00Z",
+          "reviewedBy": "HR Team"
+        },
+        {
+          "type": "id_verification", 
+          "status": "verified",
+          "uploadedAt": "2024-01-10T10:30:00Z",
+          "reviewedAt": "2024-01-12T14:35:00Z",
+          "reviewedBy": "Security Team"
+        },
+        {
+          "type": "gdpr_consent",
+          "status": "verified",
+          "uploadedAt": "2024-01-10T11:00:00Z",
+          "reviewedAt": "2024-01-12T15:00:00Z",
+          "reviewedBy": "Compliance Team"
+        }
+      ],
+      "tasks": [
+        {
+          "title": "Complete IT Setup",
+          "description": "Set up laptop, email, and access credentials",
+          "category": "equipment",
+          "status": "completed",
+          "priority": "high",
+          "assignedBy": "IT Department",
+          "completedAt": "2024-01-15T16:00:00Z"
+        },
+        {
+          "title": "Payment Systems Training",
+          "description": "Complete Nets payment platform training",
+          "category": "training", 
+          "status": "completed",
+          "priority": "high",
+          "assignedBy": "Product Team",
+          "completedAt": "2024-01-18T17:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "emp-nets-002",
+      "firstName": "Erik",
+      "lastName": "Larsen",
+      "companyEmail": "erik.larsen@nets.eu", 
+      "privateEmail": "erik.l.product@outlook.com",
+      "department": "Product",
+      "position": "Product Manager",
+      "location": "Copenhagen, Denmark",
+      "phone": "+45 87 65 43 21",
+      "manager": "Maria Andersen",
+      "startDate": "2024-02-01",
+      "status": "active",
+      "securityClearance": "medium",
+      "employmentType": "full_time",
+      "workLocation": "office",
+      "skills": ["Product Strategy", "Agile", "Data Analysis", "Financial Services", "User Research"],
+      "languages": ["Danish", "English", "Norwegian"],
+      "onboarding": {
+        "completed": true,
+        "completionDate": "2024-02-07",
+        "completionPercentage": 100,
+        "mentor": "Maria Andersen",
+        "buddyProgram": true
+      },
+      "documents": [
+        {
+          "type": "employment_contract",
+          "status": "verified",
+          "uploadedAt": "2024-01-25T11:00:00Z",
+          "reviewedAt": "2024-01-26T10:00:00Z",
+          "reviewedBy": "HR Team"
+        },
+        {
+          "type": "financial_disclosure",
+          "status": "verified",
+          "uploadedAt": "2024-01-25T12:00:00Z",
+          "reviewedAt": "2024-01-26T11:00:00Z",
+          "reviewedBy": "Compliance Team"
+        }
+      ],
+      "tasks": [
+        {
+          "title": "Product Training",
+          "description": "Complete product knowledge training modules",
+          "category": "training",
+          "status": "completed",
+          "priority": "medium",
+          "assignedBy": "Product Team",
+          "completedAt": "2024-02-05T17:00:00Z"
+        },
+        {
+          "title": "Stakeholder Introductions",
+          "description": "Meet key internal and external stakeholders",
+          "category": "networking",
+          "status": "completed", 
+          "priority": "medium",
+          "assignedBy": "Maria Andersen",
+          "completedAt": "2024-02-06T16:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "emp-nets-003",
+      "firstName": "Sofia",
+      "lastName": "Berg",
+      "companyEmail": "sofia.berg@nets.eu",
+      "privateEmail": "sofia.b.design@protonmail.com",
+      "department": "Design",
+      "position": "UX Designer",
+      "location": "Stockholm, Sweden", 
+      "phone": "+46 70 234 567 89",
+      "manager": "Peter Olsen",
+      "startDate": "2024-03-01",
+      "status": "pending",
+      "securityClearance": "medium",
+      "employmentType": "full_time",
+      "workLocation": "remote",
+      "skills": ["UX Design", "Figma", "User Research", "Prototyping", "Accessibility"],
+      "languages": ["Swedish", "English", "Danish"],
+      "onboarding": {
+        "completed": false,
+        "completionDate": null,
+        "completionPercentage": 45,
+        "mentor": "Peter Olsen",
+        "buddyProgram": true
+      },
+      "documents": [
+        {
+          "type": "employment_contract",
+          "status": "pending",
+          "uploadedAt": "2024-02-25T14:00:00Z"
+        },
+        {
+          "type": "tax_forms",
+          "status": "uploaded",
+          "uploadedAt": "2024-02-26T09:30:00Z"
+        }
+      ],
+      "tasks": [
+        {
+          "title": "Design Tools Setup",
+          "description": "Install and configure Figma, Adobe Creative Suite",
+          "category": "equipment",
+          "status": "in_progress",
+          "priority": "high",
+          "assignedBy": "Design Team",
+          "dueDate": "2024-03-05T17:00:00Z"
+        },
+        {
+          "title": "Complete Company Handbook",
+          "description": "Read and acknowledge company policies",
+          "category": "compliance",
+          "status": "not_started",
+          "priority": "medium", 
+          "assignedBy": "HR Team",
+          "dueDate": "2024-03-10T17:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "emp-nets-004",
+      "firstName": "Magnus",
+      "lastName": "Johansson",
+      "companyEmail": "magnus.johansson@nets.eu",
+      "privateEmail": "magnus.j.devops@gmail.com",
+      "department": "Engineering",
+      "position": "DevOps Engineer",
+      "location": "Stockholm, Sweden",
+      "phone": "+46 70 123 45 67",
+      "manager": "Lars Nielsen",
+      "startDate": "2023-12-01",
+      "endDate": "2024-03-15",
+      "status": "offboarded",
+      "securityClearance": "high",
+      "employmentType": "full_time",
+      "workLocation": "hybrid",
+      "skills": ["Kubernetes", "Docker", "AWS", "CI/CD", "Infrastructure as Code"],
+      "languages": ["Swedish", "English"],
+      "onboarding": {
+        "completed": true,
+        "completionDate": "2023-12-08",
+        "completionPercentage": 100,
+        "mentor": "Lars Nielsen",
+        "buddyProgram": true
+      },
+      "offboarding": {
+        "initiated": true,
+        "initiatedDate": "2024-03-01",
+        "completionDate": "2024-03-15",
+        "reason": "voluntary_resignation",
+        "newPosition": "Senior DevOps Engineer at Klarna",
+        "exitInterviewCompleted": true,
+        "knowledgeTransferCompleted": true,
+        "equipmentReturned": true,
+        "accessRevoked": true,
+        "finalPayroll": true
+      },
+      "documents": [
+        {
+          "type": "resignation_letter",
+          "status": "verified",
+          "uploadedAt": "2024-03-01T09:00:00Z",
+          "reviewedAt": "2024-03-01T14:00:00Z",
+          "reviewedBy": "HR Director"
+        },
+        {
+          "type": "knowledge_transfer",
+          "status": "verified",
+          "uploadedAt": "2024-03-10T16:00:00Z",
+          "reviewedAt": "2024-03-11T10:00:00Z",
+          "reviewedBy": "Lars Nielsen"
+        },
+        {
+          "type": "equipment_return",
+          "status": "verified",
+          "uploadedAt": "2024-03-14T12:00:00Z", 
+          "reviewedAt": "2024-03-14T14:00:00Z",
+          "reviewedBy": "IT Department"
+        }
+      ],
+      "tasks": [
+        {
+          "title": "Knowledge Transfer Sessions",
+          "description": "Conduct handover sessions for all managed systems",
+          "category": "knowledge_transfer",
+          "status": "completed",
+          "priority": "high",
+          "assignedBy": "Lars Nielsen",
+          "completedAt": "2024-03-10T17:00:00Z"
+        },
+        {
+          "title": "Access Revocation Audit",
+          "description": "Verify all system access has been properly revoked",
+          "category": "security",
+          "status": "completed",
+          "priority": "high",
+          "assignedBy": "Security Team",
+          "completedAt": "2024-03-15T10:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "emp-nets-005",
+      "firstName": "Lars",
+      "lastName": "Petersen",
+      "companyEmail": "lars.petersen@nets.eu",
+      "privateEmail": "lars.p.dev@gmail.com", 
+      "department": "Engineering",
+      "position": "Frontend Developer",
+      "location": "Copenhagen, Denmark",
+      "phone": "+45 23 45 67 89",
+      "manager": "Anna Hansen",
+      "startDate": "2024-03-20",
+      "status": "invited",
+      "securityClearance": "medium",
+      "employmentType": "full_time",
+      "workLocation": "hybrid",
+      "skills": ["React", "Vue.js", "TypeScript", "CSS", "Testing"],
+      "languages": ["Danish", "English", "German"],
+      "onboarding": {
+        "completed": false,
+        "completionDate": null,
+        "completionPercentage": 0,
+        "mentor": "Anna Hansen",
+        "buddyProgram": true
+      },
+      "documents": [],
+      "tasks": []
+    },
+    {
+      "id": "emp-nets-006",
+      "firstName": "Mette",
+      "lastName": "Sørensen",
+      "companyEmail": "mette.sorensen@nets.eu",
+      "privateEmail": "mette.s.marketing@outlook.com",
+      "department": "Marketing", 
+      "position": "Marketing Specialist",
+      "location": "Copenhagen, Denmark",
+      "phone": "+45 34 56 78 90",
+      "manager": "Erik Larsen",
+      "startDate": "2023-11-15",
+      "endDate": "2024-03-20",
+      "status": "offboarding_initiated",
+      "securityClearance": "low",
+      "employmentType": "full_time",
+      "workLocation": "office",
+      "skills": ["Digital Marketing", "Content Strategy", "Analytics", "Social Media", "Brand Management"],
+      "languages": ["Danish", "English", "French"],
+      "onboarding": {
+        "completed": true,
+        "completionDate": "2023-11-22",
+        "completionPercentage": 100,
+        "mentor": "Erik Larsen",
+        "buddyProgram": true
+      },
+      "offboarding": {
+        "initiated": true,
+        "initiatedDate": "2024-03-16",
+        "completionDate": null,
+        "reason": "position_elimination",
+        "newPosition": null,
+        "exitInterviewCompleted": false,
+        "knowledgeTransferCompleted": false,
+        "equipmentReturned": false,
+        "accessRevoked": false,
+        "finalPayroll": false
+      },
+      "documents": [
+        {
+          "type": "termination_notice",
+          "status": "pending",
+          "uploadedAt": "2024-03-16T09:00:00Z"
+        }
+      ],
+      "tasks": [
+        {
+          "title": "Campaign Handover",
+          "description": "Transfer ownership of active marketing campaigns",
+          "category": "knowledge_transfer",
+          "status": "in_progress",
+          "priority": "high",
+          "assignedBy": "Erik Larsen",
+          "dueDate": "2024-03-18T17:00:00Z"
+        }
+      ]
+    }
+  ],
+  "departments": [
+    {
+      "name": "Engineering",
+      "head": "Lars Nielsen",
+      "location": "Copenhagen",
+      "size": 45,
+      "securityLevel": "high"
+    },
+    {
+      "name": "Product",
+      "head": "Maria Andersen", 
+      "location": "Copenhagen",
+      "size": 12,
+      "securityLevel": "medium"
+    },
+    {
+      "name": "Design",
+      "head": "Peter Olsen",
+      "location": "Stockholm",
+      "size": 8,
+      "securityLevel": "medium" 
+    },
+    {
+      "name": "Marketing",
+      "head": "Erik Larsen",
+      "location": "Copenhagen",
+      "size": 6,
+      "securityLevel": "low"
+    }
+  ],
+  "demo_metadata": {
+    "total_employees": 6,
+    "active_employees": 2,
+    "pending_onboarding": 2,
+    "offboarded": 1,
+    "offboarding_in_progress": 1,
+    "last_updated": "2025-01-27",
+    "scenarios_covered": [
+      "completed_onboarding",
+      "pending_onboarding", 
+      "voluntary_resignation",
+      "position_elimination",
+      "new_hire_invitation"
+    ]
+  }
+}

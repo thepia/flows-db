@@ -123,6 +123,7 @@ docs/dist/
 config/local.*
 config/production.*
 config/staging.*
+.npmrc.local
 
 # JWT secrets and keys
 *.key

@@ -38,7 +38,19 @@
     "maintenance": "node scripts/maintenance.js",
     "setup:hooks": "node scripts/setup-git-hooks.js",
     "docs:generate": "node scripts/generate-docs.js",
-    "docs:serve": "npx http-server docs/ -p 8080"
+    "docs:serve": "npx http-server docs/ -p 8080",
+    "install:auth": "./scripts/install-with-auth.sh",
+    "demo:setup": "node demo/scripts/setup-demo.js run",
+    "demo:setup:status": "node demo/scripts/setup-demo.js status",
+    "demo:populate": "node demo/scripts/populate-full-demo.js run",
+    "demo:populate-rich": "node demo/scripts/populate-rich-demo.js run",
+    "demo:complete": "node demo/scripts/setup-complete-demo.js run",
+    "demo:refresh": "node demo/scripts/refresh-demo.js run",
+    "demo:reset": "node demo/scripts/reset-demo.js run",
+    "demo:analytics": "node demo/scripts/analytics.js run",
+    "demo:admin": "pnpm --filter flows-admin-demo dev",
+    "demo:admin:build": "pnpm --filter flows-admin-demo build",
+    "demo:admin:install": "pnpm --filter flows-admin-demo install"
   },
   "keywords": [
     "thepia",

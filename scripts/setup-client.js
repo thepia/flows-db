@@ -29,7 +29,12 @@ if (!supabaseUrl || !supabaseServiceKey) {
   process.exit(1);
 }
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
 
 // Client tier configurations
 const CLIENT_TIERS = {
@@ -127,22 +132,29 @@ function validateDomain(domain) {
  * Check if client code or domain already exists
  */
 async function checkClientExists(clientCode, domain) {
-  const { data, error } = await supabase
-    .from('clients')
-    .select('client_code, domain')
-    .or(`client_code.eq.${clientCode},domain.eq.${domain}`);
-  
-  if (error) {
-    throw new Error(`Database error: ${error.message}`);
+  try {
+    // Use direct fetch as workaround for schema configuration issues
+    const response = await fetch(`${supabaseUrl}/rest/v1/clients?select=client_code,domain&or=(client_code.eq.${clientCode},domain.eq.${domain})`, {
+      headers: {
+        'apikey': supabaseServiceKey,
+        'Authorization': `Bearer ${supabaseServiceKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    return {
+      codeExists: data.some(c => c.client_code === clientCode),
+      domainExists: data.some(c => c.domain === domain)
+    };
+  } catch (err) {
+    throw new Error(`Database error: ${err.message}`);
   }
-  
-  const existingCode = data.find(c => c.client_code === clientCode);
-  const existingDomain = data.find(c => c.domain === domain);
-  
-  return {
-    codeExists: !!existingCode,
-    domainExists: !!existingDomain
-  };
 }
 
 /**
@@ -218,17 +230,25 @@ async function createClientApplications(clientId, clientCode, apps) {
       ]
     };
     
-    const { data, error } = await supabase
-      .from('client_applications')
-      .insert(application)
-      .select()
-      .single();
+    // Use direct fetch as workaround for schema configuration issues
+    const response = await fetch(`${supabaseUrl}/rest/v1/client_applications`, {
+      method: 'POST',
+      headers: {
+        'apikey': supabaseServiceKey,
+        'Authorization': `Bearer ${supabaseServiceKey}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify(application)
+    });
     
-    if (error) {
-      throw new Error(`Failed to create application ${appCode}: ${error.message}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to create application ${appCode}: HTTP ${response.status} - ${errorText}`);
     }
     
-    applicationRecords.push(data);
+    const apps = await response.json();
+    applicationRecords.push(apps[0]);
   }
   
   return applicationRecords;
@@ -359,15 +379,25 @@ async function setupClient(options) {
       features: tierConfig.features
     };
     
-    const { data: client, error: clientError } = await supabase
-      .from('clients')
-      .insert(clientData)
-      .select()
-      .single();
+    // Use direct fetch as workaround for schema configuration issues
+    const response = await fetch(`${supabaseUrl}/rest/v1/clients`, {
+      method: 'POST',
+      headers: {
+        'apikey': supabaseServiceKey,
+        'Authorization': `Bearer ${supabaseServiceKey}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify(clientData)
+    });
     
-    if (clientError) {
-      throw new Error(`Failed to create client: ${clientError.message}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to create client: HTTP ${response.status} - ${errorText}`);
     }
+    
+    const clients = await response.json();
+    const client = clients[0];
     
     spinner.succeed(`Client "${options.clientCode}" created successfully`);
     

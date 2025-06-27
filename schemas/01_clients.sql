@@ -6,7 +6,10 @@
 -- Security: RLS enabled, staff-only access
 -- Dependencies: None (foundation table)
 
-CREATE TABLE IF NOT EXISTS clients (
+-- Set schema context
+SET search_path TO api, public;
+
+CREATE TABLE IF NOT EXISTS api.clients (
   -- Primary identifier
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   

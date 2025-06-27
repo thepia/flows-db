@@ -6,12 +6,15 @@
 -- Security: Client-isolated via RLS policies
 -- Dependencies: clients table (foreign key)
 
-CREATE TABLE IF NOT EXISTS client_applications (
+-- Set schema context
+SET search_path TO api, public;
+
+CREATE TABLE IF NOT EXISTS api.client_applications (
   -- Primary identifier
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   
   -- Client relationship
-  client_id UUID NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
+  client_id UUID NOT NULL REFERENCES api.clients(id) ON DELETE CASCADE,
   
   -- Application identification
   app_code VARCHAR(50) NOT NULL,
@@ -87,6 +90,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trigger_client_applications_updated_at ON client_applications;
 CREATE TRIGGER trigger_client_applications_updated_at
   BEFORE UPDATE ON client_applications
   FOR EACH ROW
@@ -103,6 +107,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trigger_generate_app_name ON client_applications;
 CREATE TRIGGER trigger_generate_app_name
   BEFORE INSERT ON client_applications
   FOR EACH ROW
@@ -129,6 +134,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trigger_validate_app_configuration ON client_applications;
 CREATE TRIGGER trigger_validate_app_configuration
   BEFORE INSERT OR UPDATE ON client_applications
   FOR EACH ROW
@@ -142,6 +148,7 @@ CREATE TRIGGER trigger_validate_app_configuration
 ALTER TABLE client_applications ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Thepia staff can access all application data
+DROP POLICY IF EXISTS policy_client_applications_staff_access ON client_applications;
 CREATE POLICY policy_client_applications_staff_access ON client_applications
   FOR ALL 
   USING (
@@ -154,12 +161,13 @@ CREATE POLICY policy_client_applications_staff_access ON client_applications
   );
 
 -- Policy: API servers can access applications for specific clients
+DROP POLICY IF EXISTS policy_client_applications_api_access ON client_applications;
 CREATE POLICY policy_client_applications_api_access ON client_applications
   FOR ALL
   USING (
     client_id::text = auth.jwt()->>'client_id'
     OR EXISTS (
-      SELECT 1 FROM clients 
+      SELECT 1 FROM api.clients 
       WHERE clients.id = client_applications.client_id 
         AND clients.client_code = auth.jwt()->>'client_code'
     )
@@ -167,13 +175,14 @@ CREATE POLICY policy_client_applications_api_access ON client_applications
   WITH CHECK (
     client_id::text = auth.jwt()->>'client_id'
     OR EXISTS (
-      SELECT 1 FROM clients 
+      SELECT 1 FROM api.clients 
       WHERE clients.id = client_applications.client_id 
         AND clients.client_code = auth.jwt()->>'client_code'
     )
   );
 
 -- Policy: Read-only access for application users
+DROP POLICY IF EXISTS policy_client_applications_user_read ON client_applications;
 CREATE POLICY policy_client_applications_user_read ON client_applications
   FOR SELECT
   USING (
@@ -202,7 +211,7 @@ DECLARE
 BEGIN
   SELECT ca.* INTO app_record
   FROM client_applications ca
-  JOIN clients c ON c.id = ca.client_id
+  JOIN api.clients c ON c.id = ca.client_id
   WHERE c.client_code = p_client_code
     AND ca.app_code = p_app_code
     AND ca.status = 'active'
@@ -242,7 +251,7 @@ DECLARE
   client_record clients;
 BEGIN
   -- Get client information
-  SELECT * INTO client_record FROM clients WHERE client_code = p_client_code;
+  SELECT * INTO client_record FROM api.clients WHERE client_code = p_client_code;
   IF NOT FOUND THEN
     RETURN '{"error": "Client not found"}'::JSONB;
   END IF;
@@ -354,7 +363,7 @@ SELECT
   ca.last_accessed,
   ca.created_at
 FROM client_applications ca
-JOIN clients c ON c.id = ca.client_id
+JOIN api.clients c ON c.id = ca.client_id
 WHERE ca.status = 'active' 
   AND c.status = 'active';
 

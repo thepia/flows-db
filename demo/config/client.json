@@ -1,0 +1,177 @@
+{
+  "client": {
+    "client_code": "nets-demo",
+    "legal_name": "Nets A/S (Demo)",
+    "domain": "nets-demo.thepia.net",
+    "region": "EU",
+    "tier": "pro",
+    "industry": "financial_services",
+    "company_size": "large",
+    "country_code": "DK",
+    "settings": {
+      "theme": "corporate",
+      "locale": "en-EU",
+      "timezone": "Europe/Copenhagen",
+      "currency": "EUR",
+      "branding": {
+        "primary_color": "#1e40af",
+        "secondary_color": "#64748b",
+        "logo_url": "https://assets.thepia.net/clients/nets/logo.svg"
+      },
+      "security": {
+        "require_mfa": true,
+        "session_timeout": 30,
+        "password_policy": "strict",
+        "audit_level": "comprehensive"
+      },
+      "compliance": {
+        "gdpr_enabled": true,
+        "data_retention_days": 2555,
+        "audit_retention_years": 7,
+        "pci_compliance": true
+      }
+    },
+    "features": [
+      "basic-auth",
+      "invitations", 
+      "analytics",
+      "sso",
+      "audit-trail",
+      "gdpr-tools",
+      "bulk-operations",
+      "advanced-reporting"
+    ]
+  },
+  "applications": [
+    {
+      "app_code": "onboarding",
+      "app_name": "Employee Onboarding",
+      "app_description": "Secure digital onboarding for new Nets employees with Nordic compliance requirements",
+      "app_version": "1.2.0",
+      "configuration": {
+        "theme": "welcoming",
+        "locale": "en-EU",
+        "branding": {
+          "primary_color": "#059669",
+          "secondary_color": "#64748b",
+          "welcome_message": "Welcome to Nets A/S - Shaping the future of payments"
+        },
+        "workflow": {
+          "auto_progress": true,
+          "require_manager_approval": true,
+          "enable_reminders": true,
+          "completion_threshold": 95
+        },
+        "security": {
+          "document_encryption": true,
+          "ip_restrictions": ["10.0.0.0/8", "192.168.0.0/16"],
+          "require_device_verification": true
+        },
+        "compliance": {
+          "gdpr_consent": true,
+          "data_minimization": true,
+          "right_to_erasure": true
+        }
+      },
+      "features": [
+        "document-collection",
+        "digital-signatures", 
+        "training-modules",
+        "progress-tracking",
+        "manager-notifications",
+        "compliance-verification",
+        "equipment-assignment",
+        "access-provisioning"
+      ],
+      "permissions": {
+        "create_invitations": ["hr_staff", "managers"],
+        "view_progress": ["hr_staff", "managers", "employee"],
+        "approve_documents": ["hr_staff", "compliance_team"],
+        "assign_equipment": ["it_staff", "managers"],
+        "provision_access": ["it_admin", "security_team"]
+      },
+      "allowed_domains": ["nets-demo.thepia.net", "nets.eu"],
+      "cors_origins": [
+        "https://nets-demo.thepia.net",
+        "https://app.nets-demo.thepia.net",
+        "https://onboarding.nets.eu"
+      ]
+    },
+    {
+      "app_code": "offboarding", 
+      "app_name": "Employee Offboarding",
+      "app_description": "Secure offboarding process for Nets employees with comprehensive audit trails and compliance verification",
+      "app_version": "1.3.0",
+      "configuration": {
+        "theme": "professional",
+        "locale": "en-EU", 
+        "branding": {
+          "primary_color": "#dc2626",
+          "secondary_color": "#64748b",
+          "farewell_message": "Thank you for your contribution to Nets A/S"
+        },
+        "workflow": {
+          "immediate_security_actions": true,
+          "require_manager_signoff": true,
+          "audit_everything": true,
+          "deadline_enforcement": "strict"
+        },
+        "security": {
+          "immediate_access_revocation": true,
+          "financial_system_lockout": true,
+          "audit_trail_creation": true,
+          "secure_data_handling": true
+        },
+        "compliance": {
+          "data_retention_verification": true,
+          "equipment_return_tracking": true,
+          "knowledge_transfer_required": true,
+          "final_compliance_signoff": true
+        }
+      },
+      "features": [
+        "immediate-access-revocation",
+        "equipment-return-tracking",
+        "knowledge-transfer",
+        "document-collection",
+        "audit-trail-generation", 
+        "compliance-verification",
+        "manager-handover",
+        "final-signoff"
+      ],
+      "permissions": {
+        "initiate_offboarding": ["hr_staff", "managers", "security_team"],
+        "approve_offboarding": ["hr_director", "security_director"],
+        "access_audit_trail": ["compliance_team", "security_team", "audit_team"],
+        "financial_system_access": ["finance_team", "security_admin"],
+        "final_signoff": ["hr_director", "compliance_director"]
+      },
+      "allowed_domains": ["nets-demo.thepia.net", "nets.eu"],
+      "cors_origins": [
+        "https://nets-demo.thepia.net", 
+        "https://app.nets-demo.thepia.net",
+        "https://offboarding.nets.eu"
+      ]
+    }
+  ],
+  "demo_metadata": {
+    "version": "1.0.0",
+    "created_date": "2025-01-27",
+    "last_updated": "2025-01-27",
+    "scenarios": [
+      "new_employee_onboarding",
+      "security_clearance_offboarding", 
+      "voluntary_resignation",
+      "compliance_audit_demonstration"
+    ],
+    "personas": [
+      "hr_staff",
+      "it_administrator", 
+      "compliance_officer",
+      "security_manager",
+      "department_manager",
+      "new_employee",
+      "departing_employee"
+    ]
+  }
+}

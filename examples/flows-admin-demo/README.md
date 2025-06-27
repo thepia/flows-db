@@ -1,0 +1,147 @@
+# Flows Admin Demo
+
+A demo admin application for managing employees and invitations in the Thepia Flows authentication system. Built with SvelteKit, shadcn-svelte, and Tailwind CSS.
+
+## Features
+
+- **Employee Dashboard**: View all employees with enrollment status and completion percentages
+- **Employee Details**: Detailed view showing documents, tasks, and onboarding progress
+- **Invitation Management**: Create and track onboarding/offboarding invitations
+- **Client-Only Architecture**: Runs entirely in the browser with mock data
+- **Responsive Design**: Works on desktop and mobile devices
+
+## Technology Stack
+
+- **SvelteKit**: Full-stack framework with client-only configuration
+- **shadcn-svelte**: Beautiful, accessible UI components
+- **Tailwind CSS**: Utility-first CSS framework
+- **TypeScript**: Type-safe development
+- **Lucide Icons**: Beautiful SVG icons
+- **@thepia/branding**: Thepia brand assets and guidelines
+
+## Demo Data
+
+The application uses mock data representing:
+- **Nets A/S** as the demo client
+- 4 sample employees with different statuses
+- Document and task tracking
+- Invitation workflows for onboarding/offboarding
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+ 
+- pnpm (recommended) or npm
+
+### Installation
+
+1. Navigate to the demo directory:
+   ```bash
+   cd examples/flows-admin-demo
+   ```
+
+2. Install dependencies:
+   ```bash
+   pnpm install
+   ```
+
+3. Start the development server:
+   ```bash
+   pnpm dev
+   ```
+
+4. Open your browser to `http://localhost:5173`
+
+### Available Scripts
+
+- `pnpm dev` - Start development server
+- `pnpm build` - Build for production
+- `pnpm preview` - Preview production build
+- `pnpm check` - Run Svelte/TypeScript checks
+- `pnpm lint` - Run ESLint
+- `pnpm format` - Format code with Prettier
+
+## Project Structure
+
+```
+src/
+├── lib/
+│   ├── components/ui/     # shadcn-svelte components
+│   ├── data/             # Mock data and helpers
+│   ├── types.ts          # TypeScript type definitions
+│   └── utils.ts          # Utility functions
+├── routes/
+│   ├── +page.svelte      # Main dashboard
+│   ├── employees/[id]/   # Employee detail pages
+│   └── invitations/new/  # Create invitation form
+├── app.html              # HTML template
+├── app.pcss              # Global styles
+└── hooks.client.ts       # Client-side hooks
+```
+
+## Key Components
+
+### Dashboard (`/`)
+- Overview statistics
+- Employee list with status indicators
+- Recent invitations
+- Quick actions
+
+### Employee Details (`/employees/[id]`)
+- Personal information
+- Onboarding progress
+- Document status tracking
+- Task completion
+
+### Create Invitation (`/invitations/new`)
+- Form for new invitations
+- Preview panel
+- Invitation code generation
+- Expiration management
+
+## Mock Data
+
+The application includes realistic mock data:
+
+- **Employees**: 4 sample employees with varying completion states
+- **Documents**: Contract uploads, ID verification, tax forms
+- **Tasks**: IT setup, training modules, compliance requirements
+- **Invitations**: Pending, sent, and expired invitation examples
+
+## Styling
+
+The app uses shadcn-svelte components with Tailwind CSS:
+- Consistent design system
+- Dark/light mode support (configured)
+- Responsive layouts
+- Accessible components
+
+## Client-Only Architecture
+
+This demo runs entirely in the browser:
+- No server-side rendering required
+- All data is mocked locally
+- Perfect for demonstrations and prototyping
+- Easy to deploy to static hosting
+
+## Future Enhancements
+
+Potential features for a production version:
+- Real API integration with flows-db
+- User authentication
+- File upload functionality
+- Email integration
+- Reporting and analytics
+- Bulk operations
+- Advanced filtering and search
+
+## Related Projects
+
+- `@thepia/flows-auth` - Authentication library
+- `@thepia/flows-db` - Database management system
+- `@thepia/branding` - Brand assets and guidelines
+
+## License
+
+MIT - See the main flows-db project for details.
