@@ -12,7 +12,8 @@
 	} from '$lib/stores/settings';
 	import { clients, loadAllClients, loadClientData } from '$lib/stores/data';
 	import type { BrandingConfig } from '$lib/types';
-	import { Settings, Palette, Building2, Plus, Trash2, RotateCcw, Save, AlertTriangle, Database, ArrowRight } from 'lucide-svelte';
+	import { Settings, Palette, Building2, Plus, Trash2, RotateCcw, Save, AlertTriangle, Database } from 'lucide-svelte';
+	import DemoManagementPanel from '../demo/DemoManagementPanel.svelte';
 
 	// Component state
 	let newBrandingName = '';
@@ -21,6 +22,7 @@
 	let showAddBranding = false;
 	let initialized = false;
 	let loadingClientData = false;
+	let activeTab = 'settings'; // 'settings' or 'demo'
 
 	// Initialize settings on mount
 	onMount(async () => {
@@ -131,49 +133,77 @@
 </script>
 
 {#if initialized && $settings}
-<div class="space-y-6">
-	<!-- Header -->
-	<div class="flex items-center justify-between">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+	<div class="space-y-6">
+		<!-- Tab Navigation -->
 		<div>
-			<h1 class="text-2xl font-bold text-gray-900 flex items-center">
-				<Settings class="w-6 h-6 mr-3" />
-				Demo Settings
-			</h1>
-			<p class="text-sm text-gray-500 mt-1">
-				Configure branding, client selection, and demo preferences
-			</p>
+			<div class="border-b border-gray-200">
+				<nav class="-mb-px flex space-x-8">
+					<button
+						on:click={() => activeTab = 'settings'}
+						class="py-2 px-1 border-b-2 font-medium text-sm {
+							activeTab === 'settings' 
+								? 'border-blue-500 text-blue-600' 
+								: 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+						}"
+					>
+						<Settings class="w-4 h-4 mr-2 inline" />
+						Demo Settings
+					</button>
+					<button
+						on:click={() => activeTab = 'demo'}
+						class="py-2 px-1 border-b-2 font-medium text-sm {
+							activeTab === 'demo' 
+								? 'border-blue-500 text-blue-600' 
+								: 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+						}"
+					>
+						<Database class="w-4 h-4 mr-2 inline" />
+						Demo Management
+					</button>
+				</nav>
+			</div>
 		</div>
-		<Button variant="outline" on:click={resetSettings}>
-			<RotateCcw class="w-4 h-4 mr-2" />
-			Reset to Defaults
-		</Button>
-	</div>
 
-	{#if $settingsError}
-		<Card class="border-red-200 bg-red-50">
-			<CardContent class="pt-4">
-				<div class="flex items-center text-red-800">
-					<AlertTriangle class="w-5 h-5 mr-2" />
-					<span>Settings Error: {$settingsError}</span>
-					<Button variant="ghost" size="sm" on:click={() => settingsStore.clearError()} class="ml-auto">
-						Dismiss
-					</Button>
-				</div>
-			</CardContent>
-		</Card>
-	{/if}
+	<!-- Tab Content -->
+	{#if activeTab === 'settings'}
+		{#if $settingsError}
+			<Card class="border-red-200 bg-red-50">
+				<CardContent class="pt-4">
+					<div class="flex items-center text-red-800">
+						<AlertTriangle class="w-5 h-5 mr-2" />
+						<span>Settings Error: {$settingsError}</span>
+						<Button variant="ghost" size="sm" on:click={() => settingsStore.clearError()} class="ml-auto">
+							Dismiss
+						</Button>
+					</div>
+				</CardContent>
+			</Card>
+		{/if}
 
-	<!-- Branding Configuration -->
-	<Card>
-		<CardHeader>
-			<CardTitle class="flex items-center">
-				<Palette class="w-5 h-5 mr-2" />
-				Branding Configuration
-			</CardTitle>
-			<CardDescription>
-				Select the branding package or local directory to use for the demo interface
-			</CardDescription>
-		</CardHeader>
+		<!-- Settings Header with Reset Button -->
+		<div class="flex items-center justify-between mb-6">
+			<div>
+				<h2 class="text-xl font-semibold text-gray-900">Demo Configuration</h2>
+				<p class="text-sm text-gray-500 mt-1">Configure branding, client selection, and demo preferences</p>
+			</div>
+			<Button variant="outline" size="sm" on:click={resetSettings}>
+				<RotateCcw class="w-4 h-4 mr-2" />
+				Reset to Defaults
+			</Button>
+		</div>
+
+		<!-- Branding Configuration -->
+		<Card>
+			<CardHeader>
+				<CardTitle class="flex items-center">
+					<Palette class="w-5 h-5 mr-2" />
+					Branding Configuration
+				</CardTitle>
+				<CardDescription>
+					Select the branding package or local directory to use for the demo interface
+				</CardDescription>
+			</CardHeader>
 		<CardContent class="space-y-4">
 			<!-- Current Selection -->
 			<div>
@@ -374,26 +404,20 @@
 				</div>
 				
 				{#if $settings?.selectedClient}
-					<div class="flex items-center space-x-2">
-						<Button 
-							variant="outline" 
-							size="sm" 
-							on:click={loadSelectedClientData}
-							disabled={loadingClientData}
-						>
-							{#if loadingClientData}
-								<div class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mr-2"></div>
-								Loading...
-							{:else}
-								<Database class="w-4 h-4 mr-2" />
-								Load Data
-							{/if}
-						</Button>
-						<Button variant="outline" size="sm" href="/">
-							<ArrowRight class="w-4 h-4 mr-2" />
-							View Dashboard
-						</Button>
-					</div>
+					<Button 
+						variant="outline" 
+						size="sm" 
+						on:click={loadSelectedClientData}
+						disabled={loadingClientData}
+					>
+						{#if loadingClientData}
+							<div class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mr-2"></div>
+							Loading...
+						{:else}
+							<Database class="w-4 h-4 mr-2" />
+							Load Data
+						{/if}
+					</Button>
 				{/if}
 			</div>
 		</CardContent>
@@ -419,6 +443,11 @@
 			</div>
 		</CardContent>
 	</Card>
+	{:else if activeTab === 'demo'}
+		<!-- Demo Management Panel -->
+		<DemoManagementPanel />
+	{/if}
+	</div>
 </div>
 {:else}
 <!-- Loading state -->

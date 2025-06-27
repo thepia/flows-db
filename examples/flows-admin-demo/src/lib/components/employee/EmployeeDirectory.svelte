@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "$lib/components/ui/card";
+	import { Button } from "$lib/components/ui/button";
 	import EmployeeCard from "./EmployeeCard.svelte";
 	import type { Employee, EmployeeEnrollment } from "$lib/types";
+	import { UserPlus } from "lucide-svelte";
 
 	// Props
 	export let employees: Employee[];
@@ -18,10 +20,18 @@
 <!-- Employee List -->
 <Card>
 	<CardHeader>
-		<CardTitle>Employee Directory</CardTitle>
-		<CardDescription>
-			Manage employees and track their onboarding status
-		</CardDescription>
+		<div class="flex items-center justify-between">
+			<div>
+				<CardTitle>People Directory</CardTitle>
+				<CardDescription>
+					Manage employees and associates
+				</CardDescription>
+			</div>
+			<Button href="/employees/new">
+				<UserPlus class="w-4 h-4 mr-2" />
+				New Person
+			</Button>
+		</div>
 	</CardHeader>
 	<CardContent>
 		{#if loading}
@@ -50,8 +60,8 @@
 				<div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
 					<span class="text-2xl text-gray-400">👥</span>
 				</div>
-				<h3 class="text-lg font-medium text-gray-900 mb-2">No employees found</h3>
-				<p class="text-gray-600 mb-4">Get started by adding your first employee.</p>
+				<h3 class="text-lg font-medium text-gray-900 mb-2">No people found</h3>
+				<p class="text-gray-600 mb-4">Get started by adding your first person.</p>
 			</div>
 		{:else}
 			<!-- Employee list -->

@@ -107,3 +107,61 @@ export interface SettingsState {
 	loading: boolean;
 	error: string | null;
 }
+
+export interface DemoCompany {
+	id: string;
+	name: string;
+	displayName: string;
+	industry: string;
+	description: string;
+	employeeCount: number;
+	onboardingCount: number;
+	offboardingCount: number;
+	demoType: 'prospect' | 'internal' | 'training';
+	complexity: 'simple' | 'standard' | 'complex';
+	isActive: boolean;
+	lastGenerated?: string;
+	generationStatus: 'not_generated' | 'generating' | 'completed' | 'error';
+}
+
+export interface DemoGenerationConfig {
+	companyId: string;
+	employeeCount: number;
+	onboardingCount: number;
+	offboardingCount: number;
+	includeHistoricalData: boolean;
+	generateDocuments: boolean;
+	generateTasks: boolean;
+	complexity: 'simple' | 'standard' | 'complex';
+}
+
+export interface DemoMetrics {
+	totalCompanies: number;
+	totalEmployees: number;
+	activeProcesses: number;
+	completedProcesses: number;
+	totalDocuments: number;
+	totalTasks: number;
+	lastUpdated: string;
+}
+
+export interface DemoTemplate {
+	id: string;
+	name: string;
+	type: 'document' | 'task' | 'workflow';
+	category: string;
+	description: string;
+	isActive: boolean;
+	usageCount: number;
+}
+
+export interface DemoAction {
+	id: string;
+	type: 'generate' | 'reset' | 'export' | 'import';
+	companyId?: string;
+	status: 'pending' | 'running' | 'completed' | 'error';
+	progress: number;
+	message: string;
+	startedAt: string;
+	completedAt?: string;
+}

@@ -165,3 +165,8 @@ Required environment variables:
   - Supabase table confirmed to be correct
   - Frontend encryption planned for PII protection
   - Using demo as the frontend for implementation
+
+## TODO Items
+- Default branding for the interface is determined by the branding folder for the client selected in settings
+  - The square logo should be coming from the active branding folder
+  - Fallback branding folder is @thepia/branding
