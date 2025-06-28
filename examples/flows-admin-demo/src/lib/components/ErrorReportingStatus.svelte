@@ -1,68 +1,68 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "$lib/components/ui/card";
-	import { Button } from "$lib/components/ui/button";
-	import { AlertCircle, CheckCircle2, XCircle, RefreshCw } from "lucide-svelte";
-	
-	let config: any = null;
-	let queueSize = 0;
-	let lastRefresh = '';
+import { Button } from '$lib/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
+import { AlertCircle, CheckCircle2, RefreshCw, XCircle } from 'lucide-svelte';
+import { onMount } from 'svelte';
 
-	async function loadErrorReportingStatus() {
-		try {
-			const { getAdminErrorReportingConfig } = await import('../config/errorReporting.js');
-			const { getAdminErrorReportQueueSize } = await import('../utils/errorReporter.js');
-			
-			config = await getAdminErrorReportingConfig();
-			queueSize = getAdminErrorReportQueueSize();
-			lastRefresh = new Date().toLocaleTimeString();
-		} catch (error) {
-			console.error('Failed to load error reporting status:', error);
-		}
-	}
+let config: any = null;
+let queueSize = 0;
+let lastRefresh = '';
 
-	async function flushReports() {
-		try {
-			const { flushAdminErrorReports } = await import('../config/errorReporting.js');
-			await flushAdminErrorReports();
-			await loadErrorReportingStatus(); // Refresh status
-		} catch (error) {
-			console.error('Failed to flush error reports:', error);
-		}
-	}
+async function loadErrorReportingStatus() {
+  try {
+    const { getAdminErrorReportingConfig } = await import('../config/errorReporting.js');
+    const { getAdminErrorReportQueueSize } = await import('../utils/errorReporter.js');
 
-	async function testErrorReporting() {
-		try {
-			const { reportAdminFlowError } = await import('../config/errorReporting.js');
-			await reportAdminFlowError('ui-interaction', new Error('Test error from status component'), {
-				test: true,
-				timestamp: Date.now()
-			});
-			console.log('[Admin Demo] Test error report sent');
-		} catch (error) {
-			console.error('Failed to send test error report:', error);
-		}
-	}
+    config = await getAdminErrorReportingConfig();
+    queueSize = getAdminErrorReportQueueSize();
+    lastRefresh = new Date().toLocaleTimeString();
+  } catch (error) {
+    console.error('Failed to load error reporting status:', error);
+  }
+}
 
-	onMount(() => {
-		loadErrorReportingStatus();
-		
-		// Refresh status every 5 seconds
-		const interval = setInterval(loadErrorReportingStatus, 5000);
-		return () => clearInterval(interval);
-	});
+async function flushReports() {
+  try {
+    const { flushAdminErrorReports } = await import('../config/errorReporting.js');
+    await flushAdminErrorReports();
+    await loadErrorReportingStatus(); // Refresh status
+  } catch (error) {
+    console.error('Failed to flush error reports:', error);
+  }
+}
 
-	$: statusIcon = config?.enabled 
-		? CheckCircle2 
-		: config?.serverType?.includes('no local servers') 
-			? XCircle 
-			: AlertCircle;
-	
-	$: statusColor = config?.enabled 
-		? 'text-green-600' 
-		: config?.serverType?.includes('no local servers') 
-			? 'text-red-600' 
-			: 'text-yellow-600';
+async function testErrorReporting() {
+  try {
+    const { reportAdminFlowError } = await import('../config/errorReporting.js');
+    await reportAdminFlowError('ui-interaction', new Error('Test error from status component'), {
+      test: true,
+      timestamp: Date.now(),
+    });
+    console.log('[Admin Demo] Test error report sent');
+  } catch (error) {
+    console.error('Failed to send test error report:', error);
+  }
+}
+
+onMount(() => {
+  loadErrorReportingStatus();
+
+  // Refresh status every 5 seconds
+  const interval = setInterval(loadErrorReportingStatus, 5000);
+  return () => clearInterval(interval);
+});
+
+$: statusIcon = config?.enabled
+  ? CheckCircle2
+  : config?.serverType?.includes('no local servers')
+    ? XCircle
+    : AlertCircle;
+
+$: statusColor = config?.enabled
+  ? 'text-green-600'
+  : config?.serverType?.includes('no local servers')
+    ? 'text-red-600'
+    : 'text-yellow-600';
 </script>
 
 <Card class="max-w-md">

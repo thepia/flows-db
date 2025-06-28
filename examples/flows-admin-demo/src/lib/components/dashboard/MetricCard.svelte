@@ -1,41 +1,39 @@
 <script lang="ts">
-	import { Card, CardContent, CardHeader, CardTitle } from "$lib/components/ui/card";
-	import { Loader2 } from "lucide-svelte";
-	import type { ComponentType } from "svelte";
+import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
+import { Loader2 } from 'lucide-svelte';
+import type { ComponentType } from 'svelte';
 
-	// Props
-	export let title: string;
-	export let value: number | string;
-	export let description: string = '';
-	export let icon: ComponentType = null;
-	export let color: 'primary' | 'success' | 'warning' | 'danger' | 'info' = 'primary';
-	export let loading: boolean = false;
-	export let trend: {
-		value: number;
-		direction: 'up' | 'down';
-		period: string;
-	} = null;
+// Props
+export let title: string;
+export let value: number | string;
+export const description: string = '';
+export const icon: ComponentType = null;
+export const color: 'primary' | 'success' | 'warning' | 'danger' | 'info' = 'primary';
+export const loading: boolean = false;
+export const trend: {
+  value: number;
+  direction: 'up' | 'down';
+  period: string;
+} = null;
 
-	// Color mappings for different metric types
-	$: iconColorClass = {
-		primary: 'text-primary',
-		success: 'text-green-600',
-		warning: 'text-yellow-600',
-		danger: 'text-red-600',
-		info: 'text-blue-600'
-	}[color];
+// Color mappings for different metric types
+$: iconColorClass = {
+  primary: 'text-primary',
+  success: 'text-green-600',
+  warning: 'text-yellow-600',
+  danger: 'text-red-600',
+  info: 'text-blue-600',
+}[color];
 
-	$: valueColorClass = {
-		primary: 'text-primary',
-		success: 'text-green-600',
-		warning: 'text-yellow-600',
-		danger: 'text-red-600',
-		info: 'text-blue-600'
-	}[color];
+$: valueColorClass = {
+  primary: 'text-primary',
+  success: 'text-green-600',
+  warning: 'text-yellow-600',
+  danger: 'text-red-600',
+  info: 'text-blue-600',
+}[color];
 
-	$: trendColorClass = trend?.direction === 'up' 
-		? 'text-green-600' 
-		: 'text-red-600';
+$: trendColorClass = trend?.direction === 'up' ? 'text-green-600' : 'text-red-600';
 </script>
 
 <Card>

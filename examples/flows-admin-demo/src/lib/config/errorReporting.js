@@ -1,6 +1,6 @@
 /**
  * Error Reporting Configuration for Flows Admin Demo
- * 
+ *
  * Purpose: Configures admin error reporting to use the local demo server endpoint
  * Context: This enables debugging of admin dashboard issues, Supabase errors, and UI problems during development
  */
@@ -15,7 +15,7 @@ const ERROR_REPORTING_ENDPOINTS = {
   // Local demo server (default for development)
   localDemo: null, // Will be set dynamically to current dev server
   // Production: Intentionally not implemented yet (needs throttling/protection design)
-  productionApi: null // Not implemented - requires throttling and protection strategy
+  productionApi: null, // Not implemented - requires throttling and protection strategy
 };
 
 /**
@@ -23,7 +23,7 @@ const ERROR_REPORTING_ENDPOINTS = {
  */
 function getLocalDemoEndpoint() {
   if (!browser) return null;
-  
+
   const { protocol, hostname, port } = window.location;
   return `${protocol}//${hostname}:${port}/dev/error-reports`;
 }
@@ -33,12 +33,12 @@ function getLocalDemoEndpoint() {
  */
 async function checkServerHealth(endpoint) {
   if (!endpoint) return false;
-  
+
   try {
     const response = await fetch(endpoint, {
       method: 'GET',
-      headers: { 'Accept': 'application/json' },
-      signal: AbortSignal.timeout(2000) // 2 second timeout
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(2000), // 2 second timeout
     });
     return response.ok;
   } catch (error) {
@@ -54,23 +54,24 @@ async function detectEnvironmentAndServers() {
     return {
       environment: 'server',
       useLocalDemo: false,
-      fallbackDisabled: true
+      fallbackDisabled: true,
     };
   }
-  
-  const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+  const isDev =
+    window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   const environment = isDev ? 'development' : 'production';
-  
+
   // Check local demo server (current dev server)
   const localDemoEndpoint = getLocalDemoEndpoint();
-  const useLocalDemo = localDemoEndpoint && await checkServerHealth(localDemoEndpoint);
-  
+  const useLocalDemo = localDemoEndpoint && (await checkServerHealth(localDemoEndpoint));
+
   const fallbackDisabled = !useLocalDemo;
-  
+
   return {
     environment,
     useLocalDemo,
-    fallbackDisabled
+    fallbackDisabled,
   };
 }
 
@@ -80,19 +81,21 @@ async function detectEnvironmentAndServers() {
 export async function getAdminErrorReportingConfig() {
   const { environment, useLocalDemo, fallbackDisabled } = await detectEnvironmentAndServers();
   const isDev = environment === 'development';
-  
+
   let endpoint;
   let serverType;
-  
+
   if (isDev && useLocalDemo) {
     endpoint = getLocalDemoEndpoint();
     serverType = 'Local Demo Server (/dev/error-reports)';
   } else {
     // Production frontend error reporting not implemented yet
     endpoint = null;
-    serverType = fallbackDisabled ? 'Disabled (no local servers available)' : 'Disabled (dev-only feature)';
+    serverType = fallbackDisabled
+      ? 'Disabled (no local servers available)'
+      : 'Disabled (dev-only feature)';
   }
-  
+
   return {
     enabled: !!endpoint,
     endpoint,
@@ -102,7 +105,7 @@ export async function getAdminErrorReportingConfig() {
     environment,
     serverType,
     appName: 'flows-admin-demo',
-    appVersion: '1.0.0'
+    appVersion: '1.0.0',
   };
 }
 
@@ -111,19 +114,19 @@ export async function getAdminErrorReportingConfig() {
  */
 export async function initializeAdminErrorReporting() {
   if (!browser) return false;
-  
+
   try {
     const { initializeAdminErrorReporter } = await import('../utils/errorReporter.js');
     const config = await getAdminErrorReportingConfig();
-    
+
     await initializeAdminErrorReporter(config);
-    
+
     console.log('[Admin Demo] Error reporting initialized:', {
       endpoint: config.endpoint,
       serverType: config.serverType,
-      enabled: config.enabled
+      enabled: config.enabled,
     });
-    
+
     return true;
   } catch (error) {
     console.error('[Admin Demo] Failed to initialize error reporting:', error);
@@ -136,32 +139,32 @@ export async function initializeAdminErrorReporting() {
  */
 export function enableGlobalAdminErrorReporting() {
   if (!browser) return;
-  
+
   // Global error handler
   window.addEventListener('error', async (event) => {
     console.error('[Admin Demo] Unhandled error:', event.error);
-    
+
     try {
       const { reportAdminError } = await import('../utils/errorReporter.js');
       await reportAdminError('ui-interaction', event.error, {
         filename: event.filename,
         lineno: event.lineno,
         colno: event.colno,
-        type: 'uncaught-error'
+        type: 'uncaught-error',
       });
     } catch (reportingError) {
       console.error('[Admin Demo] Failed to report uncaught error:', reportingError);
     }
   });
-  
+
   // Unhandled promise rejection handler
   window.addEventListener('unhandledrejection', async (event) => {
     console.error('[Admin Demo] Unhandled promise rejection:', event.reason);
-    
+
     try {
       const { reportAdminError } = await import('../utils/errorReporter.js');
       await reportAdminError('api-call', event.reason, {
-        type: 'unhandled-promise-rejection'
+        type: 'unhandled-promise-rejection',
       });
     } catch (reportingError) {
       console.error('[Admin Demo] Failed to report promise rejection:', reportingError);
@@ -174,13 +177,13 @@ export function enableGlobalAdminErrorReporting() {
  */
 export async function reportAdminFlowError(operation, error, context = {}) {
   if (!browser) return;
-  
+
   try {
     const { reportAdminError } = await import('../utils/errorReporter.js');
-    
+
     await reportAdminError(operation, error, {
       adminDemo: true,
-      ...context
+      ...context,
     });
   } catch (reportingError) {
     console.error('[Admin Demo] Failed to report admin error:', reportingError);
@@ -192,13 +195,13 @@ export async function reportAdminFlowError(operation, error, context = {}) {
  */
 export async function reportSupabaseError(table, operation, error, context = {}) {
   if (!browser) return;
-  
+
   try {
     const { reportDataError } = await import('../utils/errorReporter.js');
-    
+
     await reportDataError(table, operation, error, {
       supabase: true,
-      ...context
+      ...context,
     });
   } catch (reportingError) {
     console.error('[Admin Demo] Failed to report Supabase error:', reportingError);
@@ -210,13 +213,13 @@ export async function reportSupabaseError(table, operation, error, context = {})
  */
 export async function reportComponentError(component, action, error, context = {}) {
   if (!browser) return;
-  
+
   try {
     const { reportUiError } = await import('../utils/errorReporter.js');
-    
+
     await reportUiError(component, action, error, {
       ui: true,
-      ...context
+      ...context,
     });
   } catch (reportingError) {
     console.error('[Admin Demo] Failed to report UI error:', reportingError);
@@ -228,7 +231,7 @@ export async function reportComponentError(component, action, error, context = {
  */
 export async function flushAdminErrorReports() {
   if (!browser) return;
-  
+
   try {
     const { flushAdminErrorReports } = await import('../utils/errorReporter.js');
     await flushAdminErrorReports();

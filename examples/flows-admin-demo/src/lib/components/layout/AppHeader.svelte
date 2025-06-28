@@ -1,32 +1,34 @@
 <script lang="ts">
-	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
-	import { Button } from "$lib/components/ui/button";
-	import { Settings, Inbox, User, ArrowLeft, ChevronLeft } from "lucide-svelte";
-	import { client } from '$lib/stores/data';
-	import LogoWrapper from '../branding/LogoWrapper.svelte';
+import { goto } from '$app/navigation';
+import { page } from '$app/stores';
+import { Button } from '$lib/components/ui/button';
+import { client } from '$lib/stores/data';
+import { ArrowLeft, ChevronLeft, Inbox, Settings, User } from 'lucide-svelte';
+import LogoWrapper from '../branding/LogoWrapper.svelte';
 
-	// Props
-	export let title: string = 'Flows Dashboard';
-	export let showBackButton: boolean = false;
+// Props
+export const title: string = 'Flows Dashboard';
+export const showBackButton: boolean = false;
 
-	// Navigation handlers
-	function navigateToSettings() {
-		goto('/settings');
-	}
+// Navigation handlers
+function navigateToSettings() {
+  console.log('Settings button clicked - navigating to /settings');
+  window.location.href = '/settings';
+}
 
-	function navigateBack() {
-		goto('/');
-	}
+function navigateBack() {
+  console.log('Back button clicked - navigating to home');
+  window.location.href = '/';
+}
 
-	// Placeholder handlers for future functionality
-	function openInbox() {
-		console.log('Inbox clicked - feature coming soon');
-	}
+// Placeholder handlers for future functionality
+function openInbox() {
+  console.log('Inbox clicked - feature coming soon');
+}
 
-	function openProfile() {
-		console.log('Profile clicked - feature coming soon');
-	}
+function openProfile() {
+  console.log('Profile clicked - feature coming soon');
+}
 </script>
 
 <header class="bg-white border-b border-gray-200">
@@ -67,15 +69,14 @@
 			<div class="flex items-center space-x-2">
 				<!-- Settings button (only show on main page) -->
 				{#if !showBackButton}
-					<Button 
-						variant="ghost" 
-						size="icon"
+					<button 
+						type="button"
 						on:click={navigateToSettings}
-						class="w-9 h-9 rounded-md hover:bg-gray-100"
+						class="inline-flex items-center justify-center w-9 h-9 rounded-md hover:bg-gray-100 text-gray-600"
 						title="Settings"
 					>
-						<Settings class="w-5 h-5 text-gray-600" />
-					</Button>
+						<Settings class="w-5 h-5" />
+					</button>
 				{/if}
 
 				<!-- Inbox button -->

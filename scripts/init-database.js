@@ -55,7 +55,10 @@ const sqlFiles = [
   '00_schema_setup.sql',
   '01_clients.sql',  
   '02_applications.sql',
-  '03_invitations.sql'
+  '03_invitations.sql',
+  '10_shadow_offboarding_workflows.sql',
+  '11_credit_system_offboarding.sql',
+  '12_task_oriented_offboarding.sql'
 ];
 
 /**

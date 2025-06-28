@@ -1,6 +1,6 @@
 /**
  * Error Reporting Utilities for Flows Admin Demo
- * 
+ *
  * Purpose: Configurable error reporting for admin dashboard issues during development
  * Context: This enables debugging of Supabase data loading, UI errors, and admin flow issues
  */
@@ -48,7 +48,7 @@ class AdminErrorReporter {
       maxRetries: 3,
       retryDelay: 1000,
       debug: false,
-      ...config
+      ...config,
     };
   }
 
@@ -92,11 +92,11 @@ class AdminErrorReporter {
       userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'server',
       url: typeof window !== 'undefined' ? window.location.href : 'unknown',
       app: 'flows-admin-demo',
-      version: '1.0.0'
+      version: '1.0.0',
     };
 
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     };
 
     let response: Response;
@@ -104,7 +104,7 @@ class AdminErrorReporter {
       response = await fetch(this.config.endpoint!, {
         method: 'POST',
         headers,
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
     } catch (error) {
       throw new Error(`Network error: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -144,7 +144,7 @@ class AdminErrorReporter {
     }
 
     this.retryQueue = failedRetries;
-    
+
     if (this.retryQueue.length > 0) {
       this.scheduleRetry();
     }
@@ -159,7 +159,7 @@ class AdminErrorReporter {
     const queuedEvents = [...this.queue];
     this.queue = [];
 
-    queuedEvents.forEach(event => this.report(event));
+    queuedEvents.forEach((event) => this.report(event));
   }
 
   getQueueSize() {
@@ -172,7 +172,7 @@ let reporter: AdminErrorReporter | null = null;
 
 export function initializeAdminErrorReporter(config: ErrorReporterConfig) {
   reporter = new AdminErrorReporter(config);
-  
+
   if (config.debug) {
     console.log('📊 [AdminErrorReporter] Initialized with config:', config);
   }
@@ -180,16 +180,22 @@ export function initializeAdminErrorReporter(config: ErrorReporterConfig) {
 
 export function updateAdminErrorReporterConfig(config: Partial<ErrorReporterConfig>) {
   if (!reporter) {
-    console.warn('📊 [AdminErrorReporter] Not initialized. Call initializeAdminErrorReporter first.');
+    console.warn(
+      '📊 [AdminErrorReporter] Not initialized. Call initializeAdminErrorReporter first.'
+    );
     return;
   }
-  
+
   reporter.updateConfig(config);
 }
 
-export function reportAdminError(operation: AdminErrorEvent['operation'], error: any, context?: Record<string, any>) {
+export function reportAdminError(
+  operation: AdminErrorEvent['operation'],
+  error: any,
+  context?: Record<string, any>
+) {
   if (!reporter) return;
-  
+
   reporter.report({
     type: 'admin-error',
     operation,
@@ -197,15 +203,20 @@ export function reportAdminError(operation: AdminErrorEvent['operation'], error:
       name: error?.name,
       message: error?.message,
       code: error?.code,
-      stack: error?.stack
+      stack: error?.stack,
     },
-    context
+    context,
   });
 }
 
-export function reportDataError(table: string, operation: DataErrorEvent['operation'], error: any, context?: Record<string, any>) {
+export function reportDataError(
+  table: string,
+  operation: DataErrorEvent['operation'],
+  error: any,
+  context?: Record<string, any>
+) {
   if (!reporter) return;
-  
+
   reporter.report({
     type: 'data-error',
     table,
@@ -215,15 +226,20 @@ export function reportDataError(table: string, operation: DataErrorEvent['operat
       message: error?.message,
       code: error?.code,
       details: error?.details,
-      hint: error?.hint
+      hint: error?.hint,
     },
-    context
+    context,
   });
 }
 
-export function reportUiError(component: string, action: string, error: any, context?: Record<string, any>) {
+export function reportUiError(
+  component: string,
+  action: string,
+  error: any,
+  context?: Record<string, any>
+) {
   if (!reporter) return;
-  
+
   reporter.report({
     type: 'ui-error',
     component,
@@ -231,9 +247,9 @@ export function reportUiError(component: string, action: string, error: any, con
     error: {
       name: error?.name,
       message: error?.message,
-      stack: error?.stack
+      stack: error?.stack,
     },
-    context
+    context,
   });
 }
 

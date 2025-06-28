@@ -1,130 +1,143 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { Button } from "$lib/components/ui/button";
-	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "$lib/components/ui/card";
-	import { 
-		client, 
-		invitations, 
-		loading, 
-		error, 
-		loadDemoData 
-	} from "$lib/stores/data";
-	import { ArrowLeft, UserPlus, Filter, MoreVertical, Eye, RefreshCw, XCircle, Share } from "lucide-svelte";
-	import LoadingAnimation from "$lib/components/shared/LoadingAnimation.svelte";
-	import { goto } from "$app/navigation";
-	import type { Invitation } from "$lib/types";
+import { goto } from '$app/navigation';
+import LoadingAnimation from '$lib/components/shared/LoadingAnimation.svelte';
+import { Button } from '$lib/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
+import { client, error, invitations, loadDemoData, loading } from '$lib/stores/data';
+import type { Invitation } from '$lib/types';
+import {
+  ArrowLeft,
+  Eye,
+  Filter,
+  MoreVertical,
+  RefreshCw,
+  Share,
+  UserPlus,
+  XCircle,
+} from 'lucide-svelte';
+import { onMount } from 'svelte';
 
-	// Filtering and sorting state
-	let statusFilter = 'all'; // 'all' | 'pending' | 'used' | 'expired' | 'revoked'
-	let typeFilter = 'all'; // 'all' | 'onboarding' | 'offboarding'
-	let sortBy = 'created'; // 'created' | 'expires' | 'name'
-	let sortOrder = 'desc'; // 'asc' | 'desc'
-	let searchQuery = '';
+// Filtering and sorting state
+let statusFilter = 'all'; // 'all' | 'pending' | 'used' | 'expired' | 'revoked'
+let typeFilter = 'all'; // 'all' | 'onboarding' | 'offboarding'
+let sortBy = 'created'; // 'created' | 'expires' | 'name'
+let sortOrder = 'desc'; // 'asc' | 'desc'
+let searchQuery = '';
 
-	// Invitation management state
-	let activeInvitationDropdown: string | null = null;
+// Invitation management state
+let activeInvitationDropdown: string | null = null;
 
-	// Load data on component mount
-	onMount(() => {
-		if ($client === null) {
-			loadDemoData();
-		}
-	});
+// Load data on component mount
+onMount(() => {
+  if ($client === null) {
+    loadDemoData();
+  }
+});
 
-	// Filtered and sorted invitations
-	$: filteredInvitations = $invitations
-		.filter(invitation => {
-			// Status filter
-			if (statusFilter !== 'all' && invitation.status !== statusFilter) return false;
-			
-			// Type filter
-			if (typeFilter !== 'all' && invitation.invitationType !== typeFilter) return false;
-			
-			// Search query
-			if (searchQuery) {
-				const query = searchQuery.toLowerCase();
-				const searchableText = `${invitation.firstName} ${invitation.lastName} ${invitation.companyEmail} ${invitation.department} ${invitation.position}`.toLowerCase();
-				if (!searchableText.includes(query)) return false;
-			}
-			
-			return true;
-		})
-		.sort((a, b) => {
-			let valueA: any, valueB: any;
-			
-			switch (sortBy) {
-				case 'created':
-					valueA = new Date(a.createdAt).getTime();
-					valueB = new Date(b.createdAt).getTime();
-					break;
-				case 'expires':
-					valueA = new Date(a.expiresAt).getTime();
-					valueB = new Date(b.expiresAt).getTime();
-					break;
-				case 'name':
-					valueA = `${a.firstName} ${a.lastName}`.toLowerCase();
-					valueB = `${b.firstName} ${b.lastName}`.toLowerCase();
-					break;
-				default:
-					return 0;
-			}
-			
-			if (sortOrder === 'asc') {
-				return valueA > valueB ? 1 : valueA < valueB ? -1 : 0;
-			} else {
-				return valueA < valueB ? 1 : valueA > valueB ? -1 : 0;
-			}
-		});
+// Filtered and sorted invitations
+$: filteredInvitations = $invitations
+  .filter((invitation) => {
+    // Status filter
+    if (statusFilter !== 'all' && invitation.status !== statusFilter) return false;
 
-	// Invitation management functions
-	function toggleInvitationDropdown(invitationId: string) {
-		activeInvitationDropdown = activeInvitationDropdown === invitationId ? null : invitationId;
-	}
+    // Type filter
+    if (typeFilter !== 'all' && invitation.invitationType !== typeFilter) return false;
 
-	function shareInvitationCode(invitationCode: string) {
-		navigator.clipboard.writeText(invitationCode);
-		console.log(`Shared invitation code: ${invitationCode}`);
-		// TODO: Show toast notification
-		activeInvitationDropdown = null;
-	}
+    // Search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const searchableText =
+        `${invitation.firstName} ${invitation.lastName} ${invitation.companyEmail} ${invitation.department} ${invitation.position}`.toLowerCase();
+      if (!searchableText.includes(query)) return false;
+    }
 
-	function viewInvitationDetails(invitation: Invitation) {
-		console.log('Viewing invitation details:', invitation);
-		// TODO: Open modal with full invitation details
-		activeInvitationDropdown = null;
-	}
+    return true;
+  })
+  .sort((a, b) => {
+    let valueA: any, valueB: any;
 
-	function resendInvitation(invitation: Invitation) {
-		console.log('Resending invitation:', invitation);
-		// TODO: Implement resend functionality
-		activeInvitationDropdown = null;
-	}
+    switch (sortBy) {
+      case 'created':
+        valueA = new Date(a.createdAt).getTime();
+        valueB = new Date(b.createdAt).getTime();
+        break;
+      case 'expires':
+        valueA = new Date(a.expiresAt).getTime();
+        valueB = new Date(b.expiresAt).getTime();
+        break;
+      case 'name':
+        valueA = `${a.firstName} ${a.lastName}`.toLowerCase();
+        valueB = `${b.firstName} ${b.lastName}`.toLowerCase();
+        break;
+      default:
+        return 0;
+    }
 
-	function revokeInvitation(invitation: Invitation) {
-		if (confirm(`Are you sure you want to revoke the invitation for ${invitation.firstName} ${invitation.lastName}?`)) {
-			console.log('Revoking invitation:', invitation);
-			// TODO: Implement revoke functionality via Supabase
-			activeInvitationDropdown = null;
-		}
-	}
+    if (sortOrder === 'asc') {
+      return valueA > valueB ? 1 : valueA < valueB ? -1 : 0;
+    } else {
+      return valueA < valueB ? 1 : valueA > valueB ? -1 : 0;
+    }
+  });
 
-	function getStatusColor(status: string) {
-		switch (status) {
-			case 'pending': return 'text-yellow-600 bg-yellow-50';
-			case 'used': return 'text-green-600 bg-green-50';
-			case 'expired': return 'text-red-600 bg-red-50';
-			case 'revoked': return 'text-gray-600 bg-gray-50';
-			default: return 'text-gray-600 bg-gray-50';
-		}
-	}
+// Invitation management functions
+function toggleInvitationDropdown(invitationId: string) {
+  activeInvitationDropdown = activeInvitationDropdown === invitationId ? null : invitationId;
+}
 
-	function resetFilters() {
-		statusFilter = 'all';
-		typeFilter = 'all';
-		searchQuery = '';
-		sortBy = 'created';
-		sortOrder = 'desc';
-	}
+function shareInvitationCode(invitationCode: string) {
+  navigator.clipboard.writeText(invitationCode);
+  console.log(`Shared invitation code: ${invitationCode}`);
+  // TODO: Show toast notification
+  activeInvitationDropdown = null;
+}
+
+function viewInvitationDetails(invitation: Invitation) {
+  console.log('Viewing invitation details:', invitation);
+  // TODO: Open modal with full invitation details
+  activeInvitationDropdown = null;
+}
+
+function resendInvitation(invitation: Invitation) {
+  console.log('Resending invitation:', invitation);
+  // TODO: Implement resend functionality
+  activeInvitationDropdown = null;
+}
+
+function revokeInvitation(invitation: Invitation) {
+  if (
+    confirm(
+      `Are you sure you want to revoke the invitation for ${invitation.firstName} ${invitation.lastName}?`
+    )
+  ) {
+    console.log('Revoking invitation:', invitation);
+    // TODO: Implement revoke functionality via Supabase
+    activeInvitationDropdown = null;
+  }
+}
+
+function getStatusColor(status: string) {
+  switch (status) {
+    case 'pending':
+      return 'text-yellow-600 bg-yellow-50';
+    case 'used':
+      return 'text-green-600 bg-green-50';
+    case 'expired':
+      return 'text-red-600 bg-red-50';
+    case 'revoked':
+      return 'text-gray-600 bg-gray-50';
+    default:
+      return 'text-gray-600 bg-gray-50';
+  }
+}
+
+function resetFilters() {
+  statusFilter = 'all';
+  typeFilter = 'all';
+  searchQuery = '';
+  sortBy = 'created';
+  sortOrder = 'desc';
+}
 </script>
 
 <svelte:head>

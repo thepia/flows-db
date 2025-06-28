@@ -1,70 +1,81 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { 
-		client, 
-		clients,
-		applications,
-		employees, 
-		invitations, 
-		enrollments, 
-		loading, 
-		error, 
-		loadDemoData,
-		loadAllClients, 
-		getClientMetrics
-	} from "$lib/stores/data";
-	import { settingsStore } from '$lib/stores/settings';
-	import FloatingStatusButton from "$lib/components/FloatingStatusButton.svelte";
-	import DashboardMetrics from "$lib/components/dashboard/DashboardMetrics.svelte";
-	import EmployeeDirectory from "$lib/components/employee/EmployeeDirectory.svelte";
-	import InvitationsSidebar from "$lib/components/dashboard/InvitationsSidebar.svelte";
-	import LoadingAnimation from "$lib/components/shared/LoadingAnimation.svelte";
-	import { AlertCircle, UserPlus, Users, Briefcase } from "lucide-svelte";
-	import { Button } from "$lib/components/ui/button";
+import DashboardMetrics from '$lib/components/dashboard/DashboardMetrics.svelte';
+import InvitationsSidebar from '$lib/components/dashboard/InvitationsSidebar.svelte';
+import EmployeeDirectory from '$lib/components/employee/EmployeeDirectory.svelte';
+import FloatingStatusButton from '$lib/components/FloatingStatusButton.svelte';
+import LoadingAnimation from '$lib/components/shared/LoadingAnimation.svelte';
+import TemplateManager from '$lib/components/offboarding/TemplateManager.svelte';
+import ProcessManager from '$lib/components/offboarding/ProcessManager.svelte';
+import TaskManager from '$lib/components/offboarding/TaskManager.svelte';
+import { Button } from '$lib/components/ui/button';
+import {
+  applications,
+  client,
+  clients,
+  employees,
+  enrollments,
+  error,
+  getClientMetrics,
+  invitations,
+  loadAllClients,
+  loadDemoData,
+  loading,
+} from '$lib/stores/data';
+import { settingsStore } from '$lib/stores/settings';
+import { AlertCircle, Briefcase, Plus, UserMinus, UserPlus, Users } from 'lucide-svelte';
+import { onMount } from 'svelte';
 
-	// Tab state
-	let activeTab = 'people';
+// Tab state
+let activeTab = 'people';
 
-	// Metrics state
-	let onboardingCount = 0;
-	let offboardingCount = 0;
-	let metricsLoading = false;
+// Metrics state
+let onboardingCount = 0;
+let offboardingCount = 0;
 
-	// Load data on component mount
-	onMount(async () => {
-		// Initialize settings and load all clients first
-		settingsStore.init();
-		await loadAllClients();
-		
-		// Load demo data (falls back to default client if no settings)
-		await loadDemoData();
-		await loadMetrics();
-	});
+// Offboarding state
+let offboardingView = 'templates'; // 'templates', 'processes', 'tasks'
+let selectedTemplate = null;
+let selectedProcess = null;
+let offboardingTemplates = [];
+let offboardingProcesses = [];
+let offboardingTasks = [];
+let metricsLoading = false;
 
-	// Load business metrics
-	async function loadMetrics() {
-		if (!$client) return;
-		
-		metricsLoading = true;
-		try {
-			const metrics = await getClientMetrics();
-			onboardingCount = metrics.onboardingCount;
-			offboardingCount = metrics.offboardingCount;
-		} catch (err) {
-			console.error('Failed to load metrics:', err);
-		} finally {
-			metricsLoading = false;
-		}
-	}
+// Load data on component mount
+onMount(async () => {
+  // Initialize settings and load all clients first
+  settingsStore.init();
+  await loadAllClients();
 
-	// Reactive to client changes
-	$: if ($client) {
-		loadMetrics();
-	}
+  // Load demo data (falls back to default client if no settings)
+  await loadDemoData();
+  await loadMetrics();
+});
 
-	// Dashboard statistics (reactive to store changes)
-	$: totalEmployees = $employees.length;
-	$: pendingInvitations = $invitations.filter(inv => inv.status === 'pending').length;
+// Load business metrics
+async function loadMetrics() {
+  if (!$client) return;
+
+  metricsLoading = true;
+  try {
+    const metrics = await getClientMetrics();
+    onboardingCount = metrics.onboardingCount;
+    offboardingCount = metrics.offboardingCount;
+  } catch (err) {
+    console.error('Failed to load metrics:', err);
+  } finally {
+    metricsLoading = false;
+  }
+}
+
+// Reactive to client changes
+$: if ($client) {
+  loadMetrics();
+}
+
+// Dashboard statistics (reactive to store changes)
+$: totalEmployees = $employees.length;
+$: pendingInvitations = $invitations.filter((inv) => inv.status === 'pending').length;
 </script>
 
 <svelte:head>
@@ -87,6 +98,7 @@
 					<Users class="w-4 h-4 mr-2 inline" />
 					People
 				</button>
+
 
 				<!-- Application Tabs -->
 				{#each $applications as app}
@@ -157,14 +169,143 @@
 				<!-- Application Tab Content -->
 				{@const selectedApp = $applications.find(app => app.code === activeTab)}
 				{#if selectedApp}
-					<div class="space-y-8">
+					{#if selectedApp.type === 'offboarding'}
+						<!-- Task-Oriented Offboarding Application -->
+						<div class="space-y-6">
+							<!-- Application Header -->
+							<div class="flex justify-between items-start">
+								<div>
+									<div class="flex items-center gap-3 mb-2">
+										<h2 class="text-xl font-semibold text-gray-900">{selectedApp.name}</h2>
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {
+											selectedApp.status === 'active' ? 'bg-green-100 text-green-800' :
+											selectedApp.status === 'maintenance' ? 'bg-yellow-100 text-yellow-800' :
+											selectedApp.status === 'deprecated' ? 'bg-red-100 text-red-800' :
+											'bg-gray-100 text-gray-800'
+										}">
+											{selectedApp.status}
+										</span>
+										<span class="text-sm text-gray-400">v{selectedApp.version}</span>
+									</div>
+									<p class="text-sm text-gray-500 mt-1">
+										Task-oriented employee offboarding and departure management
+									</p>
+									<div class="flex items-center gap-4 mt-2 text-xs text-gray-400">
+										<span>Process Templates</span>
+										<span>Task Management</span>
+										<span>Department-Specific</span>
+									</div>
+								</div>
+								
+								<!-- Navigation Tabs -->
+								<div class="flex items-center gap-2">
+									<Button 
+										variant={offboardingView === 'templates' ? 'default' : 'outline'}
+										size="sm"
+										on:click={() => offboardingView = 'templates'}
+									>
+										Templates
+									</Button>
+									<Button 
+										variant={offboardingView === 'processes' ? 'default' : 'outline'}
+										size="sm"
+										on:click={() => offboardingView = 'processes'}
+									>
+										Processes
+									</Button>
+									{#if selectedProcess}
+										<Button 
+											variant={offboardingView === 'tasks' ? 'default' : 'outline'}
+											size="sm"
+											on:click={() => offboardingView = 'tasks'}
+										>
+											Tasks
+										</Button>
+									{/if}
+								</div>
+							</div>
+
+							<!-- View Content -->
+							{#if offboardingView === 'templates'}
+								<TemplateManager 
+									templates={offboardingTemplates}
+									onTemplateSelect={(template) => {
+										selectedTemplate = template;
+									}}
+									onCreateTemplate={() => {
+										console.log('Create new template');
+									}}
+									onEditTemplate={(template) => {
+										console.log('Edit template:', template);
+									}}
+									loading={$loading}
+								/>
+							{:else if offboardingView === 'processes'}
+								<ProcessManager 
+									processes={offboardingProcesses}
+									onProcessSelect={(process) => {
+										selectedProcess = process;
+										offboardingView = 'tasks';
+									}}
+									onCreateProcess={() => {
+										offboardingView = 'templates';
+									}}
+									onUpdateProcessStatus={(processId, status) => {
+										console.log('Update process status:', processId, status);
+									}}
+									loading={$loading}
+								/>
+							{:else if offboardingView === 'tasks' && selectedProcess}
+								<TaskManager 
+									process={selectedProcess}
+									tasks={offboardingTasks}
+									onTaskUpdate={(taskId, updates) => {
+										console.log('Update task:', taskId, updates);
+									}}
+									onTaskComplete={(taskId) => {
+										console.log('Complete task:', taskId);
+									}}
+									onTaskStart={(taskId) => {
+										console.log('Start task:', taskId);
+									}}
+									onAddNote={(taskId, note) => {
+										console.log('Add note to task:', taskId, note);
+									}}
+									onUploadDocument={(taskId, file) => {
+										console.log('Upload document for task:', taskId, file);
+									}}
+									loading={$loading}
+								/>
+							{/if}
+						</div>
+					{:else}
+						<!-- Other Applications - Show Generic View -->
+						<div class="space-y-8">
 						<!-- Application Dashboard Header -->
 						<div class="flex justify-between items-start">
 							<div>
-								<h2 class="text-xl font-semibold text-gray-900">{selectedApp.name}</h2>
+								<div class="flex items-center gap-3 mb-2">
+									<h2 class="text-xl font-semibold text-gray-900">{selectedApp.name}</h2>
+									<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {
+										selectedApp.status === 'active' ? 'bg-green-100 text-green-800' :
+										selectedApp.status === 'maintenance' ? 'bg-yellow-100 text-yellow-800' :
+										selectedApp.status === 'deprecated' ? 'bg-red-100 text-red-800' :
+										'bg-gray-100 text-gray-800'
+									}">
+										{selectedApp.status}
+									</span>
+									<span class="text-sm text-gray-400">v{selectedApp.version}</span>
+								</div>
 								<p class="text-sm text-gray-500 mt-1">
-									{selectedApp.type === 'onboarding' ? 'Onboarding' : 'Offboarding'} Management
+									{selectedApp.description || `${selectedApp.type === 'onboarding' ? 'Onboarding' : 'Offboarding'} Management Application`}
 								</p>
+								<div class="flex items-center gap-4 mt-2 text-xs text-gray-400">
+									<span>Max Users: {selectedApp.maxConcurrentUsers}</span>
+									<span>Features: {selectedApp.features.length}</span>
+									{#if selectedApp.lastAccessed}
+										<span>Last Accessed: {new Date(selectedApp.lastAccessed).toLocaleDateString()}</span>
+									{/if}
+								</div>
 							</div>
 							<Button variant="outline" href="/invitations/new">
 								<UserPlus class="w-4 h-4 mr-2" />
@@ -197,6 +338,57 @@
 								<p class="text-2xl font-bold text-gray-900 mt-1">
 									{$invitations.filter(inv => inv.applicationId === selectedApp.id && inv.status === 'accepted').length}
 								</p>
+							</div>
+						</div>
+
+						<!-- Application Features & Configuration -->
+						<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+							<!-- Features -->
+							<div class="bg-white rounded-lg shadow-sm border">
+								<div class="px-6 py-4 border-b">
+									<h3 class="text-lg font-medium text-gray-900">Application Features</h3>
+								</div>
+								<div class="p-6">
+									{#if selectedApp.features.length > 0}
+										<div class="grid grid-cols-1 gap-3">
+											{#each selectedApp.features as feature}
+												<div class="flex items-center gap-3">
+													<div class="w-2 h-2 bg-green-500 rounded-full"></div>
+													<span class="text-sm text-gray-700 capitalize">
+														{feature.replace(/-/g, ' ').replace(/_/g, ' ')}
+													</span>
+												</div>
+											{/each}
+										</div>
+									{:else}
+										<p class="text-sm text-gray-500">No features configured</p>
+									{/if}
+								</div>
+							</div>
+
+							<!-- Configuration -->
+							<div class="bg-white rounded-lg shadow-sm border">
+								<div class="px-6 py-4 border-b">
+									<h3 class="text-lg font-medium text-gray-900">Configuration</h3>
+								</div>
+								<div class="p-6">
+									{#if Object.keys(selectedApp.configuration).length > 0}
+										<div class="space-y-3">
+											{#each Object.entries(selectedApp.configuration) as [key, value]}
+												<div class="flex justify-between items-start">
+													<span class="text-sm font-medium text-gray-600 capitalize">
+														{key.replace(/_/g, ' ')}:
+													</span>
+													<span class="text-sm text-gray-900 text-right max-w-48 truncate">
+														{typeof value === 'object' ? JSON.stringify(value) : String(value)}
+													</span>
+												</div>
+											{/each}
+										</div>
+									{:else}
+										<p class="text-sm text-gray-500">Using default configuration</p>
+									{/if}
+								</div>
 							</div>
 						</div>
 
@@ -234,6 +426,7 @@
 							</div>
 						</div>
 					</div>
+					{/if}
 				{/if}
 			{/if}
 		{/if}

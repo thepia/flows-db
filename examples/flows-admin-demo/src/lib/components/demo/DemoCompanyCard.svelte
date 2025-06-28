@@ -1,60 +1,68 @@
 <script lang="ts">
-	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "$lib/components/ui/card";
-	import { Button } from "$lib/components/ui/button";
-	import type { DemoCompany } from "$lib/types";
-	import { 
-		Play, 
-		RotateCcw, 
-		Edit, 
-		Trash2, 
-		Users, 
-		TrendingUp, 
-		TrendingDown, 
-		CheckCircle, 
-		AlertCircle, 
-		Clock, 
-		Loader2 
-	} from "lucide-svelte";
+import { Button } from '$lib/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
+import type { DemoCompany } from '$lib/types';
+import {
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  Edit,
+  Loader2,
+  Play,
+  RotateCcw,
+  Trash2,
+  TrendingDown,
+  TrendingUp,
+  Users,
+} from 'lucide-svelte';
 
-	// Props
-	export let company: DemoCompany;
-	export let onGenerate: (companyId: string) => void = () => {};
-	export let onReset: (companyId: string) => void = () => {};
-	export let onEdit: (companyId: string) => void = () => {};
-	export let onDelete: (companyId: string) => void = () => {};
+// Props
+export let company: DemoCompany;
+export const onGenerate: (companyId: string) => void = () => {};
+export const onReset: (companyId: string) => void = () => {};
+export const onEdit: (companyId: string) => void = () => {};
+export const onDelete: (companyId: string) => void = () => {};
 
-	// Get status icon and color
-	function getStatusDisplay(status: DemoCompany['generationStatus']) {
-		switch (status) {
-			case 'completed':
-				return { icon: CheckCircle, color: 'text-green-600', bgColor: 'bg-green-50' };
-			case 'generating':
-				return { icon: Loader2, color: 'text-blue-600', bgColor: 'bg-blue-50' };
-			case 'error':
-				return { icon: AlertCircle, color: 'text-red-600', bgColor: 'bg-red-50' };
-			default:
-				return { icon: Clock, color: 'text-gray-600', bgColor: 'bg-gray-50' };
-		}
-	}
+// Get status icon and color
+function getStatusDisplay(status: DemoCompany['generationStatus']) {
+  switch (status) {
+    case 'completed':
+      return { icon: CheckCircle, color: 'text-green-600', bgColor: 'bg-green-50' };
+    case 'generating':
+      return { icon: Loader2, color: 'text-blue-600', bgColor: 'bg-blue-50' };
+    case 'error':
+      return { icon: AlertCircle, color: 'text-red-600', bgColor: 'bg-red-50' };
+    default:
+      return { icon: Clock, color: 'text-gray-600', bgColor: 'bg-gray-50' };
+  }
+}
 
-	function getComplexityColor(complexity: string) {
-		switch (complexity) {
-			case 'simple': return 'bg-green-100 text-green-800';
-			case 'complex': return 'bg-red-100 text-red-800';
-			default: return 'bg-blue-100 text-blue-800';
-		}
-	}
+function getComplexityColor(complexity: string) {
+  switch (complexity) {
+    case 'simple':
+      return 'bg-green-100 text-green-800';
+    case 'complex':
+      return 'bg-red-100 text-red-800';
+    default:
+      return 'bg-blue-100 text-blue-800';
+  }
+}
 
-	function getDemoTypeColor(type: string) {
-		switch (type) {
-			case 'prospect': return 'bg-purple-100 text-purple-800';
-			case 'training': return 'bg-orange-100 text-orange-800';
-			default: return 'bg-gray-100 text-gray-800';
-		}
-	}
+function getDemoTypeColor(type: string) {
+  switch (type) {
+    case 'prospect':
+      return 'bg-purple-100 text-purple-800';
+    case 'training':
+      return 'bg-orange-100 text-orange-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
+  }
+}
 
-	$: statusDisplay = getStatusDisplay(company.generationStatus);
-	$: lastGenerated = company.lastGenerated ? new Date(company.lastGenerated).toLocaleDateString() : 'Never';
+$: statusDisplay = getStatusDisplay(company.generationStatus);
+$: lastGenerated = company.lastGenerated
+  ? new Date(company.lastGenerated).toLocaleDateString()
+  : 'Never';
 </script>
 
 <Card class="hover:shadow-md transition-shadow">

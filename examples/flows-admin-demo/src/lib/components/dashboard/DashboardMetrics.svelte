@@ -1,13 +1,13 @@
 <script lang="ts">
-	import MetricCard from "./MetricCard.svelte";
-	import { Users, UserPlus, UserX, AlertCircle } from "lucide-svelte";
+import { AlertCircle, UserPlus, Users, UserX } from 'lucide-svelte';
+import MetricCard from './MetricCard.svelte';
 
-	// Props
-	export let totalEmployees: number;
-	export let onboardingCount: number;
-	export let offboardingCount: number;
-	export let pendingInvitations: number;
-	export let loading: boolean = false;
+// Props
+export let totalEmployees: number;
+export let onboardingCount: number;
+export let offboardingCount: number;
+export let pendingInvitations: number;
+export const loading: boolean = false;
 </script>
 
 <!-- Dashboard Stats -->

@@ -1,79 +1,79 @@
 <script lang="ts">
-	import { Button } from "$lib/components/ui/button";
-	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "$lib/components/ui/card";
-	import type { DemoCompany, DemoGenerationConfig } from "$lib/types";
-	import { X, Settings, Users, FileText, ListTodo, Zap } from "lucide-svelte";
+import { Button } from '$lib/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
+import type { DemoCompany, DemoGenerationConfig } from '$lib/types';
+import { FileText, ListTodo, Settings, Users, X, Zap } from 'lucide-svelte';
 
-	// Props
-	export let company: DemoCompany | null = null;
-	export let isOpen: boolean = false;
-	export let onClose: () => void = () => {};
-	export let onGenerate: (config: DemoGenerationConfig) => Promise<void> = async () => {};
+// Props
+export const company: DemoCompany | null = null;
+export const isOpen: boolean = false;
+export const onClose: () => void = () => {};
+export const onGenerate: (config: DemoGenerationConfig) => Promise<void> = async () => {};
 
-	// Generation configuration
-	let config: DemoGenerationConfig = {
-		companyId: '',
-		employeeCount: 1000,
-		onboardingCount: 25,
-		offboardingCount: 15,
-		includeHistoricalData: true,
-		generateDocuments: true,
-		generateTasks: true,
-		complexity: 'standard'
-	};
+// Generation configuration
+let config: DemoGenerationConfig = {
+  companyId: '',
+  employeeCount: 1000,
+  onboardingCount: 25,
+  offboardingCount: 15,
+  includeHistoricalData: true,
+  generateDocuments: true,
+  generateTasks: true,
+  complexity: 'standard',
+};
 
-	let isGenerating = false;
+let isGenerating = false;
 
-	// Update config when company changes
-	$: if (company) {
-		config = {
-			companyId: company.id,
-			employeeCount: company.employeeCount || 1000,
-			onboardingCount: company.onboardingCount || 25,
-			offboardingCount: company.offboardingCount || 15,
-			includeHistoricalData: true,
-			generateDocuments: true,
-			generateTasks: true,
-			complexity: company.complexity
-		};
-	}
+// Update config when company changes
+$: if (company) {
+  config = {
+    companyId: company.id,
+    employeeCount: company.employeeCount || 1000,
+    onboardingCount: company.onboardingCount || 25,
+    offboardingCount: company.offboardingCount || 15,
+    includeHistoricalData: true,
+    generateDocuments: true,
+    generateTasks: true,
+    complexity: company.complexity,
+  };
+}
 
-	// Handle generation
-	async function handleGenerate() {
-		if (!company || isGenerating) return;
+// Handle generation
+async function handleGenerate() {
+  if (!company || isGenerating) return;
 
-		isGenerating = true;
-		try {
-			await onGenerate(config);
-			onClose();
-		} catch (error) {
-			console.error('Generation failed:', error);
-		} finally {
-			isGenerating = false;
-		}
-	}
+  isGenerating = true;
+  try {
+    await onGenerate(config);
+    onClose();
+  } catch (error) {
+    console.error('Generation failed:', error);
+  } finally {
+    isGenerating = false;
+  }
+}
 
-	// Calculate estimated time
-	$: estimatedMinutes = Math.round(
-		(config.employeeCount / 100) + 
-		(config.onboardingCount * 2) + 
-		(config.offboardingCount * 2) +
-		(config.includeHistoricalData ? 5 : 0) +
-		(config.generateDocuments ? 3 : 0) +
-		(config.generateTasks ? 2 : 0)
-	);
+// Calculate estimated time
+$: estimatedMinutes = Math.round(
+  config.employeeCount / 100 +
+    config.onboardingCount * 2 +
+    config.offboardingCount * 2 +
+    (config.includeHistoricalData ? 5 : 0) +
+    (config.generateDocuments ? 3 : 0) +
+    (config.generateTasks ? 2 : 0)
+);
 
-	// Get complexity description
-	function getComplexityDescription(complexity: string) {
-		switch (complexity) {
-			case 'simple':
-				return 'Basic employee profiles with standard processes';
-			case 'complex':
-				return 'Rich demographics, complex workflows, and extensive relationships';
-			default:
-				return 'Balanced profiles with realistic complexity';
-		}
-	}
+// Get complexity description
+function getComplexityDescription(complexity: string) {
+  switch (complexity) {
+    case 'simple':
+      return 'Basic employee profiles with standard processes';
+    case 'complex':
+      return 'Rich demographics, complex workflows, and extensive relationships';
+    default:
+      return 'Balanced profiles with realistic complexity';
+  }
+}
 </script>
 
 {#if isOpen && company}

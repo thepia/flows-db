@@ -1,101 +1,105 @@
 <script lang="ts">
-	import { page } from '$app/stores';
-	import { onMount } from 'svelte';
-	import { Button } from "$lib/components/ui/button";
-	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "$lib/components/ui/card";
-	import { employees, enrollments, client, loadDemoData } from "$lib/stores/data";
-	import { 
-		ArrowLeft, 
-		User, 
-		Mail, 
-		Phone, 
-		MapPin, 
-		Building, 
-		Calendar,
-		FileText,
-		CheckCircle,
-		Clock,
-		AlertCircle,
-		X,
-		Download
-	} from "lucide-svelte";
-	import type { Employee, DocumentStatus, TaskStatus } from "$lib/types";
+import { page } from '$app/stores';
+import { Button } from '$lib/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
+import { client, employees, enrollments, loadDemoData } from '$lib/stores/data';
+import type { DocumentStatus, Employee, TaskStatus } from '$lib/types';
+import {
+  AlertCircle,
+  ArrowLeft,
+  Building,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Download,
+  FileText,
+  Mail,
+  MapPin,
+  Phone,
+  User,
+  X,
+} from 'lucide-svelte';
+import { onMount } from 'svelte';
 
-	// Load data on component mount if not already loaded
-	onMount(() => {
-		if ($employees.length === 0) {
-			loadDemoData();
-		}
-	});
+// Load data on component mount if not already loaded
+onMount(() => {
+  if ($employees.length === 0) {
+    loadDemoData();
+  }
+});
 
-	$: employeeId = $page.params.id;
-	$: employee = $employees.find(e => e.id === employeeId);
-	$: enrollment = $enrollments.find(e => e.employeeId === employeeId);
+$: employeeId = $page.params.id;
+$: employee = $employees.find((e) => e.id === employeeId);
+$: enrollment = $enrollments.find((e) => e.employeeId === employeeId);
 
-	function getStatusIcon(status: DocumentStatus['status'] | TaskStatus['status']) {
-		switch (status) {
-			case 'completed':
-			case 'verified':
-				return CheckCircle;
-			case 'in_progress':
-			case 'uploaded':
-				return Clock;
-			case 'pending':
-			case 'not_started':
-				return AlertCircle;
-			case 'rejected':
-			case 'overdue':
-				return X;
-			default:
-				return Clock;
-		}
-	}
+function getStatusIcon(status: DocumentStatus['status'] | TaskStatus['status']) {
+  switch (status) {
+    case 'completed':
+    case 'verified':
+      return CheckCircle;
+    case 'in_progress':
+    case 'uploaded':
+      return Clock;
+    case 'pending':
+    case 'not_started':
+      return AlertCircle;
+    case 'rejected':
+    case 'overdue':
+      return X;
+    default:
+      return Clock;
+  }
+}
 
-	function getStatusColor(status: DocumentStatus['status'] | TaskStatus['status']) {
-		switch (status) {
-			case 'completed':
-			case 'verified':
-				return 'text-green-600 bg-green-50 border-green-200';
-			case 'in_progress':
-			case 'uploaded':
-				return 'text-blue-600 bg-blue-50 border-blue-200';
-			case 'pending':
-			case 'not_started':
-				return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-			case 'rejected':
-			case 'overdue':
-				return 'text-red-600 bg-red-50 border-red-200';
-			default:
-				return 'text-gray-600 bg-gray-50 border-gray-200';
-		}
-	}
+function getStatusColor(status: DocumentStatus['status'] | TaskStatus['status']) {
+  switch (status) {
+    case 'completed':
+    case 'verified':
+      return 'text-green-600 bg-green-50 border-green-200';
+    case 'in_progress':
+    case 'uploaded':
+      return 'text-blue-600 bg-blue-50 border-blue-200';
+    case 'pending':
+    case 'not_started':
+      return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+    case 'rejected':
+    case 'overdue':
+      return 'text-red-600 bg-red-50 border-red-200';
+    default:
+      return 'text-gray-600 bg-gray-50 border-gray-200';
+  }
+}
 
-	function getPriorityColor(priority: TaskStatus['priority']) {
-		switch (priority) {
-			case 'high': return 'text-red-600';
-			case 'medium': return 'text-yellow-600';
-			case 'low': return 'text-green-600';
-			default: return 'text-gray-600';
-		}
-	}
+function getPriorityColor(priority: TaskStatus['priority']) {
+  switch (priority) {
+    case 'high':
+      return 'text-red-600';
+    case 'medium':
+      return 'text-yellow-600';
+    case 'low':
+      return 'text-green-600';
+    default:
+      return 'text-gray-600';
+  }
+}
 
-	function formatDate(dateString: string) {
-		return new Date(dateString).toLocaleDateString('en-US', {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric'
-		});
-	}
+function formatDate(dateString: string) {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+}
 
-	function formatDateTime(dateString: string) {
-		return new Date(dateString).toLocaleString('en-US', {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit'
-		});
-	}
+function formatDateTime(dateString: string) {
+  return new Date(dateString).toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
 </script>
 
 <svelte:head>

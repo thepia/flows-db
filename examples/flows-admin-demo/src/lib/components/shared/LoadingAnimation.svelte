@@ -1,19 +1,19 @@
 <script lang="ts">
-	export let message: string = 'Loading demo data...';
-	export let size: 'sm' | 'md' | 'lg' = 'md';
-	
-	// Size mappings
-	$: containerSize = {
-		sm: 'w-32 h-32',
-		md: 'w-48 h-48', 
-		lg: 'w-64 h-64'
-	}[size];
-	
-	$: textSize = {
-		sm: 'text-sm',
-		md: 'text-base',
-		lg: 'text-lg'
-	}[size];
+export const message: string = 'Loading demo data...';
+export const size: 'sm' | 'md' | 'lg' = 'md';
+
+// Size mappings
+$: containerSize = {
+  sm: 'w-32 h-32',
+  md: 'w-48 h-48',
+  lg: 'w-64 h-64',
+}[size];
+
+$: textSize = {
+  sm: 'text-sm',
+  md: 'text-base',
+  lg: 'text-lg',
+}[size];
 </script>
 
 <div class="flex flex-col items-center justify-center space-y-4">

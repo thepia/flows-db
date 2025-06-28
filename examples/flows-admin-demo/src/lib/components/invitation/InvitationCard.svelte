@@ -1,17 +1,17 @@
 <script lang="ts">
-	import InvitationStatusBadge from "./InvitationStatusBadge.svelte";
-	import InvitationActionsDropdown from "./InvitationActionsDropdown.svelte";
-	import type { Invitation } from "$lib/types";
+import type { Invitation } from '$lib/types';
+import InvitationActionsDropdown from './InvitationActionsDropdown.svelte';
+import InvitationStatusBadge from './InvitationStatusBadge.svelte';
 
-	// Props
-	export let invitation: Invitation;
-	export let compact: boolean = false;
-	export let showActions: boolean = true;
+// Props
+export let invitation: Invitation;
+export const compact: boolean = false;
+export const showActions: boolean = true;
 
-	// Format date helper
-	function formatDate(dateString: string) {
-		return new Date(dateString).toLocaleDateString();
-	}
+// Format date helper
+function formatDate(dateString: string) {
+  return new Date(dateString).toLocaleDateString();
+}
 </script>
 
 <div class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors {compact ? 'p-3' : 'p-4'}">

@@ -37,6 +37,8 @@
     "analytics:usage": "node scripts/usage-analytics.js",
     "maintenance": "node scripts/maintenance.js",
     "setup:hooks": "node scripts/setup-git-hooks.js",
+    "offboarding:deploy-schema": "node scripts/deploy-task-offboarding-schema.js",
+    "offboarding:create-templates": "node scripts/create-offboarding-templates-demo.js",
     "docs:generate": "node scripts/generate-docs.js",
     "docs:serve": "npx http-server docs/ -p 8080",
     "install:auth": "./scripts/install-with-auth.sh",
@@ -50,7 +52,9 @@
     "demo:analytics": "node demo/scripts/analytics.js run",
     "demo:admin": "pnpm --filter flows-admin-demo dev",
     "demo:admin:build": "pnpm --filter flows-admin-demo build",
-    "demo:admin:install": "pnpm --filter flows-admin-demo install"
+    "demo:admin:install": "pnpm --filter flows-admin-demo install",
+    "demo:build": "pnpm --filter flows-admin-demo build",
+    "offboarding:demo-data": "node scripts/create-offboarding-demo-data.js"
   },
   "keywords": [
     "thepia",

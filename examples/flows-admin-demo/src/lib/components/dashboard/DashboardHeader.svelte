@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { Button } from "$lib/components/ui/button";
-	import { UserPlus, Settings, Home } from "lucide-svelte";
-	import { page } from '$app/stores';
+import { page } from '$app/stores';
+import { Button } from '$lib/components/ui/button';
+import { Home, Settings, UserPlus } from 'lucide-svelte';
 
-	// Props
-	export let clientName: string = '';
-	export let loading: boolean = false;
+// Props
+export const clientName: string = '';
+export const loading: boolean = false;
 </script>
 
 <!-- Header -->

@@ -86,6 +86,12 @@ async function cleanupExistingData(spinner) {
     }
     
     if (demoClient) {
+      // Clean up offboarding data first (if tables exist)
+      try {
+        const { cleanupOffboardingData } = await import('../../scripts/create-offboarding-demo-data.js');
+        await cleanupOffboardingData(demoClient.id);
+      } catch (e) { /* ignore if tables don't exist */ }
+      
       // Delete in reverse dependency order using the client ID
       try {
         await apiCall(`employee_enrollments?employee_id=in.(select id from employees where client_id=${demoClient.id})`, 'DELETE');
@@ -511,6 +517,20 @@ async function setupCompleteDemo(options = {}) {
     spinner.text = 'Creating related data...';
     const { enrollments, documents, tasks, invitations } = await createAllRelatedData(employees, applications, client.id, spinner);
     
+    // Step 6: Create offboarding demo data (if tables exist)
+    let offboardingData = null;
+    try {
+      spinner.text = 'Creating offboarding demo data...';
+      const { createDemoData } = await import('../../scripts/create-offboarding-demo-data.js');
+      offboardingData = await createDemoData(client.id, true); // Pass clientId and skipLogs=true
+      spinner.text = 'Offboarding demo data created';
+    } catch (error) {
+      spinner.warn('Offboarding tables not found - skipping offboarding demo data');
+      console.log(chalk.yellow('   💡 To enable offboarding features:'));
+      console.log(chalk.white('      1. Run the SQL files manually via Supabase Dashboard'));
+      console.log(chalk.white('      2. Then run: pnpm run demo:complete again'));
+    }
+    
     // Display success summary
     console.log(chalk.green.bold('\n✅ Complete demo setup finished!\n'));
     console.log(chalk.cyan('📊 Created:'));
@@ -521,6 +541,12 @@ async function setupCompleteDemo(options = {}) {
     console.log(`   • Documents: ${chalk.white(documents.length)}`);
     console.log(`   • Tasks: ${chalk.white(tasks.length)}`);
     console.log(`   • Invitations: ${chalk.white(invitations.length)}`);
+    if (offboardingData) {
+      console.log(`   • Offboarding Workflows: ${chalk.white('3')}`);
+      console.log(`   • Knowledge Transfer Items: ${chalk.white('3')}`);
+      console.log(`   • Compliance Checks: ${chalk.white('4')}`);
+      console.log(`   • Credit Balance: ${chalk.white('85 credits available')}`);
+    }
     
     console.log(chalk.green('\n🚀 Demo is ready!'));
     console.log(`   Launch: ${chalk.yellow('pnpm run demo:admin')}`);

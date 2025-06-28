@@ -1,45 +1,45 @@
 <script lang="ts">
-	import { Button } from "$lib/components/ui/button";
-	import { MoreVertical, Eye, Share, RefreshCw, XCircle } from "lucide-svelte";
-	import { useInvitationActions } from "$lib/composables/useInvitationActions";
-	import type { Invitation } from "$lib/types";
+import { Button } from '$lib/components/ui/button';
+import { useInvitationActions } from '$lib/composables/useInvitationActions';
+import type { Invitation } from '$lib/types';
+import { Eye, MoreVertical, RefreshCw, Share, XCircle } from 'lucide-svelte';
 
-	export let invitation: Invitation;
-	export let isOpen: boolean;
-	export let onToggle: () => void;
-	export let onActionComplete: () => void = () => {};
-	export let compact: boolean = false;
+export let invitation: Invitation;
+export let isOpen: boolean;
+export let onToggle: () => void;
+export const onActionComplete: () => void = () => {};
+export const compact: boolean = false;
 
-	// Use the invitation actions composable
-	const { getAvailableActions, executeAction } = useInvitationActions();
+// Use the invitation actions composable
+const { getAvailableActions, executeAction } = useInvitationActions();
 
-	// Get available actions for this invitation
-	$: availableActions = getAvailableActions(invitation);
+// Get available actions for this invitation
+$: availableActions = getAvailableActions(invitation);
 
-	// Icon mapping for actions
-	const iconMap = {
-		Eye,
-		Share,
-		RefreshCw,
-		XCircle
-	};
+// Icon mapping for actions
+const iconMap = {
+  Eye,
+  Share,
+  RefreshCw,
+  XCircle,
+};
 
-	// Handle action execution
-	async function handleAction(actionId: string) {
-		const success = await executeAction(actionId, invitation);
-		
-		if (success) {
-			onToggle(); // Close dropdown
-			onActionComplete?.(); // Notify parent component
-		}
-	}
+// Handle action execution
+async function handleAction(actionId: string) {
+  const success = await executeAction(actionId, invitation);
 
-	// Determine button and menu sizing based on compact mode
-	$: buttonSize = compact ? 'sm' : 'sm';
-	$: iconSize = compact ? 'w-3 h-3' : 'w-4 h-4';
-	$: menuWidth = compact ? 'w-44' : 'w-48';
-	$: menuTextSize = compact ? 'text-xs' : 'text-sm';
-	$: menuPadding = compact ? 'px-3 py-2' : 'px-4 py-2';
+  if (success) {
+    onToggle(); // Close dropdown
+    onActionComplete?.(); // Notify parent component
+  }
+}
+
+// Determine button and menu sizing based on compact mode
+$: buttonSize = compact ? 'sm' : 'sm';
+$: iconSize = compact ? 'w-3 h-3' : 'w-4 h-4';
+$: menuWidth = compact ? 'w-44' : 'w-48';
+$: menuTextSize = compact ? 'text-xs' : 'text-sm';
+$: menuPadding = compact ? 'px-3 py-2' : 'px-4 py-2';
 </script>
 
 <div class="relative">

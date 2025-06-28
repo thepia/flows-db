@@ -1,14 +1,14 @@
 import { writable } from 'svelte/store';
-import { supabase } from '../supabase.js';
 import { reportSupabaseError } from '../config/errorReporting.js';
-import type { 
-  Client, 
-  Application, 
-  Employee, 
-  EmployeeEnrollment, 
-  DocumentStatus, 
-  TaskStatus, 
-  Invitation 
+import { supabase } from '../supabase.js';
+import type {
+  Application,
+  Client,
+  DocumentStatus,
+  Employee,
+  EmployeeEnrollment,
+  Invitation,
+  TaskStatus,
 } from '../types.js';
 
 // Simple hash function for browser (demo purposes)
@@ -17,7 +17,7 @@ async function generateSimpleHash(input: string): Promise<string> {
   const data = encoder.encode(input);
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
   return hashHex;
 }
 
@@ -40,13 +40,17 @@ function transformEmployee(dbEmployee: any): Employee {
   // Map legacy database status values to new UI status values
   const mapLegacyStatus = (legacyStatus: string): string => {
     switch (legacyStatus) {
-      case 'active': return 'active';
-      case 'offboarded': return 'previous';
-      case 'future': return 'future';
+      case 'active':
+        return 'active';
+      case 'offboarded':
+        return 'previous';
+      case 'future':
+        return 'future';
       case 'invited':
       case 'pending':
       case 'offboarding_initiated':
-      default: return 'other';
+      default:
+        return 'other';
     }
   };
 
@@ -61,36 +65,44 @@ function transformEmployee(dbEmployee: any): Employee {
     status: mapLegacyStatus(dbEmployee.status),
     phone: '', // Not in database schema
     manager: dbEmployee.manager || '',
-    location: dbEmployee.location
+    location: dbEmployee.location,
   };
 }
 
 // Helper function to transform database enrollment to UI format
-function transformEnrollment(dbEnrollment: any, dbDocuments: any[], dbTasks: any[]): EmployeeEnrollment {
+function transformEnrollment(
+  dbEnrollment: any,
+  dbDocuments: any[],
+  dbTasks: any[]
+): EmployeeEnrollment {
   // Transform documents
-  const documentsStatus = dbDocuments.map((doc: any): DocumentStatus => ({
-    id: doc.id,
-    name: doc.name,
-    type: doc.type,
-    status: doc.status,
-    uploadedAt: doc.uploaded_at,
-    reviewedAt: doc.reviewed_at,
-    reviewedBy: doc.reviewed_by
-  }));
+  const documentsStatus = dbDocuments.map(
+    (doc: any): DocumentStatus => ({
+      id: doc.id,
+      name: doc.name,
+      type: doc.type,
+      status: doc.status,
+      uploadedAt: doc.uploaded_at,
+      reviewedAt: doc.reviewed_at,
+      reviewedBy: doc.reviewed_by,
+    })
+  );
 
   // Transform tasks
-  const tasksStatus = dbTasks.map((task: any): TaskStatus => ({
-    id: task.id,
-    title: task.title,
-    description: task.description,
-    category: task.category,
-    status: task.status,
-    assignedAt: task.assigned_at,
-    completedAt: task.completed_at,
-    dueDate: task.due_date,
-    assignedBy: task.assigned_by,
-    priority: task.priority
-  }));
+  const tasksStatus = dbTasks.map(
+    (task: any): TaskStatus => ({
+      id: task.id,
+      title: task.title,
+      description: task.description,
+      category: task.category,
+      status: task.status,
+      assignedAt: task.assigned_at,
+      completedAt: task.completed_at,
+      dueDate: task.due_date,
+      assignedBy: task.assigned_by,
+      priority: task.priority,
+    })
+  );
 
   return {
     employeeId: dbEnrollment.employee_id,
@@ -98,14 +110,14 @@ function transformEnrollment(dbEnrollment: any, dbDocuments: any[], dbTasks: any
     documentsStatus,
     tasksStatus,
     lastActivity: dbEnrollment.last_activity,
-    completionPercentage: dbEnrollment.completion_percentage
+    completionPercentage: dbEnrollment.completion_percentage,
   };
 }
 
 // Helper function to transform database invitation to UI format
 function transformInvitation(dbInvitation: any): Invitation {
   const clientData = dbInvitation.client_data || {};
-  
+
   return {
     id: dbInvitation.id,
     companyEmail: clientData.company_email || '',
@@ -122,7 +134,7 @@ function transformInvitation(dbInvitation: any): Invitation {
     acceptedAt: dbInvitation.accepted_at,
     createdBy: dbInvitation.created_by,
     invitationCode: dbInvitation.invitation_code || '',
-    applicationId: dbInvitation.app_id
+    applicationId: dbInvitation.app_id,
   };
 }
 
@@ -147,7 +159,7 @@ export async function loadAllClients() {
         domain: clientData.domain,
         tier: clientData.tier,
         status: clientData.status,
-        region: clientData.region || 'EU'
+        region: clientData.region || 'EU',
       }));
       clients.set(transformedClients);
       return transformedClients;
@@ -185,7 +197,7 @@ export async function loadClientData(clientId: string) {
         domain: clientData.domain,
         tier: clientData.tier,
         status: clientData.status,
-        region: clientData.region || 'EU'
+        region: clientData.region || 'EU',
       };
       client.set(transformedClient);
 
@@ -227,7 +239,7 @@ async function loadClientSpecificData(clientId: string) {
         domain: clientData.domain,
         tier: clientData.tier,
         status: clientData.status,
-        region: clientData.region || 'EU'
+        region: clientData.region || 'EU',
       };
       client.set(transformedClient);
 
@@ -238,7 +250,9 @@ async function loadClientSpecificData(clientId: string) {
         .eq('client_id', clientData.id);
 
       if (appsError) {
-        await reportSupabaseError('client_applications', 'select', appsError, { client_id: clientData.id });
+        await reportSupabaseError('client_applications', 'select', appsError, {
+          client_id: clientData.id,
+        });
         throw appsError;
       }
 
@@ -246,11 +260,18 @@ async function loadClientSpecificData(clientId: string) {
         const transformedApps: Application[] = appsData.map((app: any) => ({
           id: app.id,
           clientId: app.client_id,
-          name: app.display_name,
+          name: app.app_name,
           code: app.app_code,
-          type: app.app_code,
+          type: app.app_code.includes('onboarding') ? 'onboarding' : 'offboarding',
           status: app.status,
-          version: app.version || '1.0.0'
+          version: app.app_version || '1.0.0',
+          description: app.app_description,
+          features: Array.isArray(app.features) ? app.features : [],
+          configuration: app.configuration || {},
+          permissions: app.permissions || {},
+          maxConcurrentUsers: app.max_concurrent_users || 50,
+          lastAccessed: app.last_accessed,
+          createdAt: app.created_at,
         }));
         applications.set(transformedApps);
       }
@@ -262,7 +283,9 @@ async function loadClientSpecificData(clientId: string) {
         .eq('client_id', clientData.id);
 
       if (employeesError) {
-        await reportSupabaseError('employees', 'select', employeesError, { client_id: clientData.id });
+        await reportSupabaseError('employees', 'select', employeesError, {
+          client_id: clientData.id,
+        });
         throw employeesError;
       }
 
@@ -272,7 +295,7 @@ async function loadClientSpecificData(clientId: string) {
 
         // Load enrollments with related data
         const enrollmentsData: EmployeeEnrollment[] = [];
-        
+
         for (const employee of employeesData) {
           // Get enrollment
           const { data: enrollmentData } = await supabase
@@ -294,44 +317,46 @@ async function loadClientSpecificData(clientId: string) {
             .eq('employee_id', employee.id);
 
           if (enrollmentData) {
-            enrollmentsData.push(transformEnrollment(
-              enrollmentData,
-              documentsData || [],
-              tasksData || []
-            ));
+            enrollmentsData.push(
+              transformEnrollment(enrollmentData, documentsData || [], tasksData || [])
+            );
           }
 
           // Store individual documents and tasks for global access
           if (documentsData) {
-            documents.update(docs => [
+            documents.update((docs) => [
               ...docs,
-              ...documentsData.map((doc: any): DocumentStatus => ({
-                id: doc.id,
-                name: doc.name,
-                type: doc.type,
-                status: doc.status,
-                uploadedAt: doc.uploaded_at,
-                reviewedAt: doc.reviewed_at,
-                reviewedBy: doc.reviewed_by
-              }))
+              ...documentsData.map(
+                (doc: any): DocumentStatus => ({
+                  id: doc.id,
+                  name: doc.name,
+                  type: doc.type,
+                  status: doc.status,
+                  uploadedAt: doc.uploaded_at,
+                  reviewedAt: doc.reviewed_at,
+                  reviewedBy: doc.reviewed_by,
+                })
+              ),
             ]);
           }
 
           if (tasksData) {
-            tasks.update(tasks => [
+            tasks.update((tasks) => [
               ...tasks,
-              ...tasksData.map((task: any): TaskStatus => ({
-                id: task.id,
-                title: task.title,
-                description: task.description,
-                category: task.category,
-                status: task.status,
-                assignedAt: task.assigned_at,
-                completedAt: task.completed_at,
-                dueDate: task.due_date,
-                assignedBy: task.assigned_by,
-                priority: task.priority
-              }))
+              ...tasksData.map(
+                (task: any): TaskStatus => ({
+                  id: task.id,
+                  title: task.title,
+                  description: task.description,
+                  category: task.category,
+                  status: task.status,
+                  assignedAt: task.assigned_at,
+                  completedAt: task.completed_at,
+                  dueDate: task.due_date,
+                  assignedBy: task.assigned_by,
+                  priority: task.priority,
+                })
+              ),
             ]);
           }
         }
@@ -342,14 +367,18 @@ async function loadClientSpecificData(clientId: string) {
       // Load invitations
       const { data: invitationsData, error: invitationsError } = await supabase
         .from('invitations')
-        .select(`
+        .select(
+          `
           *,
           client_applications!inner(app_code)
-        `)
+        `
+        )
         .eq('client_id', clientData.id);
 
       if (invitationsError) {
-        await reportSupabaseError('invitations', 'select', invitationsError, { client_id: clientData.id });
+        await reportSupabaseError('invitations', 'select', invitationsError, {
+          client_id: clientData.id,
+        });
         throw invitationsError;
       }
 
@@ -358,23 +387,23 @@ async function loadClientSpecificData(clientId: string) {
           const transformed = transformInvitation(inv);
           // Add app_code for invitationType
           if (inv.client_applications?.app_code) {
-            transformed.invitationType = inv.client_applications.app_code === 'onboarding' ? 'onboarding' : 'offboarding';
+            transformed.invitationType =
+              inv.client_applications.app_code === 'onboarding' ? 'onboarding' : 'offboarding';
           }
           return transformed;
         });
         invitations.set(transformedInvitations);
       }
     }
-
   } catch (err) {
     console.error('Error loading demo data:', err);
     const errorMessage = err instanceof Error ? err.message : 'Failed to load demo data';
     error.set(errorMessage);
-    
+
     // Report the overall data loading error
-    await reportSupabaseError('general', 'select', err, { 
+    await reportSupabaseError('general', 'select', err, {
       operation: 'loadDemoData',
-      stage: 'unknown'
+      stage: 'unknown',
     });
   } finally {
     loading.set(false);
@@ -412,11 +441,11 @@ export async function loadDemoData() {
         if (anyError || !anyClient || anyClient.length === 0) {
           throw new Error('No clients found in database');
         }
-        
+
         await loadClientData(anyClient[0].id);
         return;
       }
-      
+
       await loadClientData(demoClients[0].id);
       return;
     }
@@ -428,9 +457,9 @@ export async function loadDemoData() {
     const errorMessage = err instanceof Error ? err.message : 'Failed to load demo data';
     error.set(errorMessage);
     console.error('Error loading demo data:', err);
-    
-    await reportSupabaseError('general', 'select', err, { 
-      operation: 'loadDemoData'
+
+    await reportSupabaseError('general', 'select', err, {
+      operation: 'loadDemoData',
     });
   } finally {
     loading.set(false);
@@ -440,8 +469,8 @@ export async function loadDemoData() {
 // Helper function to get employee enrollment
 export function getEmployeeEnrollment(employeeId: string) {
   let result: EmployeeEnrollment | undefined;
-  enrollments.subscribe(enrollments => {
-    result = enrollments.find(e => e.employeeId === employeeId);
+  enrollments.subscribe((enrollments) => {
+    result = enrollments.find((e) => e.employeeId === employeeId);
   })();
   return result;
 }
@@ -450,28 +479,27 @@ export function getEmployeeEnrollment(employeeId: string) {
 export function getEmployeeInvitations(employeeId: string) {
   let employee: Employee | undefined;
   let result: Invitation[] = [];
-  
-  employees.subscribe(employees => {
-    employee = employees.find(e => e.id === employeeId);
+
+  employees.subscribe((employees) => {
+    employee = employees.find((e) => e.id === employeeId);
   })();
-  
+
   if (employee) {
-    invitations.subscribe(invitations => {
-      result = invitations.filter(inv => 
-        inv.companyEmail === employee!.email || 
-        inv.privateEmail === employee!.email
+    invitations.subscribe((invitations) => {
+      result = invitations.filter(
+        (inv) => inv.companyEmail === employee!.email || inv.privateEmail === employee!.email
       );
     })();
   }
-  
+
   return result;
 }
 
 // Helper function to get application by type
 export function getApplicationByType(type: 'onboarding' | 'offboarding') {
   let result: Application | undefined;
-  applications.subscribe(applications => {
-    result = applications.find(app => app.type === type);
+  applications.subscribe((applications) => {
+    result = applications.find((app) => app.type === type);
   })();
   return result;
 }
@@ -491,8 +519,8 @@ export async function createInvitation(invitationData: {
   try {
     // Get current client data
     let currentClient: Client | null = null;
-    client.subscribe(c => currentClient = c)();
-    
+    client.subscribe((c) => (currentClient = c))();
+
     if (!currentClient) {
       throw new Error('No client data available');
     }
@@ -505,37 +533,43 @@ export async function createInvitation(invitationData: {
 
     // Generate invitation code (uppercase per database constraint)
     const invitationCode = `${currentClient.code.toUpperCase()}-${Date.now()}`;
-    
+
     // Generate JWT token with proper structure
     const timestamp = Date.now();
     const jwtPayload = {
       iss: 'api.thepia.com',
       aud: 'flows.thepia.net',
       sub: `inv-${invitationCode}`,
-      exp: Math.floor((Date.now() + (7 * 24 * 60 * 60 * 1000)) / 1000), // 7 days
+      exp: Math.floor((Date.now() + 7 * 24 * 60 * 60 * 1000) / 1000), // 7 days
       iat: Math.floor(Date.now() / 1000),
       invitation: {
         invitee: {
           fullName: `${invitationData.firstName} ${invitationData.lastName}`,
           companyEmail: invitationData.companyEmail,
-          privateEmail: invitationData.privateEmail
+          privateEmail: invitationData.privateEmail,
         },
         position: invitationData.position,
         department: invitationData.department,
         type: invitationData.invitationType,
         // Optional association dates
-        ...(invitationData.associationStartDate || invitationData.associationEndDate ? {
-          association: {
-            ...(invitationData.associationStartDate ? { startDate: invitationData.associationStartDate } : {}),
-            ...(invitationData.associationEndDate ? { endDate: invitationData.associationEndDate } : {})
-          }
-        } : {})
-      }
+        ...(invitationData.associationStartDate || invitationData.associationEndDate
+          ? {
+              association: {
+                ...(invitationData.associationStartDate
+                  ? { startDate: invitationData.associationStartDate }
+                  : {}),
+                ...(invitationData.associationEndDate
+                  ? { endDate: invitationData.associationEndDate }
+                  : {}),
+              },
+            }
+          : {}),
+      },
     };
-    
+
     // Generate JWT token hash
     const jwtTokenHash = await generateSimpleHash(JSON.stringify(jwtPayload));
-    
+
     // Set expiration date (7 days from now)
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
@@ -552,27 +586,29 @@ export async function createInvitation(invitationData: {
         first_name: invitationData.firstName,
         last_name: invitationData.lastName,
         department: invitationData.department,
-        position: invitationData.position
+        position: invitationData.position,
       },
       status: 'pending',
       expires_at: expiresAt.toISOString(),
-      created_by: 'admin@thepia.com' // In production, this would be the current user
+      created_by: 'admin@thepia.com', // In production, this would be the current user
     };
 
     // Insert into database
     const { data: newInvitation, error } = await supabase
       .from('invitations')
       .insert(dbInvitationData)
-      .select(`
+      .select(
+        `
         *,
         client_applications!inner(app_code)
-      `)
+      `
+      )
       .single();
 
     if (error) {
-      await reportSupabaseError('invitations', 'insert', error, { 
+      await reportSupabaseError('invitations', 'insert', error, {
         client_id: currentClient.id,
-        app_id: application.id 
+        app_id: application.id,
       });
       throw error;
     }
@@ -580,19 +616,19 @@ export async function createInvitation(invitationData: {
     // Transform to UI format
     const transformedInvitation = transformInvitation(newInvitation);
     if (newInvitation.client_applications?.app_code) {
-      transformedInvitation.invitationType = newInvitation.client_applications.app_code === 'onboarding' ? 'onboarding' : 'offboarding';
+      transformedInvitation.invitationType =
+        newInvitation.client_applications.app_code === 'onboarding' ? 'onboarding' : 'offboarding';
     }
 
     // Update local store
-    invitations.update(current => [...current, transformedInvitation]);
+    invitations.update((current) => [...current, transformedInvitation]);
 
     return transformedInvitation;
-
   } catch (err) {
     console.error('Error creating invitation:', err);
-    await reportSupabaseError('invitations', 'insert', err, { 
+    await reportSupabaseError('invitations', 'insert', err, {
       operation: 'createInvitation',
-      invitationData 
+      invitationData,
     });
     throw err;
   }
@@ -617,8 +653,8 @@ export async function createEmployee(employeeData: {
   try {
     // Get current client data
     let currentClient: Client | null = null;
-    client.subscribe(c => currentClient = c)();
-    
+    client.subscribe((c) => (currentClient = c))();
+
     if (!currentClient) {
       throw new Error('No client data available');
     }
@@ -629,11 +665,16 @@ export async function createEmployee(employeeData: {
     // Map new status values to legacy database values (temporary until schema update)
     const mapStatusToLegacy = (status: 'active' | 'previous' | 'future' | 'other'): string => {
       switch (status) {
-        case 'active': return 'active';
-        case 'previous': return 'offboarded';
-        case 'future': return 'future';
-        case 'other': return 'pending';
-        default: return 'active';
+        case 'active':
+          return 'active';
+        case 'previous':
+          return 'offboarded';
+        case 'future':
+          return 'future';
+        case 'other':
+          return 'pending';
+        default:
+          return 'active';
       }
     };
 
@@ -655,7 +696,7 @@ export async function createEmployee(employeeData: {
       status: mapStatusToLegacy(employeeData.status),
       security_clearance: employeeData.securityClearance,
       skills: [],
-      languages: []
+      languages: [],
     };
 
     // Insert into database
@@ -666,9 +707,9 @@ export async function createEmployee(employeeData: {
       .single();
 
     if (error) {
-      await reportSupabaseError('employees', 'insert', error, { 
+      await reportSupabaseError('employees', 'insert', error, {
         client_id: currentClient.id,
-        employee_code: employeeCode 
+        employee_code: employeeCode,
       });
       throw error;
     }
@@ -677,15 +718,14 @@ export async function createEmployee(employeeData: {
     const transformedEmployee = transformEmployee(newEmployee);
 
     // Update local store
-    employees.update(current => [...current, transformedEmployee]);
+    employees.update((current) => [...current, transformedEmployee]);
 
     return transformedEmployee;
-
   } catch (err) {
     console.error('Error creating employee:', err);
-    await reportSupabaseError('employees', 'insert', err, { 
+    await reportSupabaseError('employees', 'insert', err, {
       operation: 'createEmployee',
-      employeeData 
+      employeeData,
     });
     throw err;
   }
@@ -696,15 +736,15 @@ export async function getClientMetrics() {
   try {
     // Get current client data
     let currentClient: Client | null = null;
-    client.subscribe(c => currentClient = c)();
-    
+    client.subscribe((c) => (currentClient = c))();
+
     if (!currentClient) {
       throw new Error('No client data available');
     }
 
     // For now, use a simplified approach based on existing data
     // TODO: Replace with proper database functions after schema migration
-    
+
     // Get all employees for this client
     const { data: employeeData, error: employeeError } = await supabase
       .from('employees')
@@ -712,15 +752,15 @@ export async function getClientMetrics() {
       .eq('client_id', currentClient.id);
 
     if (employeeError) {
-      await reportSupabaseError('employees', 'select', employeeError, { 
-        client_id: currentClient.id 
+      await reportSupabaseError('employees', 'select', employeeError, {
+        client_id: currentClient.id,
       });
       throw employeeError;
     }
 
     // Get all enrollments for these employees
-    const employeeIds = employeeData?.map(e => e.id) || [];
-    
+    const employeeIds = employeeData?.map((e) => e.id) || [];
+
     if (employeeIds.length === 0) {
       return { onboardingCount: 0, offboardingCount: 0 };
     }
@@ -731,8 +771,8 @@ export async function getClientMetrics() {
       .in('employee_id', employeeIds);
 
     if (enrollmentError) {
-      await reportSupabaseError('employee_enrollments', 'select', enrollmentError, { 
-        client_id: currentClient.id 
+      await reportSupabaseError('employee_enrollments', 'select', enrollmentError, {
+        client_id: currentClient.id,
       });
       throw enrollmentError;
     }
@@ -740,46 +780,47 @@ export async function getClientMetrics() {
     // Get onboarding and offboarding invitations
     const { data: invitationData, error: invitationError } = await supabase
       .from('invitations')
-      .select(`
+      .select(
+        `
         client_data,
         client_applications!inner(app_code)
-      `)
+      `
+      )
       .eq('client_id', currentClient.id)
       .eq('status', 'pending');
 
     if (invitationError) {
-      await reportSupabaseError('invitations', 'select', invitationError, { 
-        client_id: currentClient.id 
+      await reportSupabaseError('invitations', 'select', invitationError, {
+        client_id: currentClient.id,
       });
       throw invitationError;
     }
 
     // Calculate simplified metrics
     // Onboarding: Employees with incomplete onboarding (completion < 100%)
-    const onboardingCount = enrollmentData?.filter(e => 
-      !e.onboarding_completed && e.completion_percentage < 100
-    ).length || 0;
+    const onboardingCount =
+      enrollmentData?.filter((e) => !e.onboarding_completed && e.completion_percentage < 100)
+        .length || 0;
 
     // Offboarding: Count of pending offboarding invitations (simplified)
-    const offboardingCount = invitationData?.filter(inv => 
-      inv.client_applications?.app_code === 'offboarding'
-    ).length || 0;
+    const offboardingCount =
+      invitationData?.filter((inv) => inv.client_applications?.app_code === 'offboarding').length ||
+      0;
 
     return {
       onboardingCount,
-      offboardingCount
+      offboardingCount,
     };
-
   } catch (err) {
     console.error('Error getting client metrics:', err);
-    await reportSupabaseError('general', 'metrics', err, { 
-      operation: 'getClientMetrics'
+    await reportSupabaseError('general', 'metrics', err, {
+      operation: 'getClientMetrics',
     });
-    
+
     // Return fallback values instead of throwing
     return {
       onboardingCount: 0,
-      offboardingCount: 0
+      offboardingCount: 0,
     };
   }
 }

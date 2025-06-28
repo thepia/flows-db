@@ -1,34 +1,41 @@
 <script lang="ts">
-	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "$lib/components/ui/card";
-	import type { DemoMetrics } from "$lib/types";
-	import { 
-		Building2, 
-		Users, 
-		Activity, 
-		CheckCircle, 
-		FileText, 
-		ListTodo,
-		TrendingUp
-	} from "lucide-svelte";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
+import type { DemoMetrics } from '$lib/types';
+import {
+  Activity,
+  Building2,
+  CheckCircle,
+  FileText,
+  ListTodo,
+  TrendingUp,
+  Users,
+} from 'lucide-svelte';
 
-	// Props
-	export let metrics: DemoMetrics | null;
-	export let loading: boolean = false;
+// Props
+export let metrics: DemoMetrics | null;
+export const loading: boolean = false;
 
-	// Format numbers with commas
-	function formatNumber(num: number): string {
-		return num.toLocaleString();
-	}
+// Format numbers with commas
+function formatNumber(num: number): string {
+  return num.toLocaleString();
+}
 
-	// Calculate derived metrics
-	$: completionRate = metrics ? 
-		Math.round((metrics.completedProcesses / (metrics.activeProcesses + metrics.completedProcesses)) * 100) : 0;
-	
-	$: averageTasksPerProcess = metrics && metrics.activeProcesses > 0 ? 
-		Math.round(metrics.totalTasks / metrics.activeProcesses) : 0;
-	
-	$: averageDocsPerProcess = metrics && metrics.activeProcesses > 0 ? 
-		Math.round(metrics.totalDocuments / metrics.activeProcesses) : 0;
+// Calculate derived metrics
+$: completionRate = metrics
+  ? Math.round(
+      (metrics.completedProcesses / (metrics.activeProcesses + metrics.completedProcesses)) * 100
+    )
+  : 0;
+
+$: averageTasksPerProcess =
+  metrics && metrics.activeProcesses > 0
+    ? Math.round(metrics.totalTasks / metrics.activeProcesses)
+    : 0;
+
+$: averageDocsPerProcess =
+  metrics && metrics.activeProcesses > 0
+    ? Math.round(metrics.totalDocuments / metrics.activeProcesses)
+    : 0;
 </script>
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

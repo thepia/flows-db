@@ -1,17 +1,17 @@
 <script lang="ts">
-	import { Card, CardContent, CardHeader, CardTitle } from "$lib/components/ui/card";
-	import { Button } from "$lib/components/ui/button";
-	import InvitationCard from "../invitation/InvitationCard.svelte";
-	import type { Invitation } from "$lib/types";
+import { Button } from '$lib/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
+import type { Invitation } from '$lib/types';
+import InvitationCard from '../invitation/InvitationCard.svelte';
 
-	// Props
-	export let invitations: Invitation[];
-	export let loading: boolean = false;
+// Props
+export let invitations: Invitation[];
+export const loading: boolean = false;
 
-	// Show only recent invitations (last 5)
-	$: recentInvitations = invitations
-		.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-		.slice(0, 5);
+// Show only recent invitations (last 5)
+$: recentInvitations = invitations
+  .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  .slice(0, 5);
 </script>
 
 <Card class="sticky top-4">

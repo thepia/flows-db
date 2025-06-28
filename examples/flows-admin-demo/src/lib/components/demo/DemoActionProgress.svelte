@@ -1,49 +1,54 @@
 <script lang="ts">
-	import { Card, CardContent, CardHeader, CardTitle } from "$lib/components/ui/card";
-	import { runningActions, recentActions } from "$lib/stores/demoManagement";
-	import { Activity, CheckCircle, AlertCircle, Clock, Loader2 } from "lucide-svelte";
-	import type { DemoAction } from "$lib/types";
+import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
+import { recentActions, runningActions } from '$lib/stores/demoManagement';
+import type { DemoAction } from '$lib/types';
+import { Activity, AlertCircle, CheckCircle, Clock, Loader2 } from 'lucide-svelte';
 
-	// Get status icon and color for actions
-	function getActionStatusDisplay(action: DemoAction) {
-		switch (action.status) {
-			case 'completed':
-				return { icon: CheckCircle, color: 'text-green-600', bgColor: 'bg-green-50' };
-			case 'running':
-				return { icon: Loader2, color: 'text-blue-600', bgColor: 'bg-blue-50' };
-			case 'error':
-				return { icon: AlertCircle, color: 'text-red-600', bgColor: 'bg-red-50' };
-			default:
-				return { icon: Clock, color: 'text-gray-600', bgColor: 'bg-gray-50' };
-		}
-	}
+// Get status icon and color for actions
+function getActionStatusDisplay(action: DemoAction) {
+  switch (action.status) {
+    case 'completed':
+      return { icon: CheckCircle, color: 'text-green-600', bgColor: 'bg-green-50' };
+    case 'running':
+      return { icon: Loader2, color: 'text-blue-600', bgColor: 'bg-blue-50' };
+    case 'error':
+      return { icon: AlertCircle, color: 'text-red-600', bgColor: 'bg-red-50' };
+    default:
+      return { icon: Clock, color: 'text-gray-600', bgColor: 'bg-gray-50' };
+  }
+}
 
-	function getActionTypeLabel(type: string) {
-		switch (type) {
-			case 'generate': return 'Data Generation';
-			case 'reset': return 'Data Reset';
-			case 'export': return 'Data Export';
-			case 'import': return 'Data Import';
-			default: return type;
-		}
-	}
+function getActionTypeLabel(type: string) {
+  switch (type) {
+    case 'generate':
+      return 'Data Generation';
+    case 'reset':
+      return 'Data Reset';
+    case 'export':
+      return 'Data Export';
+    case 'import':
+      return 'Data Import';
+    default:
+      return type;
+  }
+}
 
-	function formatTime(dateString: string) {
-		return new Date(dateString).toLocaleTimeString();
-	}
+function formatTime(dateString: string) {
+  return new Date(dateString).toLocaleTimeString();
+}
 
-	function formatDuration(startedAt: string, completedAt?: string) {
-		const start = new Date(startedAt);
-		const end = completedAt ? new Date(completedAt) : new Date();
-		const durationMs = end.getTime() - start.getTime();
-		const seconds = Math.floor(durationMs / 1000);
-		const minutes = Math.floor(seconds / 60);
-		
-		if (minutes > 0) {
-			return `${minutes}m ${seconds % 60}s`;
-		}
-		return `${seconds}s`;
-	}
+function formatDuration(startedAt: string, completedAt?: string) {
+  const start = new Date(startedAt);
+  const end = completedAt ? new Date(completedAt) : new Date();
+  const durationMs = end.getTime() - start.getTime();
+  const seconds = Math.floor(durationMs / 1000);
+  const minutes = Math.floor(seconds / 60);
+
+  if (minutes > 0) {
+    return `${minutes}m ${seconds % 60}s`;
+  }
+  return `${seconds}s`;
+}
 </script>
 
 {#if $runningActions.length > 0 || $recentActions.length > 0}

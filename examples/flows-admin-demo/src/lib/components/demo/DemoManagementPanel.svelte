@@ -1,78 +1,82 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "$lib/components/ui/card";
-	import { Button } from "$lib/components/ui/button";
-	import { 
-		demoManagementStore, 
-		demoCompanies, 
-		demoMetrics, 
-		isDemoLoading, 
-		demoError 
-	} from "$lib/stores/demoManagement";
-	import DemoMetricsDashboard from "./DemoMetricsDashboard.svelte";
-	import DemoCompanyCard from "./DemoCompanyCard.svelte";
-	import DemoGenerationDialog from "./DemoGenerationDialog.svelte";
-	import DemoActionProgress from "./DemoActionProgress.svelte";
-	import type { DemoCompany } from "$lib/types";
-	import { Database, Plus, AlertTriangle, Wifi, WifiOff } from "lucide-svelte";
+import { Button } from '$lib/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
+import {
+  demoCompanies,
+  demoError,
+  demoManagementStore,
+  demoMetrics,
+  isDemoLoading,
+} from '$lib/stores/demoManagement';
+import type { DemoCompany } from '$lib/types';
+import { AlertTriangle, Database, Plus, Wifi, WifiOff } from 'lucide-svelte';
+import { onMount } from 'svelte';
+import DemoActionProgress from './DemoActionProgress.svelte';
+import DemoCompanyCard from './DemoCompanyCard.svelte';
+import DemoGenerationDialog from './DemoGenerationDialog.svelte';
+import DemoMetricsDashboard from './DemoMetricsDashboard.svelte';
 
-	// Dialog state
-	let isGenerationDialogOpen = false;
-	let selectedCompany: DemoCompany | null = null;
+// Dialog state
+let isGenerationDialogOpen = false;
+let selectedCompany: DemoCompany | null = null;
 
-	// Initialize demo data on mount
-	onMount(async () => {
-		try {
-			await demoManagementStore.init();
-		} catch (error) {
-			console.error('Failed to initialize demo data:', error);
-		}
-	});
+// Initialize demo data on mount
+onMount(async () => {
+  try {
+    await demoManagementStore.init();
+  } catch (error) {
+    console.error('Failed to initialize demo data:', error);
+  }
+});
 
-	// Handle demo actions
-	function handleGenerate(companyId: string) {
-		const company = $demoCompanies.find(c => c.id === companyId);
-		if (company) {
-			selectedCompany = company;
-			isGenerationDialogOpen = true;
-		}
-	}
+// Handle demo actions
+function handleGenerate(companyId: string) {
+  const company = $demoCompanies.find((c) => c.id === companyId);
+  if (company) {
+    selectedCompany = company;
+    isGenerationDialogOpen = true;
+  }
+}
 
-	function handleReset(companyId: string) {
-		if (confirm('Are you sure you want to reset all demo data for this company? This action cannot be undone.')) {
-			demoManagementStore.resetCompany(companyId);
-		}
-	}
+function handleReset(companyId: string) {
+  if (
+    confirm(
+      'Are you sure you want to reset all demo data for this company? This action cannot be undone.'
+    )
+  ) {
+    demoManagementStore.resetCompany(companyId);
+  }
+}
 
-	function handleEdit(companyId: string) {
-		// TODO: Implement company edit dialog
-		console.log('Edit company:', companyId);
-	}
+function handleEdit(companyId: string) {
+  // TODO: Implement company edit dialog
+  console.log('Edit company:', companyId);
+}
 
-	function handleDelete(companyId: string) {
-		if (confirm('Are you sure you want to delete this demo company? This action cannot be undone.')) {
-			demoManagementStore.deleteCompany(companyId);
-		}
-	}
+function handleDelete(companyId: string) {
+  if (confirm('Are you sure you want to delete this demo company? This action cannot be undone.')) {
+    demoManagementStore.deleteCompany(companyId);
+  }
+}
 
-	// Handle generation dialog
-	function closeGenerationDialog() {
-		isGenerationDialogOpen = false;
-		selectedCompany = null;
-	}
+// Handle generation dialog
+function closeGenerationDialog() {
+  isGenerationDialogOpen = false;
+  selectedCompany = null;
+}
 
-	async function handleGenerateData(config: any) {
-		try {
-			await demoManagementStore.generateDemoData(config);
-		} catch (error) {
-			console.error('Demo generation failed:', error);
-		}
-	}
+async function handleGenerateData(config: any) {
+  try {
+    await demoManagementStore.generateDemoData(config);
+  } catch (error) {
+    console.error('Demo generation failed:', error);
+  }
+}
 
-	// Clear error
-	function clearError() {
-		demoManagementStore.clearError();
-	}
+// Clear error
+function clearError() {
+  demoManagementStore.clearError();
+}
 </script>
 
 <div class="space-y-6">

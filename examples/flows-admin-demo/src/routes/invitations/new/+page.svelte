@@ -1,203 +1,217 @@
 <script lang="ts">
-	import { Button } from "$lib/components/ui/button";
-	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "$lib/components/ui/card";
-	import { client, applications, employees, createInvitation, loadDemoData } from "$lib/stores/data";
-	import { onMount } from "svelte";
-	import { ArrowLeft, UserPlus, Send, Save, Search, X } from "lucide-svelte";
-	import type { Invitation, Employee } from "$lib/types";
+import { Button } from '$lib/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
+import { applications, client, createInvitation, employees, loadDemoData } from '$lib/stores/data';
+import type { Employee, Invitation } from '$lib/types';
+import { ArrowLeft, Save, Search, Send, UserPlus, X } from 'lucide-svelte';
+import { onMount } from 'svelte';
 
-	// Form data
-	let formData = {
-		firstName: '',
-		lastName: '',
-		companyEmail: '',
-		privateEmail: '',
-		department: '',
-		position: '',
-		invitationType: 'onboarding' as 'onboarding' | 'offboarding',
-		expiresInDays: 7,
-		associationStartDate: '',
-		associationEndDate: ''
-	};
+// Form data
+let formData = {
+  firstName: '',
+  lastName: '',
+  companyEmail: '',
+  privateEmail: '',
+  department: '',
+  position: '',
+  invitationType: 'onboarding' as 'onboarding' | 'offboarding',
+  expiresInDays: 7,
+  associationStartDate: '',
+  associationEndDate: '',
+};
 
-	// Form state
-	let isSubmitting = false;
-	let showSuccess = false;
-	let generatedInvitation: Partial<Invitation> | null = null;
-	let error: string | null = null;
+// Form state
+let isSubmitting = false;
+let showSuccess = false;
+let generatedInvitation: Partial<Invitation> | null = null;
+let error: string | null = null;
 
-	// Employee selection state
-	let selectedEmployee: Employee | null = null;
-	let employeeSearchQuery = '';
-	let showEmployeeDropdown = false;
-	let employeeSearchContainer: HTMLDivElement;
+// Employee selection state
+let selectedEmployee: Employee | null = null;
+let employeeSearchQuery = '';
+let showEmployeeDropdown = false;
+let employeeSearchContainer: HTMLDivElement;
 
-	// Load data on mount
-	onMount(() => {
-		if ($client === null || $applications.length === 0 || $employees.length === 0) {
-			loadDemoData();
-		}
-		
-		// Add click outside listener
-		document.addEventListener('click', handleClickOutside);
-		
-		// Cleanup
-		return () => {
-			document.removeEventListener('click', handleClickOutside);
-		};
-	});
+// Load data on mount
+onMount(() => {
+  if ($client === null || $applications.length === 0 || $employees.length === 0) {
+    loadDemoData();
+  }
 
-	// Department options
-	const departments = [
-		'Engineering',
-		'Product',
-		'Design',
-		'Marketing',
-		'Sales',
-		'HR',
-		'Finance',
-		'Operations',
-		'Customer Success',
-		'Legal'
-	];
+  // Add click outside listener
+  document.addEventListener('click', handleClickOutside);
 
-	// Employee search and selection functions
-	$: filteredEmployees = $employees.filter(employee =>
-		(employee.firstName + ' ' + employee.lastName).toLowerCase().includes(employeeSearchQuery.toLowerCase()) ||
-		employee.email.toLowerCase().includes(employeeSearchQuery.toLowerCase()) ||
-		employee.department.toLowerCase().includes(employeeSearchQuery.toLowerCase())
-	).slice(0, 10); // Limit to 10 results
+  // Cleanup
+  return () => {
+    document.removeEventListener('click', handleClickOutside);
+  };
+});
 
-	function selectEmployee(employee: Employee) {
-		selectedEmployee = employee;
-		employeeSearchQuery = `${employee.firstName} ${employee.lastName}`;
-		showEmployeeDropdown = false;
+// Department options
+const departments = [
+  'Engineering',
+  'Product',
+  'Design',
+  'Marketing',
+  'Sales',
+  'HR',
+  'Finance',
+  'Operations',
+  'Customer Success',
+  'Legal',
+];
 
-		// Auto-populate form fields from selected employee
-		formData.firstName = employee.firstName;
-		formData.lastName = employee.lastName;
-		formData.companyEmail = employee.email;
-		formData.department = employee.department;
-		formData.position = employee.position;
-		
-		// Set invitation type to offboarding for existing employees
-		formData.invitationType = 'offboarding';
+// Employee search and selection functions
+$: filteredEmployees = $employees
+  .filter(
+    (employee) =>
+      (employee.firstName + ' ' + employee.lastName)
+        .toLowerCase()
+        .includes(employeeSearchQuery.toLowerCase()) ||
+      employee.email.toLowerCase().includes(employeeSearchQuery.toLowerCase()) ||
+      employee.department.toLowerCase().includes(employeeSearchQuery.toLowerCase())
+  )
+  .slice(0, 10); // Limit to 10 results
 
-		// Set association dates from employee data
-		if (employee.startDate) {
-			// Use employee's start date as association start date
-			formData.associationStartDate = employee.startDate;
-		}
-		
-		// Set association end date to 90 days in the future (for offboarding)
-		const futureDate = new Date();
-		futureDate.setDate(futureDate.getDate() + 90);
-		formData.associationEndDate = futureDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+function selectEmployee(employee: Employee) {
+  selectedEmployee = employee;
+  employeeSearchQuery = `${employee.firstName} ${employee.lastName}`;
+  showEmployeeDropdown = false;
 
-		// Generate a personal email suggestion
-		if (!formData.privateEmail) {
-			const emailParts = employee.email.split('@');
-			if (emailParts.length === 2) {
-				// Create a personal email suggestion (firstname.lastname@gmail.com)
-				const personalEmail = `${employee.firstName.toLowerCase()}.${employee.lastName.toLowerCase()}@gmail.com`;
-				formData.privateEmail = personalEmail;
-			}
-		}
-	}
+  // Auto-populate form fields from selected employee
+  formData.firstName = employee.firstName;
+  formData.lastName = employee.lastName;
+  formData.companyEmail = employee.email;
+  formData.department = employee.department;
+  formData.position = employee.position;
 
-	function clearEmployeeSelection() {
-		selectedEmployee = null;
-		employeeSearchQuery = '';
-		showEmployeeDropdown = false;
-		
-		// Clear form fields
-		formData.firstName = '';
-		formData.lastName = '';
-		formData.companyEmail = '';
-		formData.privateEmail = '';
-		formData.department = '';
-		formData.position = '';
-		formData.invitationType = 'onboarding';
-	}
+  // Set invitation type to offboarding for existing employees
+  formData.invitationType = 'offboarding';
 
-	function handleEmployeeSearch() {
-		showEmployeeDropdown = employeeSearchQuery.length > 0 && !selectedEmployee;
-	}
+  // Set association dates from employee data
+  if (employee.startDate) {
+    // Use employee's start date as association start date
+    formData.associationStartDate = employee.startDate;
+  }
 
-	// Close dropdown when clicking outside
-	function handleClickOutside(event: MouseEvent) {
-		if (employeeSearchContainer && !employeeSearchContainer.contains(event.target as Node)) {
-			showEmployeeDropdown = false;
-		}
-	}
+  // Set association end date to 90 days in the future (for offboarding)
+  const futureDate = new Date();
+  futureDate.setDate(futureDate.getDate() + 90);
+  formData.associationEndDate = futureDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
 
-	function generateInvitationCode(clientCode: string, type: string): string {
-		const typePrefix = type === 'onboarding' ? 'ONBOARD' : 'OFFBOARD';
-		const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-		return `${clientCode.toUpperCase()}-${typePrefix}-${random}`;
-	}
+  // Generate a personal email suggestion
+  if (!formData.privateEmail) {
+    const emailParts = employee.email.split('@');
+    if (emailParts.length === 2) {
+      // Create a personal email suggestion (firstname.lastname@gmail.com)
+      const personalEmail = `${employee.firstName.toLowerCase()}.${employee.lastName.toLowerCase()}@gmail.com`;
+      formData.privateEmail = personalEmail;
+    }
+  }
+}
 
-	async function handleSubmit() {
-		if (!formData.firstName || !formData.lastName || !formData.companyEmail || !formData.privateEmail || !formData.department || !formData.position) {
-			return;
-		}
+function clearEmployeeSelection() {
+  selectedEmployee = null;
+  employeeSearchQuery = '';
+  showEmployeeDropdown = false;
 
-		isSubmitting = true;
-		error = null;
+  // Clear form fields
+  formData.firstName = '';
+  formData.lastName = '';
+  formData.companyEmail = '';
+  formData.privateEmail = '';
+  formData.department = '';
+  formData.position = '';
+  formData.invitationType = 'onboarding';
+}
 
-		try {
-			// Create invitation using the real Supabase function
-			generatedInvitation = await createInvitation({
-				companyEmail: formData.companyEmail,
-				privateEmail: formData.privateEmail,
-				firstName: formData.firstName,
-				lastName: formData.lastName,
-				department: formData.department,
-				position: formData.position,
-				invitationType: formData.invitationType,
-				...(formData.associationStartDate ? { associationStartDate: formData.associationStartDate } : {}),
-				...(formData.associationEndDate ? { associationEndDate: formData.associationEndDate } : {})
-			});
+function handleEmployeeSearch() {
+  showEmployeeDropdown = employeeSearchQuery.length > 0 && !selectedEmployee;
+}
 
-			showSuccess = true;
-		} catch (err) {
-			console.error('Failed to create invitation:', err);
-			error = err instanceof Error ? err.message : 'Failed to create invitation';
-		} finally {
-			isSubmitting = false;
-		}
-	}
+// Close dropdown when clicking outside
+function handleClickOutside(event: MouseEvent) {
+  if (employeeSearchContainer && !employeeSearchContainer.contains(event.target as Node)) {
+    showEmployeeDropdown = false;
+  }
+}
 
-	function resetForm() {
-		formData = {
-			firstName: '',
-			lastName: '',
-			companyEmail: '',
-			privateEmail: '',
-			department: '',
-			position: '',
-			invitationType: 'onboarding',
-			expiresInDays: 7,
-			associationStartDate: '',
-			associationEndDate: ''
-		};
-		
-		// Clear employee selection
-		selectedEmployee = null;
-		employeeSearchQuery = '';
-		showEmployeeDropdown = false;
-		
-		showSuccess = false;
-		generatedInvitation = null;
-		error = null;
-	}
+function generateInvitationCode(clientCode: string, type: string): string {
+  const typePrefix = type === 'onboarding' ? 'ONBOARD' : 'OFFBOARD';
+  const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+  return `${clientCode.toUpperCase()}-${typePrefix}-${random}`;
+}
 
-	function copyInvitationLink() {
-		if (generatedInvitation && $client) {
-			const link = `https://${$client.domain}/invitation/${generatedInvitation.invitationCode}`;
-			navigator.clipboard.writeText(link);
-		}
-	}
+async function handleSubmit() {
+  if (
+    !formData.firstName ||
+    !formData.lastName ||
+    !formData.companyEmail ||
+    !formData.privateEmail ||
+    !formData.department ||
+    !formData.position
+  ) {
+    return;
+  }
+
+  isSubmitting = true;
+  error = null;
+
+  try {
+    // Create invitation using the real Supabase function
+    generatedInvitation = await createInvitation({
+      companyEmail: formData.companyEmail,
+      privateEmail: formData.privateEmail,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      department: formData.department,
+      position: formData.position,
+      invitationType: formData.invitationType,
+      ...(formData.associationStartDate
+        ? { associationStartDate: formData.associationStartDate }
+        : {}),
+      ...(formData.associationEndDate ? { associationEndDate: formData.associationEndDate } : {}),
+    });
+
+    showSuccess = true;
+  } catch (err) {
+    console.error('Failed to create invitation:', err);
+    error = err instanceof Error ? err.message : 'Failed to create invitation';
+  } finally {
+    isSubmitting = false;
+  }
+}
+
+function resetForm() {
+  formData = {
+    firstName: '',
+    lastName: '',
+    companyEmail: '',
+    privateEmail: '',
+    department: '',
+    position: '',
+    invitationType: 'onboarding',
+    expiresInDays: 7,
+    associationStartDate: '',
+    associationEndDate: '',
+  };
+
+  // Clear employee selection
+  selectedEmployee = null;
+  employeeSearchQuery = '';
+  showEmployeeDropdown = false;
+
+  showSuccess = false;
+  generatedInvitation = null;
+  error = null;
+}
+
+function copyInvitationLink() {
+  if (generatedInvitation && $client) {
+    const link = `https://${$client.domain}/invitation/${generatedInvitation.invitationCode}`;
+    navigator.clipboard.writeText(link);
+  }
+}
 </script>
 
 <svelte:head>

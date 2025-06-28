@@ -22,6 +22,7 @@ A demo admin application for managing employees and invitations in the Thepia Fl
 ## Demo Data
 
 The application uses mock data representing:
+
 - **Nets A/S** as the demo client
 - 4 sample employees with different statuses
 - Document and task tracking
@@ -31,22 +32,25 @@ The application uses mock data representing:
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - pnpm (recommended) or npm
 
 ### Installation
 
 1. Navigate to the demo directory:
+
    ```bash
    cd examples/flows-admin-demo
    ```
 
 2. Install dependencies:
+
    ```bash
    pnpm install
    ```
 
 3. Start the development server:
+
    ```bash
    pnpm dev
    ```
@@ -83,18 +87,21 @@ src/
 ## Key Components
 
 ### Dashboard (`/`)
+
 - Overview statistics
 - Employee list with status indicators
 - Recent invitations
 - Quick actions
 
 ### Employee Details (`/employees/[id]`)
+
 - Personal information
 - Onboarding progress
 - Document status tracking
 - Task completion
 
 ### Create Invitation (`/invitations/new`)
+
 - Form for new invitations
 - Preview panel
 - Invitation code generation
@@ -112,6 +119,7 @@ The application includes realistic mock data:
 ## Styling
 
 The app uses shadcn-svelte components with Tailwind CSS:
+
 - Consistent design system
 - Dark/light mode support (configured)
 - Responsive layouts
@@ -120,14 +128,56 @@ The app uses shadcn-svelte components with Tailwind CSS:
 ## Client-Only Architecture
 
 This demo runs entirely in the browser:
+
 - No server-side rendering required
 - All data is mocked locally
 - Perfect for demonstrations and prototyping
 - Easy to deploy to static hosting
 
+## Development Guidelines
+
+### Svelte 5 Specific Patterns
+
+**Bindable Variables**: Use `let` instead of `const` for variables that may be bound or reassigned:
+```svelte
+<script lang="ts">
+// ✅ Correct - allows binding and reassignment
+let activeTab = 'home';
+
+// ❌ Incorrect - causes runtime errors with Svelte 5
+const activeTab = 'home';
+</script>
+```
+
+**{@const} Placement**: Must be immediate children of specific blocks. Build errors occur if placed incorrectly:
+```svelte
+<!-- ✅ Correct -->
+{#if condition}
+  {@const computed = calculation()}
+  <div>{computed}</div>
+{/if}
+
+<!-- ❌ Incorrect - nested in div -->
+{#if condition}
+  <div>
+    {@const computed = calculation()} <!-- Build error! -->
+  </div>
+{/if}
+```
+
+Valid parent blocks: `{#if}`, `{:else}`, `{#each}`, `{:then}`, `{:catch}`, `{#snippet}`, `<svelte:fragment>`, `<Component>`
+
+### Linting
+
+This project uses **Biome** instead of ESLint/Prettier:
+- Run `pnpm biome check` to check for issues
+- Run `pnpm biome format` to format code
+- Biome cannot catch Svelte template syntax errors (like {@const} placement)
+
 ## Future Enhancements
 
 Potential features for a production version:
+
 - Real API integration with flows-db
 - User authentication
 - File upload functionality

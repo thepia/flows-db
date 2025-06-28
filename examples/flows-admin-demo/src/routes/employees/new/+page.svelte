@@ -1,136 +1,143 @@
 <script lang="ts">
-	import { Button } from "$lib/components/ui/button";
-	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "$lib/components/ui/card";
-	import { client, createEmployee, loadDemoData } from "$lib/stores/data";
-	import { onMount } from "svelte";
-	import { ArrowLeft, UserPlus, Save } from "lucide-svelte";
-	import { goto } from "$app/navigation";
+import { goto } from '$app/navigation';
+import { Button } from '$lib/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
+import { client, createEmployee, loadDemoData } from '$lib/stores/data';
+import { ArrowLeft, Save, UserPlus } from 'lucide-svelte';
+import { onMount } from 'svelte';
 
-	// Form data
-	let formData = {
-		firstName: '',
-		lastName: '',
-		companyEmail: '',
-		department: '',
-		position: '',
-		location: '',
-		manager: '',
-		startDate: '',
-		endDate: '',
-		employmentType: 'full_time' as 'full_time' | 'part_time' | 'contractor' | 'intern',
-		workLocation: 'office' as 'office' | 'remote' | 'hybrid',
-		status: 'active' as 'active' | 'previous' | 'future' | 'other',
-		securityClearance: 'low' as 'low' | 'medium' | 'high'
-	};
+// Form data
+let formData = {
+  firstName: '',
+  lastName: '',
+  companyEmail: '',
+  department: '',
+  position: '',
+  location: '',
+  manager: '',
+  startDate: '',
+  endDate: '',
+  employmentType: 'full_time' as 'full_time' | 'part_time' | 'contractor' | 'intern',
+  workLocation: 'office' as 'office' | 'remote' | 'hybrid',
+  status: 'active' as 'active' | 'previous' | 'future' | 'other',
+  securityClearance: 'low' as 'low' | 'medium' | 'high',
+};
 
-	// UI state
-	let hasEndDate = false;
+// UI state
+let hasEndDate = false;
 
-	// Form state
-	let isSubmitting = false;
-	let showSuccess = false;
-	let createdEmployee: any = null;
-	let error: string | null = null;
+// Form state
+let isSubmitting = false;
+let showSuccess = false;
+let createdEmployee: any = null;
+let error: string | null = null;
 
-	// Load data on mount
-	onMount(() => {
-		if ($client === null) {
-			loadDemoData();
-		}
-	});
+// Load data on mount
+onMount(() => {
+  if ($client === null) {
+    loadDemoData();
+  }
+});
 
-	// Department options
-	const departments = [
-		'Engineering',
-		'Product',
-		'Design',
-		'Marketing',
-		'Sales',
-		'Operations',
-		'Finance',
-		'HR',
-		'Legal',
-		'Customer Success'
-	];
+// Department options
+const departments = [
+  'Engineering',
+  'Product',
+  'Design',
+  'Marketing',
+  'Sales',
+  'Operations',
+  'Finance',
+  'HR',
+  'Legal',
+  'Customer Success',
+];
 
-	// Location options
-	const locations = [
-		'Copenhagen, Denmark',
-		'Stockholm, Sweden',
-		'Oslo, Norway',
-		'Helsinki, Finland',
-		'Remote - Europe',
-		'London, UK',
-		'Berlin, Germany'
-	];
+// Location options
+const locations = [
+  'Copenhagen, Denmark',
+  'Stockholm, Sweden',
+  'Oslo, Norway',
+  'Helsinki, Finland',
+  'Remote - Europe',
+  'London, UK',
+  'Berlin, Germany',
+];
 
-	async function handleSubmit() {
-		if (!formData.firstName || !formData.lastName || !formData.companyEmail || !formData.department || !formData.position || !formData.location) {
-			return;
-		}
+async function handleSubmit() {
+  if (
+    !formData.firstName ||
+    !formData.lastName ||
+    !formData.companyEmail ||
+    !formData.department ||
+    !formData.position ||
+    !formData.location
+  ) {
+    return;
+  }
 
-		isSubmitting = true;
-		error = null;
+  isSubmitting = true;
+  error = null;
 
-		try {
-			// Create employee using the real Supabase function
-			createdEmployee = await createEmployee({
-				firstName: formData.firstName,
-				lastName: formData.lastName,
-				companyEmail: formData.companyEmail,
-				department: formData.department,
-				position: formData.position,
-				location: formData.location,
-				manager: formData.manager,
-				startDate: formData.startDate || undefined,
-				endDate: formData.endDate || undefined,
-				employmentType: formData.employmentType,
-				workLocation: formData.workLocation,
-				status: formData.status,
-				securityClearance: formData.securityClearance
-			});
+  try {
+    // Create employee using the real Supabase function
+    createdEmployee = await createEmployee({
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      companyEmail: formData.companyEmail,
+      department: formData.department,
+      position: formData.position,
+      location: formData.location,
+      manager: formData.manager,
+      startDate: formData.startDate || undefined,
+      endDate: formData.endDate || undefined,
+      employmentType: formData.employmentType,
+      workLocation: formData.workLocation,
+      status: formData.status,
+      securityClearance: formData.securityClearance,
+    });
 
-			showSuccess = true;
-		} catch (err) {
-			console.error('Failed to create employee:', err);
-			error = err instanceof Error ? err.message : 'Failed to create employee';
-		} finally {
-			isSubmitting = false;
-		}
-	}
+    showSuccess = true;
+  } catch (err) {
+    console.error('Failed to create employee:', err);
+    error = err instanceof Error ? err.message : 'Failed to create employee';
+  } finally {
+    isSubmitting = false;
+  }
+}
 
-	function resetForm() {
-		formData = {
-			firstName: '',
-			lastName: '',
-			companyEmail: '',
-			department: '',
-			position: '',
-			location: '',
-			manager: '',
-			startDate: '',
-			endDate: '',
-			employmentType: 'full_time',
-			workLocation: 'office',
-			status: 'active',
-			securityClearance: 'low'
-		};
-		hasEndDate = false;
-		showSuccess = false;
-		createdEmployee = null;
-		error = null;
-	}
+function resetForm() {
+  formData = {
+    firstName: '',
+    lastName: '',
+    companyEmail: '',
+    department: '',
+    position: '',
+    location: '',
+    manager: '',
+    startDate: '',
+    endDate: '',
+    employmentType: 'full_time',
+    workLocation: 'office',
+    status: 'active',
+    securityClearance: 'low',
+  };
+  hasEndDate = false;
+  showSuccess = false;
+  createdEmployee = null;
+  error = null;
+}
 
-	// Clear end date when checkbox is unchecked
-	$: if (!hasEndDate) {
-		formData.endDate = '';
-	}
+// Clear end date when checkbox is unchecked
+$: if (!hasEndDate) {
+  formData.endDate = '';
+}
 
-	function navigateToEmployee() {
-		if (createdEmployee) {
-			goto(`/employees/${createdEmployee.id}`);
-		}
-	}
+function navigateToEmployee() {
+  if (createdEmployee) {
+    goto(`/employees/${createdEmployee.id}`);
+  }
+}
 </script>
 
 <svelte:head>

@@ -1,135 +1,165 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "$lib/components/ui/card";
-	import { Button } from "$lib/components/ui/button";
-	import { 
-		settingsStore, 
-		settings, 
-		selectedBranding, 
-		isSettingsLoading, 
-		settingsError,
-		getAvailableClients 
-	} from '$lib/stores/settings';
-	import { clients, loadAllClients, loadClientData } from '$lib/stores/data';
-	import type { BrandingConfig } from '$lib/types';
-	import { Settings, Palette, Building2, Plus, Trash2, RotateCcw, Save, AlertTriangle, Database } from 'lucide-svelte';
-	import DemoManagementPanel from '../demo/DemoManagementPanel.svelte';
+import { Button } from '$lib/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
+import { applyBrandingToDocument, getBrandingForClient } from '$lib/services/brandingRegistry';
+import { clients, loadAllClients, loadClientData } from '$lib/stores/data';
+import {
+  getAvailableClients,
+  isSettingsLoading,
+  selectedBranding,
+  settings,
+  settingsError,
+  settingsStore,
+} from '$lib/stores/settings';
+import type { BrandingConfig } from '$lib/types';
+import {
+  AlertTriangle,
+  Building2,
+  Database,
+  Palette,
+  Plus,
+  RotateCcw,
+  Save,
+  Settings,
+  Trash2,
+} from 'lucide-svelte';
+import { onMount } from 'svelte';
+import DemoManagementPanel from '../demo/DemoManagementPanel.svelte';
 
-	// Component state
-	let newBrandingName = '';
-	let newBrandingPath = '';
-	let newBrandingType: 'package' | 'local' = 'package';
-	let showAddBranding = false;
-	let initialized = false;
-	let loadingClientData = false;
-	let activeTab = 'settings'; // 'settings' or 'demo'
+// Component state
+let newBrandingName = '';
+let newBrandingPath = '';
+let newBrandingType: 'package' | 'local' = 'package';
+let showAddBranding = false;
+let initialized = false;
+let loadingClientData = false;
+let activeTab = 'settings'; // 'settings' or 'demo'
 
-	// Initialize settings on mount
-	onMount(async () => {
-		// Initialize settings first
-		settingsStore.init();
-		
-		// Load all clients so they're available for selection
-		await loadAllClients();
-		
-		// Mark as initialized
-		initialized = true;
-	});
+// Initialize settings on mount
+onMount(async () => {
+  // Initialize settings first
+  settingsStore.init();
 
-	// Track the last loaded client to avoid re-loading
-	let lastLoadedClientId = '';
+  // Load all clients so they're available for selection
+  await loadAllClients();
 
-	// Load data for selected client when settings change
-	$: if (initialized && $settings?.selectedClient && $settings.selectedClient !== lastLoadedClientId) {
-		lastLoadedClientId = $settings.selectedClient;
-		loadClientData($settings.selectedClient).catch(error => {
-			console.error('Failed to load selected client data:', error);
-		});
-	}
+  // Mark as initialized
+  initialized = true;
+});
 
-	// Reactive available clients (with safety checks)
-	$: availableClients = ($clients && $settings) ? getAvailableClients($clients, $settings) : [];
+// Track the last loaded client to avoid re-loading
+let lastLoadedClientId = '';
 
-	// Handle branding selection
-	function handleBrandingChange(brandingId: string) {
-		settingsStore.selectBranding(brandingId);
-	}
+// Load data for selected client when settings change
+$: if (
+  initialized &&
+  $settings?.selectedClient &&
+  $settings.selectedClient !== lastLoadedClientId
+) {
+  lastLoadedClientId = $settings.selectedClient;
+  loadClientData($settings.selectedClient).catch((error) => {
+    console.error('Failed to load selected client data:', error);
+  });
+}
 
-	// Handle client selection
-	async function handleClientChange(clientId: string) {
-		settingsStore.selectClient(clientId);
-		
-		// Also load the data for this client
-		if (clientId) {
-			loadingClientData = true;
-			try {
-				await loadClientData(clientId);
-			} catch (error) {
-				console.error('Failed to load client data:', error);
-			} finally {
-				loadingClientData = false;
-			}
-		}
-	}
+// Reactive available clients (with safety checks)
+$: availableClients = $clients && $settings ? getAvailableClients($clients, $settings) : [];
 
-	// Manual data loading function
-	async function loadSelectedClientData() {
-		if (!$settings?.selectedClient) return;
-		
-		loadingClientData = true;
-		try {
-			await loadClientData($settings.selectedClient);
-		} catch (error) {
-			console.error('Failed to load client data:', error);
-		} finally {
-			loadingClientData = false;
-		}
-	}
+// Handle branding selection
+function handleBrandingChange(brandingId: string) {
+  settingsStore.selectBranding(brandingId);
+}
 
-	// Handle real clients toggle
-	function handleRealClientsToggle(checked: boolean) {
-		settingsStore.toggleRealClients(checked);
-	}
+// Handle client selection
+async function handleClientChange(clientId: string) {
+  settingsStore.selectClient(clientId);
 
-	// Add new branding
-	function addNewBranding() {
-		if (!newBrandingName.trim() || !newBrandingPath.trim()) return;
+  // Also load the data for this client
+  if (clientId) {
+    loadingClientData = true;
+    try {
+      await loadClientData(clientId);
 
-		const branding: BrandingConfig = {
-			id: newBrandingName.toLowerCase().replace(/\s+/g, '-'),
-			name: newBrandingName,
-			displayName: newBrandingName,
-			type: newBrandingType,
-			path: newBrandingPath
-		};
+      // Apply client-specific branding if available
+      const selectedClient = $clients.find((c) => c.id === clientId);
+      if (selectedClient) {
+        const clientBranding = getBrandingForClient(selectedClient.code);
+        if (clientBranding) {
+          // Update the branding selection in settings
+          settingsStore.selectBranding(clientBranding.id);
 
-		settingsStore.addBranding(branding);
-		
-		// Reset form
-		newBrandingName = '';
-		newBrandingPath = '';
-		newBrandingType = 'package';
-		showAddBranding = false;
-	}
+          // Apply the branding to the document
+          await applyBrandingToDocument(clientBranding);
 
-	// Remove branding
-	function removeBranding(brandingId: string) {
-		if (confirm('Are you sure you want to remove this branding configuration?')) {
-			settingsStore.removeBranding(brandingId);
-		}
-	}
+          console.log(`Applied branding for ${selectedClient.name}:`, clientBranding.displayName);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load client data:', error);
+    } finally {
+      loadingClientData = false;
+    }
+  }
+}
 
-	// Reset settings
-	function resetSettings() {
-		if (confirm('Are you sure you want to reset all settings to defaults? This cannot be undone.')) {
-			settingsStore.reset();
-		}
-	}
+// Manual data loading function
+async function loadSelectedClientData() {
+  if (!$settings?.selectedClient) return;
 
-	// Format last updated date
-	function formatLastUpdated(dateString: string) {
-		return new Date(dateString).toLocaleString();
-	}
+  loadingClientData = true;
+  try {
+    await loadClientData($settings.selectedClient);
+  } catch (error) {
+    console.error('Failed to load client data:', error);
+  } finally {
+    loadingClientData = false;
+  }
+}
+
+// Handle real clients toggle
+function handleRealClientsToggle(checked: boolean) {
+  settingsStore.toggleRealClients(checked);
+}
+
+// Add new branding
+function addNewBranding() {
+  if (!newBrandingName.trim() || !newBrandingPath.trim()) return;
+
+  const branding: BrandingConfig = {
+    id: newBrandingName.toLowerCase().replace(/\s+/g, '-'),
+    name: newBrandingName,
+    displayName: newBrandingName,
+    type: newBrandingType,
+    path: newBrandingPath,
+  };
+
+  settingsStore.addBranding(branding);
+
+  // Reset form
+  newBrandingName = '';
+  newBrandingPath = '';
+  newBrandingType = 'package';
+  showAddBranding = false;
+}
+
+// Remove branding
+function removeBranding(brandingId: string) {
+  if (confirm('Are you sure you want to remove this branding configuration?')) {
+    settingsStore.removeBranding(brandingId);
+  }
+}
+
+// Reset settings
+function resetSettings() {
+  if (confirm('Are you sure you want to reset all settings to defaults? This cannot be undone.')) {
+    settingsStore.reset();
+  }
+}
+
+// Format last updated date
+function formatLastUpdated(dateString: string) {
+  return new Date(dateString).toLocaleString();
+}
 </script>
 
 {#if initialized && $settings}
@@ -205,6 +235,23 @@
 				</CardDescription>
 			</CardHeader>
 		<CardContent class="space-y-4">
+			<!-- Client Branding Notice -->
+			<div class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+				<div class="flex items-start space-x-2">
+					<div class="flex-shrink-0">
+						<svg class="w-5 h-5 text-blue-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+							<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+						</svg>
+					</div>
+					<div class="flex-1">
+						<p class="text-sm text-blue-800">
+							<strong>Automatic Client Branding:</strong> When you select a client with custom branding 
+							(Hygge & Hvidløg or Meridian Brands), their branding will be automatically applied.
+						</p>
+					</div>
+				</div>
+			</div>
+
 			<!-- Current Selection -->
 			<div>
 				<label for="selected-branding" class="block text-sm font-medium text-gray-700 mb-2">
@@ -228,7 +275,7 @@
 
 			<!-- Current Branding Details -->
 			{#if $selectedBranding}
-				<div class="p-3 bg-gray-50 rounded-lg">
+				<div class="p-3 bg-gray-50 rounded-lg space-y-3">
 					<div class="grid grid-cols-2 gap-4 text-sm">
 						<div>
 							<span class="font-medium text-gray-700">Path:</span>
@@ -241,6 +288,38 @@
 							</span>
 						</div>
 					</div>
+					
+					<!-- Show which clients use this branding -->
+					{#if $selectedBranding.id === 'hygge-hvidlog' || $selectedBranding.id === 'meridian-brands'}
+						{@const associatedClient = $clients.find(c => c.code === $selectedBranding.id)}
+						{#if associatedClient}
+							<div class="pt-2 border-t border-gray-200">
+								<div class="text-sm">
+									<span class="font-medium text-gray-700">Associated Client:</span>
+									<span class="ml-2 text-gray-600">{associatedClient.name}</span>
+								</div>
+								{#if $selectedBranding.id === 'hygge-hvidlog'}
+									<div class="flex items-center space-x-2 mt-2">
+										<span class="text-xs text-gray-500">Theme Colors:</span>
+										<div class="flex space-x-1">
+											<div class="w-4 h-4 rounded bg-[#2D5A3D]" title="Forest Green"></div>
+											<div class="w-4 h-4 rounded bg-[#F4E4BC]" title="Warm Cream"></div>
+											<div class="w-4 h-4 rounded bg-[#D4A574]" title="Golden Wheat"></div>
+										</div>
+									</div>
+								{:else if $selectedBranding.id === 'meridian-brands'}
+									<div class="flex items-center space-x-2 mt-2">
+										<span class="text-xs text-gray-500">Theme Colors:</span>
+										<div class="flex space-x-1">
+											<div class="w-4 h-4 rounded bg-[#1A237E]" title="Deep Indigo"></div>
+											<div class="w-4 h-4 rounded bg-[#FF6B35]" title="Vibrant Orange"></div>
+											<div class="w-4 h-4 rounded bg-[#37474F]" title="Sophisticated Gray"></div>
+										</div>
+									</div>
+								{/if}
+							</div>
+						{/if}
+					{/if}
 				</div>
 			{/if}
 
@@ -258,10 +337,48 @@
 
 				<div class="space-y-2">
 					{#each ($settings?.availableBrandings || []) as branding}
-						<div class="flex items-center justify-between p-3 border rounded-lg">
-							<div>
-								<div class="font-medium">{branding.displayName}</div>
+						{@const isClientBranding = branding.id === 'hygge-hvidlog' || branding.id === 'meridian-brands'}
+						{@const associatedClient = isClientBranding ? $clients.find(c => c.code === branding.id) : null}
+						<div class="flex items-center justify-between p-3 border rounded-lg {
+							branding.id === $settings?.selectedBranding ? 'border-blue-500 bg-blue-50' : ''
+						}">
+							<div class="flex-1">
+								<div class="flex items-center space-x-2">
+									<div class="font-medium">{branding.displayName}</div>
+									{#if associatedClient}
+										<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+											<Building2 class="w-3 h-3 mr-1" />
+											Client Branding
+										</span>
+									{/if}
+								</div>
 								<div class="text-sm text-gray-500 font-mono">{branding.path}</div>
+								{#if associatedClient}
+									<div class="text-xs text-gray-600 mt-1">
+										Used by: {associatedClient.name}
+									</div>
+								{/if}
+								
+								<!-- Color preview for client brandings -->
+								{#if branding.id === 'hygge-hvidlog'}
+									<div class="flex items-center space-x-2 mt-2">
+										<span class="text-xs text-gray-500">Colors:</span>
+										<div class="flex space-x-1">
+											<div class="w-3 h-3 rounded bg-[#2D5A3D]" title="Forest Green"></div>
+											<div class="w-3 h-3 rounded bg-[#F4E4BC]" title="Warm Cream"></div>
+											<div class="w-3 h-3 rounded bg-[#D4A574]" title="Golden Wheat"></div>
+										</div>
+									</div>
+								{:else if branding.id === 'meridian-brands'}
+									<div class="flex items-center space-x-2 mt-2">
+										<span class="text-xs text-gray-500">Colors:</span>
+										<div class="flex space-x-1">
+											<div class="w-3 h-3 rounded bg-[#1A237E]" title="Deep Indigo"></div>
+											<div class="w-3 h-3 rounded bg-[#FF6B35]" title="Vibrant Orange"></div>
+											<div class="w-3 h-3 rounded bg-[#37474F]" title="Sophisticated Gray"></div>
+										</div>
+									</div>
+								{/if}
 							</div>
 							<div class="flex items-center space-x-2">
 								<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -271,7 +388,7 @@
 									<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
 										default
 									</span>
-								{:else}
+								{:else if !isClientBranding}
 									<Button 
 										variant="ghost" 
 										size="sm" 
@@ -376,48 +493,152 @@
 
 			<!-- Client Selection -->
 			<div>
-				<label for="selected-client" class="block text-sm font-medium text-gray-700 mb-2">
+				<label class="block text-sm font-medium text-gray-700 mb-3">
 					Selected Client
 				</label>
-				<select 
-					id="selected-client"
-					value={$settings?.selectedClient || ''}
-					on:change={(e) => handleClientChange(e.target.value)}
-					class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-				>
-					<option value="">Select client...</option>
+				
+				<!-- Rich Client Cards -->
+				<div class="grid grid-cols-1 gap-3">
 					{#each availableClients as client}
-						<option value={client.id}>
-							{client.name} ({client.tier} - {client.status})
-						</option>
+						{@const isSelected = $settings?.selectedClient === client.id}
+						{@const isDetailedDemo = client.code === 'hygge-hvidlog' || client.code === 'meridian-brands'}
+						<button
+							type="button"
+							on:click={() => handleClientChange(client.id)}
+							class="text-left p-4 border rounded-lg transition-all duration-200 hover:shadow-md {
+								isSelected 
+									? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' 
+									: 'border-gray-200 hover:border-gray-300'
+							}"
+						>
+							<div class="flex items-start justify-between">
+								<div class="flex-1">
+									<div class="flex items-center space-x-2 mb-2">
+										<h3 class="font-medium text-gray-900">{client.name}</h3>
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {
+											client.tier === 'enterprise' ? 'bg-purple-100 text-purple-800' :
+											client.tier === 'pro' ? 'bg-blue-100 text-blue-800' :
+											'bg-gray-100 text-gray-800'
+										}">
+											{client.tier}
+										</span>
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {
+											client.status === 'active' ? 'bg-green-100 text-green-800' :
+											'bg-red-100 text-red-800'
+										}">
+											{client.status}
+										</span>
+									</div>
+									
+									<div class="text-sm text-gray-600 mb-2">
+										<span class="font-mono">{client.code}</span>
+										{#if client.region}
+											• <span class="uppercase">{client.region}</span>
+										{/if}
+									</div>
+									
+									<!-- Enhanced information for detailed demo companies -->
+									{#if isDetailedDemo}
+										<div class="text-sm text-gray-500 space-y-1">
+											{#if client.code === 'hygge-hvidlog'}
+												<div class="flex items-center space-x-1">
+													<span>🌱</span>
+													<span>Sustainable Food Technology</span>
+												</div>
+												<div>Danish company • 1,200 employees • Multilingual onboarding</div>
+												<div class="flex items-center space-x-2 mt-1">
+													<Palette class="w-3 h-3" />
+													<span class="text-xs">Custom branding • Forest green theme</span>
+													<div class="flex space-x-1">
+														<div class="w-3 h-3 rounded-full bg-[#2D5A3D]" title="Primary color"></div>
+														<div class="w-3 h-3 rounded-full bg-[#F4E4BC]" title="Secondary color"></div>
+														<div class="w-3 h-3 rounded-full bg-[#D4A574]" title="Accent color"></div>
+													</div>
+												</div>
+											{:else if client.code === 'meridian-brands'}
+												<div class="flex items-center space-x-1">
+													<span>🏢</span>
+													<span>Consumer Products & Lifestyle Brands</span>
+												</div>
+												<div>Singapore HQ • 15,500 employees • High-velocity operations</div>
+												<div class="flex items-center space-x-2 mt-1">
+													<Palette class="w-3 h-3" />
+													<span class="text-xs">Custom branding • Indigo corporate theme</span>
+													<div class="flex space-x-1">
+														<div class="w-3 h-3 rounded-full bg-[#1A237E]" title="Primary color"></div>
+														<div class="w-3 h-3 rounded-full bg-[#FF6B35]" title="Secondary color"></div>
+														<div class="w-3 h-3 rounded-full bg-[#37474F]" title="Accent color"></div>
+													</div>
+												</div>
+											{/if}
+										</div>
+									{:else}
+										<div class="text-sm text-gray-500">
+											Demo client • Basic configuration • Default branding
+										</div>
+									{/if}
+								</div>
+								
+								<!-- Selection indicator -->
+								{#if isSelected}
+									<div class="flex-shrink-0 ml-3">
+										<div class="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+											<svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+												<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+											</svg>
+										</div>
+									</div>
+								{/if}
+							</div>
+						</button>
 					{/each}
-				</select>
-			</div>
-
-			<!-- Available Clients Summary -->
-			<div class="flex items-center justify-between">
-				<div class="text-sm text-gray-600">
-					Showing {availableClients.length} available client{availableClients.length !== 1 ? 's' : ''}
-					{#if !($settings?.allowRealClients || false)}
-						(demo/test clients only)
+					
+					{#if availableClients.length === 0}
+						<div class="text-center py-8 text-gray-500">
+							<Building2 class="w-8 h-8 mx-auto mb-2 opacity-50" />
+							<p>No clients available</p>
+							<p class="text-sm">Try enabling real client access or check database connection</p>
+						</div>
 					{/if}
 				</div>
-				
-				{#if $settings?.selectedClient}
-					<Button 
-						variant="outline" 
-						size="sm" 
-						on:click={loadSelectedClientData}
-						disabled={loadingClientData}
-					>
-						{#if loadingClientData}
-							<div class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mr-2"></div>
-							Loading...
-						{:else}
-							<Database class="w-4 h-4 mr-2" />
-							Load Data
-						{/if}
-					</Button>
+			</div>
+
+			<!-- Selected Client & Branding Summary -->
+			{#if $settings?.selectedClient}
+				{@const selectedClient = $clients.find(c => c.id === $settings.selectedClient)}
+				{#if selectedClient}
+					<div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+						<div class="flex items-center justify-between">
+							<div>
+								<h4 class="font-medium text-blue-900">Currently Selected</h4>
+								<p class="text-sm text-blue-700">
+									{selectedClient.name} • {$selectedBranding?.displayName || 'Default branding'}
+								</p>
+							</div>
+							<Button 
+								variant="outline" 
+								size="sm" 
+								on:click={loadSelectedClientData}
+								disabled={loadingClientData}
+							>
+								{#if loadingClientData}
+									<div class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mr-2"></div>
+									Loading...
+								{:else}
+									<Database class="w-4 h-4 mr-2" />
+									Reload Data
+								{/if}
+							</Button>
+						</div>
+					</div>
+				{/if}
+			{/if}
+
+			<!-- Available Clients Summary -->
+			<div class="text-sm text-gray-600 text-center">
+				Showing {availableClients.length} available client{availableClients.length !== 1 ? 's' : ''}
+				{#if !($settings?.allowRealClients || false)}
+					(demo/test clients only)
 				{/if}
 			</div>
 		</CardContent>

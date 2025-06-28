@@ -1,115 +1,129 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { Button } from "$lib/components/ui/button";
-	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "$lib/components/ui/card";
-	import { 
-		AlertCircle, 
-		CheckCircle2, 
-		XCircle, 
-		RefreshCw, 
-		Activity, 
-		Wifi, 
-		WifiOff,
-		Shield,
-		User,
-		Database,
-		Zap
-	} from "lucide-svelte";
-	
-	// Status states
-	let isOpen = false;
-	let errorReportingConfig: any = null;
-	let queueSize = 0;
-	let lastRefresh = '';
-	
-	// Service status (future)
-	let authStatus = 'connected'; // 'connected' | 'disconnected' | 'error'
-	let serviceWorkerStatus = 'not-supported'; // 'active' | 'installing' | 'waiting' | 'not-supported'
-	let databaseStatus = 'connected'; // 'connected' | 'disconnected' | 'error'
-	
-	async function loadSystemStatus() {
-		try {
-			// Load error reporting status
-			const { getAdminErrorReportingConfig } = await import('../config/errorReporting.js');
-			const { getAdminErrorReportQueueSize } = await import('../utils/errorReporter.js');
-			
-			errorReportingConfig = await getAdminErrorReportingConfig();
-			queueSize = getAdminErrorReportQueueSize();
-			lastRefresh = new Date().toLocaleTimeString();
-			
-			// TODO: Add other status checks
-			// - Auth status (check if Supabase is connected)
-			// - Service worker status
-			// - Database connectivity
-			
-		} catch (error) {
-			console.error('Failed to load system status:', error);
-		}
-	}
+import { Button } from '$lib/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
+import {
+  Activity,
+  AlertCircle,
+  CheckCircle2,
+  Database,
+  RefreshCw,
+  Shield,
+  User,
+  Wifi,
+  WifiOff,
+  XCircle,
+  Zap,
+} from 'lucide-svelte';
+import { onMount } from 'svelte';
 
-	async function flushErrorReports() {
-		try {
-			const { flushAdminErrorReports } = await import('../config/errorReporting.js');
-			await flushAdminErrorReports();
-			await loadSystemStatus();
-		} catch (error) {
-			console.error('Failed to flush error reports:', error);
-		}
-	}
+// Status states
+let isOpen = false;
+let errorReportingConfig: any = null;
+let queueSize = 0;
+let lastRefresh = '';
 
-	async function testErrorReporting() {
-		try {
-			const { reportAdminFlowError } = await import('../config/errorReporting.js');
-			await reportAdminFlowError('ui-interaction', new Error('Test error from floating status'), {
-				test: true,
-				timestamp: Date.now()
-			});
-			console.log('[Admin Demo] Test error report sent from floating status');
-		} catch (error) {
-			console.error('Failed to send test error report:', error);
-		}
-	}
+// Service status (future)
+const authStatus = 'connected'; // 'connected' | 'disconnected' | 'error'
+const serviceWorkerStatus = 'not-supported'; // 'active' | 'installing' | 'waiting' | 'not-supported'
+const databaseStatus = 'connected'; // 'connected' | 'disconnected' | 'error'
 
-	function toggleStatus() {
-		isOpen = !isOpen;
-		if (isOpen) {
-			loadSystemStatus();
-		}
-	}
+async function loadSystemStatus() {
+  try {
+    // Load error reporting status
+    const { getAdminErrorReportingConfig } = await import('../config/errorReporting.js');
+    const { getAdminErrorReportQueueSize } = await import('../utils/errorReporter.js');
 
-	onMount(() => {
-		loadSystemStatus();
-		
-		// Refresh status every 10 seconds
-		const interval = setInterval(loadSystemStatus, 10000);
-		return () => clearInterval(interval);
-	});
+    errorReportingConfig = await getAdminErrorReportingConfig();
+    queueSize = getAdminErrorReportQueueSize();
+    lastRefresh = new Date().toLocaleTimeString();
 
-	// Overall system health indicator
-	$: overallStatus = (() => {
-		if (!errorReportingConfig) return 'loading';
-		
-		const hasErrors = queueSize > 0;
-		const errorReportingOk = errorReportingConfig?.enabled;
-		const authOk = authStatus === 'connected';
-		const dbOk = databaseStatus === 'connected';
-		
-		if (hasErrors) return 'error';
-		if (!errorReportingOk || !authOk || !dbOk) return 'warning';
-		return 'good';
-	})();
+    // TODO: Add other status checks
+    // - Auth status (check if Supabase is connected)
+    // - Service worker status
+    // - Database connectivity
+  } catch (error) {
+    console.error('Failed to load system status:', error);
+  }
+}
 
-	$: statusIcon = overallStatus === 'good' ? CheckCircle2 : 
-	               overallStatus === 'warning' ? AlertCircle : 
-	               overallStatus === 'error' ? XCircle : Activity;
-	
-	$: statusColor = overallStatus === 'good' ? 'text-green-600' : 
-	                overallStatus === 'warning' ? 'text-yellow-600' : 
-	                overallStatus === 'error' ? 'text-red-600' : 'text-gray-600';
+async function flushErrorReports() {
+  try {
+    const { flushAdminErrorReports } = await import('../config/errorReporting.js');
+    await flushAdminErrorReports();
+    await loadSystemStatus();
+  } catch (error) {
+    console.error('Failed to flush error reports:', error);
+  }
+}
 
-	$: ringColor = overallStatus === 'good' ? 'ring-green-500' : 
-	              overallStatus === 'warning' ? 'ring-yellow-500' : 
-	              overallStatus === 'error' ? 'ring-red-500' : 'ring-gray-500';
+async function testErrorReporting() {
+  try {
+    const { reportAdminFlowError } = await import('../config/errorReporting.js');
+    await reportAdminFlowError('ui-interaction', new Error('Test error from floating status'), {
+      test: true,
+      timestamp: Date.now(),
+    });
+    console.log('[Admin Demo] Test error report sent from floating status');
+  } catch (error) {
+    console.error('Failed to send test error report:', error);
+  }
+}
+
+function toggleStatus() {
+  isOpen = !isOpen;
+  if (isOpen) {
+    loadSystemStatus();
+  }
+}
+
+onMount(() => {
+  loadSystemStatus();
+
+  // Refresh status every 10 seconds
+  const interval = setInterval(loadSystemStatus, 10000);
+  return () => clearInterval(interval);
+});
+
+// Overall system health indicator
+$: overallStatus = (() => {
+  if (!errorReportingConfig) return 'loading';
+
+  const hasErrors = queueSize > 0;
+  const errorReportingOk = errorReportingConfig?.enabled;
+  const authOk = authStatus === 'connected';
+  const dbOk = databaseStatus === 'connected';
+
+  if (hasErrors) return 'error';
+  if (!errorReportingOk || !authOk || !dbOk) return 'warning';
+  return 'good';
+})();
+
+$: statusIcon =
+  overallStatus === 'good'
+    ? CheckCircle2
+    : overallStatus === 'warning'
+      ? AlertCircle
+      : overallStatus === 'error'
+        ? XCircle
+        : Activity;
+
+$: statusColor =
+  overallStatus === 'good'
+    ? 'text-green-600'
+    : overallStatus === 'warning'
+      ? 'text-yellow-600'
+      : overallStatus === 'error'
+        ? 'text-red-600'
+        : 'text-gray-600';
+
+$: ringColor =
+  overallStatus === 'good'
+    ? 'ring-green-500'
+    : overallStatus === 'warning'
+      ? 'ring-yellow-500'
+      : overallStatus === 'error'
+        ? 'ring-red-500'
+        : 'ring-gray-500';
 </script>
 
 <!-- Floating Status Button -->

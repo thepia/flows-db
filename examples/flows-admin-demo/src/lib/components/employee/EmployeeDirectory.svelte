@@ -1,20 +1,20 @@
 <script lang="ts">
-	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "$lib/components/ui/card";
-	import { Button } from "$lib/components/ui/button";
-	import EmployeeCard from "./EmployeeCard.svelte";
-	import type { Employee, EmployeeEnrollment } from "$lib/types";
-	import { UserPlus } from "lucide-svelte";
+import { Button } from '$lib/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
+import type { Employee, EmployeeEnrollment } from '$lib/types';
+import { UserPlus } from 'lucide-svelte';
+import EmployeeCard from './EmployeeCard.svelte';
 
-	// Props
-	export let employees: Employee[];
-	export let enrollments: EmployeeEnrollment[] = [];
-	export let loading: boolean = false;
-	export let onEmployeeSelect: ((employee: Employee) => void) | undefined = undefined;
+// Props
+export let employees: Employee[];
+export const enrollments: EmployeeEnrollment[] = [];
+export const loading: boolean = false;
+export const onEmployeeSelect: ((employee: Employee) => void) | undefined = undefined;
 
-	// Helper function to get employee enrollment
-	function getEmployeeEnrollment(employeeId: string): EmployeeEnrollment | undefined {
-		return enrollments.find(e => e.employeeId === employeeId);
-	}
+// Helper function to get employee enrollment
+function getEmployeeEnrollment(employeeId: string): EmployeeEnrollment | undefined {
+  return enrollments.find((e) => e.employeeId === employeeId);
+}
 </script>
 
 <!-- Employee List -->
