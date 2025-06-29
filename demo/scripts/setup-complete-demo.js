@@ -37,6 +37,13 @@ if (!supabaseUrl || !supabaseServiceKey) {
   process.exit(1);
 }
 
+// Supabase client with proper schema
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  db: {
+    schema: 'api'
+  }
+});
+
 /**
  * Direct API helper function
  */
@@ -77,7 +84,10 @@ async function cleanupExistingData(spinner) {
     // Get the demo client first
     let demoClient = null;
     try {
-      const clients = await apiCall('clients?select=*&client_code=eq.nets-demo');
+      const { data: clients } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('client_code', 'nets-demo');
       if (clients && clients.length > 0) {
         demoClient = clients[0];
       }

@@ -25,6 +25,7 @@ import {
   totalPeopleCount,
 } from '$lib/stores/data';
 import { settingsStore } from '$lib/stores/settings';
+import { supabase } from '$lib/supabase';
 import { AlertCircle, Briefcase, Plus, UserMinus, UserPlus, Users, Settings } from 'lucide-svelte';
 import { onMount } from 'svelte';
 import { getMockOffboardingData, getTasksForProcess } from '$lib/mockData/offboarding';
@@ -42,6 +43,7 @@ let selectedTemplate = null;
 let selectedProcess = null;
 let offboardingTemplates = [];
 let offboardingProcesses = [];
+let allProcesses = []; // For the main Processes tab
 let offboardingTasks = [];
 let metricsLoading = false;
 
@@ -93,11 +95,272 @@ function clearProcessFilters() {
 	showProcessList = false;
 }
 
+// Generate demo process data
+async function generateProcessData() {
+	console.log('🔄 Starting process data generation...');
+	
+	try {
+		// Get the current client (Hygge & Hvidløg)
+		const { data: clientData, error: clientError } = await supabase
+			.from('clients')
+			.select('id, client_code')
+			.eq('client_code', 'hygge-hvidlog')
+			.single();
+			
+		if (clientError) {
+			console.error('❌ Error fetching client:', clientError);
+			alert('Error: Could not find hygge-hvidlog client');
+			return;
+		}
+		
+		if (!clientData) {
+			console.error('❌ Hygge & Hvidløg client not found');
+			alert('Error: hygge-hvidlog client not found in database');
+			return;
+		}
+
+		console.log(`📊 Working with client: ${clientData.client_code}`);
+
+		// Get all people for this client
+		const { data: people, error: peopleError } = await supabase
+			.from('people')
+			.select('id, person_code, first_name, last_name, department, position')
+			.eq('client_id', clientData.id);
+			
+		if (peopleError) {
+			console.error('❌ Error fetching people:', peopleError);
+			alert('Error fetching people: ' + peopleError.message);
+			return;
+		}
+
+		console.log(`👥 Found ${people?.length || 0} people`);
+
+		if (!people || people.length === 0) {
+			console.error('❌ No people found for client');
+			alert('Error: No people found for this client');
+			return;
+		}
+		
+		// Create enrollments for 70% of people (onboarding)
+		const enrollmentCount = Math.floor(people.length * 0.7);
+		const enrollments = [];
+		
+		for (let i = 0; i < enrollmentCount; i++) {
+			const person = people[i];
+			const completionPercentage = Math.floor(Math.random() * 80) + 10;
+			
+			enrollments.push({
+				person_id: person.id,
+				onboarding_completed: completionPercentage >= 95,
+				completion_percentage: completionPercentage,
+				mentor: 'Demo Mentor',
+				buddy_program: Math.random() > 0.5,
+				last_activity: new Date().toISOString()
+			});
+		}
+		
+		console.log(`📝 Creating ${enrollments.length} enrollment records...`);
+		
+		// Insert enrollments
+		const { error: enrollmentError } = await supabase
+			.from('people_enrollments')
+			.insert(enrollments);
+			
+		if (enrollmentError) {
+			console.error('❌ Error creating enrollments:', enrollmentError);
+			alert('Error creating enrollments: ' + enrollmentError.message);
+			return;
+		}
+		
+		console.log('✅ Created enrollment records');
+		
+		// Create offboarding template if needed
+		let { data: template } = await supabase
+			.from('offboarding_templates')
+			.select('id')
+			.eq('client_id', clientData.id)
+			.eq('is_default', true)
+			.single();
+			
+		if (!template) {
+			const { data: newTemplate, error: templateError } = await supabase
+				.from('offboarding_templates')
+				.insert({
+					client_id: clientData.id,
+					name: 'Standard Offboarding Process',
+					description: 'Default offboarding process for all employees',
+					template_type: 'company_wide',
+					estimated_duration_days: 14,
+					complexity_score: 2,
+					is_active: true,
+					is_default: true,
+					requires_manager_approval: true,
+					requires_hr_approval: true,
+					auto_assign_tasks: true,
+					created_by: 'system-demo'
+				})
+				.select('id')
+				.single();
+				
+			if (templateError) {
+				console.error('❌ Error creating template:', templateError);
+				alert('Error creating template: ' + templateError.message);
+				return;
+			}
+			template = newTemplate;
+			console.log('✅ Created offboarding template');
+		}
+		
+		// Create offboarding processes for 15% of people
+		const processCount = Math.floor(people.length * 0.15);
+		const processes = [];
+		const statuses = ['draft', 'pending_approval', 'active'];
+		const priorities = ['low', 'medium', 'high'];
+		
+		for (let i = 0; i < processCount; i++) {
+			const person = people[i + enrollmentCount]; // Use different people than enrollment
+			if (!person) break;
+			
+			processes.push({
+				client_id: clientData.id,
+				template_id: template.id,
+				employee_uid: person.person_code,
+				employee_department: person.department,
+				employee_role: person.position,
+				process_name: `${person.first_name} ${person.last_name} Offboarding`,
+				status: statuses[Math.floor(Math.random() * statuses.length)],
+				priority: priorities[Math.floor(Math.random() * priorities.length)],
+				target_completion_date: new Date(Date.now() + (Math.floor(Math.random() * 30) + 15) * 24 * 60 * 60 * 1000).toISOString(),
+				created_by: 'demo-system'
+			});
+		}
+		
+		console.log(`📋 Creating ${processes.length} offboarding processes...`);
+		
+		// Insert processes
+		const { error: processError } = await supabase
+			.from('offboarding_processes')
+			.insert(processes);
+			
+		if (processError) {
+			console.error('❌ Error creating processes:', processError);
+			alert('Error creating processes: ' + processError.message);
+			return;
+		}
+		
+		console.log('✅ Created offboarding processes');
+		
+		// Reload data to see the changes
+		await loadProcessesData();
+		await loadMetrics();
+		
+		alert(`🎉 Success! Created ${enrollments.length} onboarding enrollments and ${processes.length} offboarding processes!`);
+		
+	} catch (error) {
+		console.error('❌ Process data generation failed:', error);
+		alert('Error: ' + error.message);
+	}
+}
+
 // Load mock offboarding data
 function loadOffboardingData() {
   const mockData = getMockOffboardingData();
   offboardingTemplates = mockData.templates;
   offboardingProcesses = mockData.processes;
+}
+
+// Load real processes from database
+async function loadProcessesData() {
+  if (!$client) return;
+  
+  try {
+    // Load offboarding processes from database
+    const { data: processesData, error: processesError } = await supabase
+      .from('offboarding_processes')
+      .select(`
+        *,
+        offboarding_templates:template_id(name, description)
+      `)
+      .eq('client_id', $client.id)
+      .order('created_at', { ascending: false });
+
+    if (processesError) {
+      console.warn('Error loading processes:', processesError);
+      // Fallback to mock data
+      loadOffboardingData();
+      allProcesses = offboardingProcesses;
+      return;
+    }
+
+    // Transform database processes to match UI format
+    allProcesses = processesData?.map(process => {
+      // Extract custom fields if they exist
+      const customFields = process.custom_fields || {};
+      
+      // Extract person name from process_name (format: "FirstName LastName - Reason")
+      const nameParts = process.process_name?.split(' - ');
+      const personName = nameParts?.[0] || process.employee_uid;
+      
+      return {
+        id: process.id,
+        process_name: process.process_name || `Process for ${process.employee_uid}`,
+        employee_name: personName,
+        employee_uid: process.employee_uid,
+        employee_department: process.employee_department,
+        employee_role: process.employee_role,
+        employee_seniority: process.employee_seniority,
+        status: process.status,
+        priority: process.priority,
+        completion_percentage: customFields.completion_percentage || calculateProcessProgress(process),
+        total_tasks: customFields.total_tasks || 0,
+        completed_tasks: customFields.completed_tasks || 0,
+        overdue_tasks: customFields.overdue_tasks || 0,
+        target_completion_date: process.target_completion_date,
+        actual_start_date: process.actual_start_date,
+        actual_completion_date: process.actual_completion_date,
+        created_at: process.created_at,
+        estimated_total_hours: process.estimated_total_hours,
+        complexity_score: process.complexity_score,
+        manager_uid: process.manager_uid,
+        manager_approved_at: process.manager_approved_at,
+        hr_approved_at: process.hr_approved_at,
+        security_approved_at: process.security_approved_at,
+        notes: process.notes,
+        template_id: process.template_id,
+        templateName: process.offboarding_templates?.name || 'Standard Process',
+        // Additional UI fields for backward compatibility
+        title: process.process_name || `Process for ${process.employee_uid}`,
+        personName: personName,
+        personCode: process.employee_uid,
+        progress: customFields.completion_percentage || calculateProcessProgress(process),
+        dueDate: process.target_completion_date,
+        department: process.employee_department,
+        role: process.employee_role
+      };
+    }) || [];
+
+    console.log(`Loaded ${allProcesses.length} processes from database`);
+    
+  } catch (error) {
+    console.error('Failed to load processes:', error);
+    // Fallback to mock data
+    loadOffboardingData();
+    allProcesses = offboardingProcesses;
+  }
+}
+
+// Calculate process progress (placeholder - would need tasks data)
+function calculateProcessProgress(process) {
+  // For now, estimate based on status
+  switch (process.status) {
+    case 'draft': return 0;
+    case 'pending_approval': return 10;
+    case 'active': return 50;
+    case 'completed': return 100;
+    case 'cancelled': return 0;
+    case 'overdue': return 30;
+    default: return 0;
+  }
 }
 
 // Load data on component mount
@@ -112,6 +375,9 @@ onMount(async () => {
   
   // Load mock offboarding data
   loadOffboardingData();
+  
+  // Load real processes data
+  await loadProcessesData();
 });
 
 // Load business metrics
@@ -152,7 +418,10 @@ $: pendingInvitations = $invitations.filter((inv) => inv.status === 'pending').l
 				<button
 					data-testid="tab-people"
 					data-active={activeTab === 'people'}
-					on:click={() => activeTab = 'people'}
+					on:click={() => {
+						console.log('🔥 PEOPLE TAB CLICKED!');
+						activeTab = 'people';
+					}}
 					class="py-2 px-1 border-b-2 font-medium text-sm {
 						activeTab === 'people' 
 							? 'border-blue-500 text-blue-600' 
@@ -255,6 +524,13 @@ $: pendingInvitations = $invitations.filter((inv) => inv.status === 'pending').l
 							<p class="text-gray-600">Manage and track all processes across applications</p>
 						</div>
 						<div class="flex space-x-3">
+							<button 
+								class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+								on:click={generateProcessData}
+							>
+								<Plus class="w-4 h-4 mr-2" />
+								Generate Demo Data
+							</button>
 							<Button variant="outline">
 								<Plus class="w-4 h-4 mr-2" />
 								New Process
@@ -264,9 +540,18 @@ $: pendingInvitations = $invitations.filter((inv) => inv.status === 'pending').l
 
 					<!-- Processes Table/List -->
 					<ProcessList 
-						processes={offboardingProcesses}
+						processes={allProcesses}
 						onProcessSelect={(process) => selectedProcess = process}
 					/>
+					
+					{#if allProcesses.length === 0}
+						<div class="text-center py-12">
+							<div class="text-gray-500">
+								<p class="text-lg font-medium">No processes found</p>
+								<p class="text-sm mt-2">Processes will appear here as people are enrolled in onboarding/offboarding workflows</p>
+							</div>
+						</div>
+					{/if}
 				</div>
 			{:else}
 				<!-- Application Tab Content -->

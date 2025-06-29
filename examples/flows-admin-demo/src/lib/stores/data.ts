@@ -939,84 +939,53 @@ export async function getClientMetrics() {
       throw new Error('No client data available');
     }
 
-    // For now, use a simplified approach based on existing data
-    // TODO: Replace with proper database functions after schema migration
-
-    // Get total count of people for this client
-    const { count: totalCount, error: countError } = await supabase
-      .from('people')
-      .select('*', { count: 'exact', head: true })
-      .eq('client_id', currentClient.id);
-
-    if (countError) {
-      console.warn('Error getting people count for metrics:', countError);
-      return { onboardingCount: 0, offboardingCount: 0 };
-    }
-
-    // Get sample of people for status analysis (100 people)
-    const { data: peopleData, error: peopleError } = await supabase
-      .from('people')
-      .select('id, employment_status, associate_status')
-      .eq('client_id', currentClient.id)
-      .limit(100); // Sample for analysis
-
-    if (peopleError) {
-      await reportSupabaseError('people', 'select', peopleError, {
-        client_id: currentClient.id,
-      });
-      throw peopleError;
-    }
-
-    // Get all enrollments for these people
-    const personIds = peopleData?.map((p) => p.id) || [];
-
-    if (personIds.length === 0) {
-      return { onboardingCount: 0, offboardingCount: 0 };
-    }
-
-    const { data: enrollmentData, error: enrollmentError } = await supabase
+    // Count people actually in onboarding processes (incomplete enrollments)
+    const { data: onboardingPeople, error: onboardingError } = await supabase
       .from('people_enrollments')
-      .select('person_id, onboarding_completed, completion_percentage')
-      .in('person_id', personIds);
+      .select('person_id')
+      .eq('onboarding_completed', false)
+      .lt('completion_percentage', 100);
 
-    if (enrollmentError) {
-      console.warn('Error loading enrollments for metrics, using fallback approach:', enrollmentError);
-      // Don't throw - use fallback metrics instead
-      return {
-        onboardingCount: Math.floor(peopleData?.length * 0.2) || 0, // Estimate 20% in onboarding
-        offboardingCount: Math.floor(peopleData?.length * 0.1) || 0, // Estimate 10% in offboarding
-      };
+    let onboardingCount = 0;
+    if (!onboardingError && onboardingPeople) {
+      onboardingCount = onboardingPeople.length;
+    } else {
+      console.warn('Error loading onboarding enrollments:', onboardingError);
     }
 
-    // Get onboarding and offboarding invitations
-    const { data: invitationData, error: invitationError } = await supabase
-      .from('invitations')
-      .select(
-        `
-        client_data,
-        client_applications!inner(app_code)
-      `
-      )
+    // Count people actually in offboarding processes
+    const { data: offboardingProcesses, error: offboardingError } = await supabase
+      .from('offboarding_processes')
+      .select('employee_uid')
       .eq('client_id', currentClient.id)
-      .eq('status', 'pending');
+      .in('status', ['draft', 'pending_approval', 'active']); // Not completed/cancelled
 
-    if (invitationError) {
-      console.warn('Error loading invitations for metrics, using fallback approach:', invitationError);
-      // Don't throw - continue with partial data
+    let offboardingCount = 0;
+    if (!offboardingError && offboardingProcesses) {
+      offboardingCount = offboardingProcesses.length;
+    } else {
+      console.warn('Error loading offboarding processes:', offboardingError);
     }
 
-    // Calculate metrics using total count and sample-based estimates
-    const totalPeople = totalCount || 0;
-    
-    // Onboarding: Based on enrollment data or estimated from total
-    const onboardingCount = enrollmentData?.length > 0 
-      ? Math.round((enrollmentData.filter((e) => !e.onboarding_completed && e.completion_percentage < 100).length / enrollmentData.length) * totalPeople)
-      : Math.floor(totalPeople * 0.3); // Fallback: 30% estimated in onboarding
+    // If no processes exist, fall back to invitation counts
+    if (offboardingCount === 0) {
+      const { data: invitationData, error: invitationError } = await supabase
+        .from('invitations')
+        .select(
+          `
+          client_data,
+          client_applications!inner(app_code)
+        `
+        )
+        .eq('client_id', currentClient.id)
+        .eq('status', 'pending');
 
-    // Offboarding: Count of pending offboarding invitations or estimated from total
-    const offboardingCount = invitationData?.length > 0
-      ? invitationData.filter((inv) => inv.client_applications?.app_code === 'offboarding').length
-      : Math.floor(totalPeople * 0.1); // Fallback: 10% estimated in offboarding
+      if (!invitationError && invitationData) {
+        offboardingCount = invitationData.filter((inv) => inv.client_applications?.app_code === 'offboarding').length;
+      }
+    }
+
+    console.log(`Metrics: ${onboardingCount} people in onboarding, ${offboardingCount} people in offboarding`);
 
     return {
       onboardingCount,

@@ -38,7 +38,8 @@
       "Bash(pnpm -w run health-check)",
       "Bash(pnpm vite-node:*)",
       "Bash(true)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": []
   }
