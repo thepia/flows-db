@@ -34,7 +34,11 @@
       "Bash(pnpm test:*)",
       "Bash(npm run build:*)",
       "Bash(mv:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(pnpm -w run health-check)",
+      "Bash(pnpm vite-node:*)",
+      "Bash(true)",
+      "Bash(chmod:*)"
     ],
     "deny": []
   }

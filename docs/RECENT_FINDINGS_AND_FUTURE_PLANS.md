@@ -523,6 +523,22 @@ graph TB
 - Phase-by-phase fix implementation plan
 - Test resilience patterns for future changes
 
+### Demo Data Strategy (January 2025)
+
+**Major Discovery**: Two comprehensive demo companies are fully architected but need data population
+**New Document Created**: `docs/DEMO_DATA_STRATEGY.md`
+
+**Key Findings**:
+- **Hygge & Hvidløg A/S**: 1,200-employee European food tech company (fully defined)
+- **Meridian Brands International**: 15,500-employee global consumer products company (fully defined)
+- **Current Issue**: System defaults to basic `nets-demo` instead of rich demo companies
+- **Solution Ready**: Existing data generation system can populate both companies
+
+**Strategic Gaps Identified**:
+- Need CI testing client with stable, unchanging dataset
+- Need enterprise-scale demo capability (1000+ offboarding processes)
+- Need documented demo client selection strategy
+
 ### Recommended New Documents
 1. `ARCHITECTURE_DECISION_RECORDS.md` - Track major technical decisions
 2. `INTEGRATION_COOKBOOK.md` - Step-by-step integration examples

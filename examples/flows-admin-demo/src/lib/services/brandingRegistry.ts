@@ -1,24 +1,27 @@
 import type { BrandingConfig } from '$lib/types';
+import { reportDataError } from '$lib/utils/errorReporter';
 
 // Static imports for local branding modules to avoid dynamic import issues
+import * as thepiaDefaultBranding from '../branding/thepia-default/index';
 import * as hyggeHvidlogBranding from '../branding/hygge-hvidlog/index';
 import * as meridianBrandsBranding from '../branding/meridian-brands/index';
 
 // Static branding module map
 const LOCAL_BRANDING_MODULES = {
+  'thepia-default': thepiaDefaultBranding,
   'hygge-hvidlog': hyggeHvidlogBranding,
   'meridian-brands': meridianBrandsBranding,
 } as const;
 
 // Registry of available branding configurations
 const BRANDING_REGISTRY = {
-  // Default Thepia branding
+  // Default Thepia branding - fallback to local since package may not be available
   'thepia-default': {
     id: 'thepia-default',
     name: 'thepia-default',
     displayName: 'Thepia (Default)',
-    type: 'package' as const,
-    path: '@thepia/branding',
+    type: 'local' as const,
+    path: 'src/lib/branding/thepia-default',
     isDefault: true,
   },
 
@@ -93,6 +96,18 @@ export async function loadBrandingTokens(brandingConfig: BrandingConfig): Promis
     }
   } catch (error) {
     console.warn(`Failed to load branding tokens for ${brandingConfig.name}:`, error);
+    
+    // Report the error to error reporting system
+    await reportDataError(
+      'branding.loadTokens',
+      error instanceof Error ? error : new Error(String(error)),
+      {
+        brandingId: brandingConfig.id,
+        brandingName: brandingConfig.name,
+        brandingType: brandingConfig.type,
+        brandingPath: brandingConfig.path,
+      }
+    );
 
     // Fallback to default branding if available
     if (brandingConfig.id !== 'thepia-default') {
@@ -102,6 +117,16 @@ export async function loadBrandingTokens(brandingConfig: BrandingConfig): Promis
         return fallbackModule.tokens || fallbackModule.default?.tokens || {};
       } catch (fallbackError) {
         console.warn('Failed to load fallback branding tokens:', fallbackError);
+        
+        // Report fallback error too
+        await reportDataError(
+          'branding.loadFallbackTokens',
+          fallbackError instanceof Error ? fallbackError : new Error(String(fallbackError)),
+          {
+            originalBrandingId: brandingConfig.id,
+            fallbackBrandingId: 'thepia-default',
+          }
+        );
       }
     }
 

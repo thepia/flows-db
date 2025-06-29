@@ -22,9 +22,10 @@ import {
   loadAllClients,
   loadDemoData,
   loading,
+  totalPeopleCount,
 } from '$lib/stores/data';
 import { settingsStore } from '$lib/stores/settings';
-import { AlertCircle, Briefcase, Plus, UserMinus, UserPlus, Users } from 'lucide-svelte';
+import { AlertCircle, Briefcase, Plus, UserMinus, UserPlus, Users, Settings } from 'lucide-svelte';
 import { onMount } from 'svelte';
 import { getMockOffboardingData, getTasksForProcess } from '$lib/mockData/offboarding';
 
@@ -135,7 +136,7 @@ $: if ($client) {
 }
 
 // Dashboard statistics (reactive to store changes)
-$: totalEmployees = $employees.length;
+$: totalEmployees = $totalPeopleCount || $employees.length;
 $: pendingInvitations = $invitations.filter((inv) => inv.status === 'pending').length;
 </script>
 
@@ -162,6 +163,20 @@ $: pendingInvitations = $invitations.filter((inv) => inv.status === 'pending').l
 					People
 				</button>
 
+				<!-- Processes Tab -->
+				<button
+					data-testid="tab-processes"
+					data-active={activeTab === 'processes'}
+					on:click={() => activeTab = 'processes'}
+					class="py-2 px-1 border-b-2 font-medium text-sm {
+						activeTab === 'processes' 
+							? 'border-blue-500 text-blue-600' 
+							: 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+					}"
+				>
+					<Settings class="w-4 h-4 mr-2 inline" />
+					Processes
+				</button>
 
 				<!-- Application Tabs -->
 				{#each $applications as app}
@@ -229,6 +244,29 @@ $: pendingInvitations = $invitations.filter((inv) => inv.status === 'pending').l
 							/>
 						</div>
 					</div>
+				</div>
+			{:else if activeTab === 'processes'}
+				<!-- Processes Tab Content -->
+				<div class="space-y-8" data-testid="view-processes">
+					<!-- Processes Header -->
+					<div class="flex justify-between items-center">
+						<div>
+							<h2 class="text-2xl font-bold text-gray-900">Processes</h2>
+							<p class="text-gray-600">Manage and track all processes across applications</p>
+						</div>
+						<div class="flex space-x-3">
+							<Button variant="outline">
+								<Plus class="w-4 h-4 mr-2" />
+								New Process
+							</Button>
+						</div>
+					</div>
+
+					<!-- Processes Table/List -->
+					<ProcessList 
+						processes={offboardingProcesses}
+						onProcessSelect={(process) => selectedProcess = process}
+					/>
 				</div>
 			{:else}
 				<!-- Application Tab Content -->

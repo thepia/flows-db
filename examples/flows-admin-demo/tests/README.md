@@ -1,6 +1,26 @@
 # Flows Admin Demo - Test Suite
 
-This directory contains comprehensive end-to-end tests for the Flows Admin Demo application, focusing on the offboarding functionality.
+This directory contains comprehensive tests for the Flows Admin Demo application, including regression tests for critical bugs and end-to-end tests for the offboarding functionality.
+
+## 🔥 Regression Tests
+
+### Critical Bug: Client Loading Override
+- **File**: `test-client-regression.js` (root level)
+- **Purpose**: Prevents regression of the bug where `loadClientSpecificData()` was hardcoded to 'nets-demo'
+- **Bug Details**: The function was ignoring the `clientId` parameter and always querying for 'nets-demo', overriding the correct client selection from `loadDemoData()`
+- **Fix**: Changed query from `.eq('client_code', 'nets-demo')` to `.eq('id', clientId)`
+
+**Test Coverage:**
+- Unit tests in `tests/unit/client-loading.test.js`
+- Integration tests in `tests/e2e/client-priority.spec.js`
+- Database regression test in `test-client-regression.js`
+
+**Run Commands:**
+```bash
+pnpm run test:regression      # Database-level regression test
+pnpm run test:unit           # Unit tests for client loading logic
+pnpm run test:client-priority # E2E tests for client priority
+```
 
 ## 📁 Test Structure
 

@@ -162,6 +162,8 @@ pnpm run demo:admin:build
 pnpm run demo:admin:install
 ```
 
+Let the user run the demo dev server, as it runs forever and shouldn't be run multiple times.
+
 ## Key Implementation Details
 
 ### Schema Prefixes
@@ -213,3 +215,9 @@ Required environment variables:
   - Supabase table confirmed to be correct
   - Frontend encryption planned for PII protection
   - Using demo as the frontend for implementation
+
+## Development Memories
+
+- When updating client demo data follow docs/DEMO_DATA_MEMORY.md
+- We save SQL scripts to be run in Supabase Dashboard under /schemas
+- You cant check in secrets and tokens

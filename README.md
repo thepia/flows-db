@@ -12,6 +12,21 @@ Multi-client database management for Thepia Flows applications. This repository 
 - **Supabase schema management** and migration tools
 - **GDPR-compliant architecture** with minimal PII storage
 
+## 🚀 Quick Start
+
+### Prerequisites
+
+1. **GitHub Package Access**: This repository uses GitHub packages. Set up your token:
+   ```bash
+   export NODE_AUTH_TOKEN=your_github_token_here
+   ```
+   Or add it to your shell profile (.bashrc, .zshrc, etc.)
+
+2. **Environment Variables**: Copy and configure:
+   ```bash
+   cp .env.example .env  # Configure your Supabase credentials
+   ```
+
 ## 🏗️ Architecture
 
 ### Multi-Client Strategy

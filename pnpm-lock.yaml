@@ -148,6 +148,9 @@ importers:
       vite:
         specifier: ^6.2.6
         version: 6.3.5(@types/node@20.19.1)(jiti@1.21.7)(yaml@2.8.0)
+      vite-node:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/node@20.19.1)(jiti@1.21.7)(yaml@2.8.0)
       vitest:
         specifier: ^2.1.4
         version: 2.1.9(@types/node@20.19.1)
@@ -2507,6 +2510,11 @@ packages:
   vite-node@2.1.9:
     resolution: {integrity: sha512-AM9aQ/IPrW/6ENLQg3AGY4K1N2TGZdR5e4gu/MmmR2xR3Ll1+dib+nook92g4TV3PXVyeyxdWwtaCAiUL0hMxA==}
     engines: {node: ^18.0.0 || >=20.0.0}
+    hasBin: true
+
+  vite-node@3.2.4:
+    resolution: {integrity: sha512-EbKSKh+bh1E1IFxeO0pg1n4dvoOTt0UDiXMd/qn++r98+jPO1xtJilvXldeuQ8giIB5IkpjCgMleHMNEsGH6pg==}
+    engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
 
   vite@5.4.19:
@@ -5035,6 +5043,27 @@ snapshots:
       - sugarss
       - supports-color
       - terser
+
+  vite-node@3.2.4(@types/node@20.19.1)(jiti@1.21.7)(yaml@2.8.0):
+    dependencies:
+      cac: 6.7.14
+      debug: 4.4.1
+      es-module-lexer: 1.7.0
+      pathe: 2.0.3
+      vite: 6.3.5(@types/node@20.19.1)(jiti@1.21.7)(yaml@2.8.0)
+    transitivePeerDependencies:
+      - '@types/node'
+      - jiti
+      - less
+      - lightningcss
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+      - tsx
+      - yaml
 
   vite@5.4.19(@types/node@20.19.1):
     dependencies:

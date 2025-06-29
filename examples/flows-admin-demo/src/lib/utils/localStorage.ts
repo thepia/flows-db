@@ -88,8 +88,8 @@ export class LocalStorageManager {
    */
   static getDefaultSettings(): DemoSettings {
     return {
-      selectedBranding: 'thepia-default',
-      selectedClient: '',
+      selectedBranding: 'hygge-hvidlog', // Default to Hygge & Hvidløg branding
+      selectedClient: 'hygge-hvidlog',   // Default to Hygge & Hvidløg client
       allowRealClients: false,
       availableBrandings: getAvailableBrandings(),
       lastUpdated: new Date().toISOString(),

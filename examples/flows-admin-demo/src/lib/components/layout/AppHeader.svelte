@@ -2,7 +2,7 @@
 import { goto } from '$app/navigation';
 import { page } from '$app/stores';
 import { Button } from '$lib/components/ui/button';
-import { client } from '$lib/stores/data';
+import { client, loadingProgress } from '$lib/stores/data';
 import { ArrowLeft, ChevronLeft, Inbox, Settings, User } from 'lucide-svelte';
 import LogoWrapper from '../branding/LogoWrapper.svelte';
 
@@ -59,7 +59,25 @@ function openProfile() {
 								{$client.name} • {$client.tier} tier • {$client.status} • {$client.region}
 							</p>
 						{:else}
-							<p class="text-sm text-gray-400">Loading client...</p>
+							<div class="text-sm text-gray-400">
+								<div class="flex items-center space-x-2">
+									<div class="w-4 h-4 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+									<span>
+										{$loadingProgress.stage} ({$loadingProgress.current}/{$loadingProgress.total})
+										{#if $loadingProgress.message}
+											• {$loadingProgress.message}
+										{/if}
+									</span>
+								</div>
+								{#if $loadingProgress.total > 0}
+									<div class="w-48 bg-gray-200 rounded-full h-1.5 mt-1">
+										<div 
+											class="bg-blue-600 h-1.5 rounded-full transition-all duration-300" 
+											style="width: {($loadingProgress.current / $loadingProgress.total) * 100}%"
+										></div>
+									</div>
+								{/if}
+							</div>
 						{/if}
 					{/if}
 				</div>

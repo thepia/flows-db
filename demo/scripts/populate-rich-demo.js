@@ -89,7 +89,7 @@ async function getDemoClientAndApps() {
 async function createEmployees(clientId) {
   const employeesData = [
     {
-      employee_code: 'emp-001',
+      person_code: 'emp-001',
       first_name: 'Anna',
       last_name: 'Hansen',
       company_email: 'anna.hansen@nets.eu',
@@ -98,7 +98,7 @@ async function createEmployees(clientId) {
       location: 'Copenhagen, Denmark',
       manager: 'Lars Nielsen',
       start_date: '2024-01-15',
-      status: 'active',
+      employment_status: 'active',
       security_clearance: 'high',
       employment_type: 'full_time',
       work_location: 'hybrid',
@@ -106,7 +106,7 @@ async function createEmployees(clientId) {
       languages: ['Danish', 'English', 'Swedish']
     },
     {
-      employee_code: 'emp-002',
+      person_code: 'emp-002',
       first_name: 'Erik',
       last_name: 'Larsen',
       company_email: 'erik.larsen@nets.eu',
@@ -115,7 +115,7 @@ async function createEmployees(clientId) {
       location: 'Copenhagen, Denmark',
       manager: 'Maria Andersen',
       start_date: '2024-02-01',
-      status: 'active',
+      employment_status: 'active',
       security_clearance: 'medium',
       employment_type: 'full_time',
       work_location: 'office',
@@ -123,7 +123,7 @@ async function createEmployees(clientId) {
       languages: ['Danish', 'English', 'Norwegian']
     },
     {
-      employee_code: 'emp-003',
+      person_code: 'emp-003',
       first_name: 'Sofia',
       last_name: 'Berg',
       company_email: 'sofia.berg@nets.eu',
@@ -132,7 +132,7 @@ async function createEmployees(clientId) {
       location: 'Stockholm, Sweden',
       manager: 'Peter Olsen',
       start_date: '2024-03-01',
-      status: 'pending',
+      employment_status: 'future',
       security_clearance: 'medium',
       employment_type: 'full_time',
       work_location: 'remote',
@@ -140,7 +140,7 @@ async function createEmployees(clientId) {
       languages: ['Swedish', 'English', 'Danish']
     },
     {
-      employee_code: 'emp-004',
+      person_code: 'emp-004',
       first_name: 'Magnus',
       last_name: 'Johansson',
       company_email: 'magnus.johansson@nets.eu',
@@ -150,7 +150,7 @@ async function createEmployees(clientId) {
       manager: 'Lars Nielsen',
       start_date: '2023-12-01',
       end_date: '2024-03-15',
-      status: 'offboarded',
+      employment_status: 'former',
       security_clearance: 'high',
       employment_type: 'full_time',
       work_location: 'hybrid',
@@ -159,7 +159,7 @@ async function createEmployees(clientId) {
     },
     // Additional employees for richer demo
     {
-      employee_code: 'emp-005',
+      person_code: 'emp-005',
       first_name: 'Lars',
       last_name: 'Petersen',
       company_email: 'lars.petersen@nets.eu',
@@ -168,7 +168,7 @@ async function createEmployees(clientId) {
       location: 'Copenhagen, Denmark',
       manager: 'Anna Hansen',
       start_date: '2024-03-20',
-      status: 'invited',
+      employment_status: 'future',
       security_clearance: 'medium',
       employment_type: 'full_time',
       work_location: 'hybrid',
@@ -176,7 +176,7 @@ async function createEmployees(clientId) {
       languages: ['Danish', 'English', 'German']
     },
     {
-      employee_code: 'emp-006',
+      person_code: 'emp-006',
       first_name: 'Mette',
       last_name: 'Sørensen',
       company_email: 'mette.sorensen@nets.eu',
@@ -186,7 +186,7 @@ async function createEmployees(clientId) {
       manager: 'Erik Larsen',
       start_date: '2023-11-15',
       end_date: '2024-03-20',
-      status: 'offboarding_initiated',
+      employment_status: 'active',
       security_clearance: 'low',
       employment_type: 'full_time',
       work_location: 'office',
@@ -194,7 +194,7 @@ async function createEmployees(clientId) {
       languages: ['Danish', 'English', 'French']
     },
     {
-      employee_code: 'emp-007',
+      person_code: 'emp-007',
       first_name: 'John',
       last_name: 'Smith',
       company_email: 'john.smith@nets.eu',
@@ -203,15 +203,15 @@ async function createEmployees(clientId) {
       location: 'Copenhagen, Denmark',
       manager: 'Security Director',
       start_date: '2024-03-01',
-      status: 'pending',
+      associate_status: 'contractor',
       security_clearance: 'high',
-      employment_type: 'contractor',
+      employment_type: 'full_time',
       work_location: 'office',
       skills: ['Cybersecurity', 'Risk Assessment', 'Compliance', 'Audit', 'GDPR'],
       languages: ['English', 'Danish']
     },
     {
-      employee_code: 'emp-008',
+      person_code: 'emp-008',
       first_name: 'Astrid',
       last_name: 'Lindberg',
       company_email: 'astrid.lindberg@nets.eu',
@@ -220,7 +220,7 @@ async function createEmployees(clientId) {
       location: 'Stockholm, Sweden',
       manager: 'Finance Director',
       start_date: '2024-01-08',
-      status: 'active',
+      employment_status: 'active',
       security_clearance: 'high',
       employment_type: 'full_time',
       work_location: 'hybrid',
@@ -231,7 +231,7 @@ async function createEmployees(clientId) {
   
   const createdEmployees = [];
   for (const empData of employeesData) {
-    const employee = await apiCall('employees', 'POST', {
+    const employee = await apiCall('people', 'POST', {
       ...empData,
       client_id: clientId
     });
@@ -247,7 +247,7 @@ async function createEmployees(clientId) {
 async function createEmployeeEnrollments(employees) {
   const enrollmentsData = [
     {
-      employee_code: 'emp-001',
+      person_code: 'emp-001',
       onboarding_completed: true,
       completion_date: '2024-01-20T16:00:00Z',
       completion_percentage: 100,
@@ -256,7 +256,7 @@ async function createEmployeeEnrollments(employees) {
       last_activity: '2024-01-15T16:00:00Z'
     },
     {
-      employee_code: 'emp-002',
+      person_code: 'emp-002',
       onboarding_completed: true,
       completion_date: '2024-02-07T17:00:00Z',
       completion_percentage: 100,
@@ -265,7 +265,7 @@ async function createEmployeeEnrollments(employees) {
       last_activity: '2024-02-05T17:00:00Z'
     },
     {
-      employee_code: 'emp-003',
+      person_code: 'emp-003',
       onboarding_completed: false,
       completion_percentage: 45,
       mentor: 'Peter Olsen',
@@ -273,7 +273,7 @@ async function createEmployeeEnrollments(employees) {
       last_activity: '2024-03-02T15:30:00Z'
     },
     {
-      employee_code: 'emp-004',
+      person_code: 'emp-004',
       onboarding_completed: true,
       completion_date: '2023-12-08T17:00:00Z',
       completion_percentage: 100,
@@ -293,7 +293,7 @@ async function createEmployeeEnrollments(employees) {
       last_activity: '2024-03-15T17:00:00Z'
     },
     {
-      employee_code: 'emp-005',
+      person_code: 'emp-005',
       onboarding_completed: false,
       completion_percentage: 0,
       mentor: 'Anna Hansen',
@@ -301,7 +301,7 @@ async function createEmployeeEnrollments(employees) {
       last_activity: '2024-03-15T10:00:00Z'
     },
     {
-      employee_code: 'emp-006',
+      person_code: 'emp-006',
       onboarding_completed: true,
       completion_date: '2023-11-22T17:00:00Z',
       completion_percentage: 100,
@@ -319,7 +319,7 @@ async function createEmployeeEnrollments(employees) {
       last_activity: '2024-03-16T14:30:00Z'
     },
     {
-      employee_code: 'emp-007',
+      person_code: 'emp-007',
       onboarding_completed: false,
       completion_percentage: 20,
       mentor: 'Security Director',
@@ -327,7 +327,7 @@ async function createEmployeeEnrollments(employees) {
       last_activity: '2024-03-08T09:00:00Z'
     },
     {
-      employee_code: 'emp-008',
+      person_code: 'emp-008',
       onboarding_completed: true,
       completion_date: '2024-01-15T17:00:00Z',
       completion_percentage: 100,
@@ -339,13 +339,13 @@ async function createEmployeeEnrollments(employees) {
   
   const createdEnrollments = [];
   for (const enrollData of enrollmentsData) {
-    const employee = employees.find(e => e.employee_code === enrollData.employee_code);
+    const employee = employees.find(e => e.person_code === enrollData.person_code);
     if (!employee) continue;
     
-    const { employee_code, ...enrollmentData } = enrollData;
-    const enrollment = await apiCall('employee_enrollments', 'POST', {
+    const { person_code, ...enrollmentData } = enrollData;
+    const enrollment = await apiCall('people_enrollments', 'POST', {
       ...enrollmentData,
-      employee_id: employee.id
+      person_id: employee.id
     });
     createdEnrollments.push(enrollment[0]);
   }
@@ -360,12 +360,12 @@ async function createDocuments(employees) {
   const documentsData = [
     // Anna Hansen - Complete set
     {
-      employee_code: 'emp-001',
+      person_code: 'emp-001',
       documents: [
         {
           name: 'Employment Contract',
           type: 'contract',
-          status: 'verified',
+          employment_status: 'verified',
           uploaded_at: '2024-01-10T10:00:00Z',
           reviewed_at: '2024-01-12T14:30:00Z',
           reviewed_by: 'HR Team'
@@ -373,7 +373,7 @@ async function createDocuments(employees) {
         {
           name: 'ID Verification',
           type: 'id_verification',
-          status: 'verified',
+          employment_status: 'verified',
           uploaded_at: '2024-01-10T10:30:00Z',
           reviewed_at: '2024-01-12T14:35:00Z',
           reviewed_by: 'Security Team'
@@ -381,7 +381,7 @@ async function createDocuments(employees) {
         {
           name: 'GDPR Consent Form',
           type: 'gdpr_consent',
-          status: 'verified',
+          employment_status: 'verified',
           uploaded_at: '2024-01-10T11:00:00Z',
           reviewed_at: '2024-01-12T15:00:00Z',
           reviewed_by: 'Compliance Team'
@@ -390,12 +390,12 @@ async function createDocuments(employees) {
     },
     // Erik Larsen - Product role specific
     {
-      employee_code: 'emp-002',
+      person_code: 'emp-002',
       documents: [
         {
           name: 'Employment Contract',
           type: 'contract',
-          status: 'verified',
+          employment_status: 'verified',
           uploaded_at: '2024-01-25T11:00:00Z',
           reviewed_at: '2024-01-26T10:00:00Z',
           reviewed_by: 'HR Team'
@@ -403,7 +403,7 @@ async function createDocuments(employees) {
         {
           name: 'Financial Disclosure',
           type: 'financial_disclosure',
-          status: 'verified',
+          employment_status: 'verified',
           uploaded_at: '2024-01-25T12:00:00Z',
           reviewed_at: '2024-01-26T11:00:00Z',
           reviewed_by: 'Compliance Team'
@@ -411,7 +411,7 @@ async function createDocuments(employees) {
         {
           name: 'Product NDA',
           type: 'other',
-          status: 'verified',
+          employment_status: 'verified',
           uploaded_at: '2024-01-25T13:00:00Z',
           reviewed_at: '2024-01-26T12:00:00Z',
           reviewed_by: 'Legal Team'
@@ -420,36 +420,36 @@ async function createDocuments(employees) {
     },
     // Sofia Berg - Pending onboarding
     {
-      employee_code: 'emp-003',
+      person_code: 'emp-003',
       documents: [
         {
           name: 'Employment Contract',
           type: 'contract',
-          status: 'pending',
+          employment_status: 'future',
           uploaded_at: '2024-02-25T14:00:00Z'
         },
         {
           name: 'Tax Forms',
           type: 'tax_form',
-          status: 'uploaded',
+          employment_status: 'uploaded',
           uploaded_at: '2024-02-26T09:30:00Z'
         },
         {
           name: 'Design Portfolio Review',
           type: 'other',
-          status: 'uploaded',
+          employment_status: 'uploaded',
           uploaded_at: '2024-02-26T10:00:00Z'
         }
       ]
     },
     // Magnus Johansson - Offboarded
     {
-      employee_code: 'emp-004',
+      person_code: 'emp-004',
       documents: [
         {
           name: 'Resignation Letter',
           type: 'resignation_letter',
-          status: 'verified',
+          employment_status: 'verified',
           uploaded_at: '2024-03-01T09:00:00Z',
           reviewed_at: '2024-03-01T14:00:00Z',
           reviewed_by: 'HR Director'
@@ -457,7 +457,7 @@ async function createDocuments(employees) {
         {
           name: 'Knowledge Transfer Document',
           type: 'knowledge_transfer',
-          status: 'verified',
+          employment_status: 'verified',
           uploaded_at: '2024-03-10T16:00:00Z',
           reviewed_at: '2024-03-11T10:00:00Z',
           reviewed_by: 'Lars Nielsen'
@@ -465,7 +465,7 @@ async function createDocuments(employees) {
         {
           name: 'Equipment Return Receipt',
           type: 'equipment_return',
-          status: 'verified',
+          employment_status: 'verified',
           uploaded_at: '2024-03-14T12:00:00Z',
           reviewed_at: '2024-03-14T14:00:00Z',
           reviewed_by: 'IT Department'
@@ -474,30 +474,30 @@ async function createDocuments(employees) {
     },
     // Mette Sørensen - Offboarding in progress
     {
-      employee_code: 'emp-006',
+      person_code: 'emp-006',
       documents: [
         {
           name: 'Termination Notice',
           type: 'termination_notice',
-          status: 'pending',
+          employment_status: 'future',
           uploaded_at: '2024-03-16T09:00:00Z'
         },
         {
           name: 'Marketing Campaign Handover',
           type: 'knowledge_transfer',
-          status: 'uploaded',
+          employment_status: 'uploaded',
           uploaded_at: '2024-03-16T14:00:00Z'
         }
       ]
     },
     // John Smith - Security consultant
     {
-      employee_code: 'emp-007',
+      person_code: 'emp-007',
       documents: [
         {
           name: 'Contractor Agreement',
           type: 'contract',
-          status: 'verified',
+          employment_status: 'verified',
           uploaded_at: '2024-03-01T09:00:00Z',
           reviewed_at: '2024-03-02T10:00:00Z',
           reviewed_by: 'Legal Team'
@@ -505,19 +505,19 @@ async function createDocuments(employees) {
         {
           name: 'Security Clearance Form',
           type: 'other',
-          status: 'pending',
+          employment_status: 'future',
           uploaded_at: '2024-03-01T10:00:00Z'
         }
       ]
     },
     // Astrid Lindberg - Finance
     {
-      employee_code: 'emp-008',
+      person_code: 'emp-008',
       documents: [
         {
           name: 'Employment Contract',
           type: 'contract',
-          status: 'verified',
+          employment_status: 'verified',
           uploaded_at: '2024-01-02T10:00:00Z',
           reviewed_at: '2024-01-03T14:00:00Z',
           reviewed_by: 'HR Team'
@@ -525,7 +525,7 @@ async function createDocuments(employees) {
         {
           name: 'Financial Compliance Certification',
           type: 'financial_disclosure',
-          status: 'verified',
+          employment_status: 'verified',
           uploaded_at: '2024-01-02T11:00:00Z',
           reviewed_at: '2024-01-03T15:00:00Z',
           reviewed_by: 'Compliance Team'
@@ -533,7 +533,7 @@ async function createDocuments(employees) {
         {
           name: 'Background Check Results',
           type: 'other',
-          status: 'verified',
+          employment_status: 'verified',
           uploaded_at: '2024-01-05T09:00:00Z',
           reviewed_at: '2024-01-05T16:00:00Z',
           reviewed_by: 'Security Team'
@@ -544,13 +544,13 @@ async function createDocuments(employees) {
   
   const createdDocuments = [];
   for (const empDocs of documentsData) {
-    const employee = employees.find(e => e.employee_code === empDocs.employee_code);
+    const employee = employees.find(e => e.person_code === empDocs.person_code);
     if (!employee) continue;
     
     for (const docData of empDocs.documents) {
       const document = await apiCall('documents', 'POST', {
         ...docData,
-        employee_id: employee.id
+        person_id: employee.id
       });
       createdDocuments.push(document[0]);
     }
@@ -566,13 +566,13 @@ async function createTasks(employees) {
   const tasksData = [
     // Anna Hansen - Completed onboarding
     {
-      employee_code: 'emp-001',
+      person_code: 'emp-001',
       tasks: [
         {
           title: 'Complete IT Setup',
           description: 'Set up laptop, email, and access credentials',
           category: 'equipment',
-          status: 'completed',
+          employment_status: 'completed',
           priority: 'high',
           assigned_by: 'IT Department',
           assigned_at: '2024-01-15T09:00:00Z',
@@ -582,7 +582,7 @@ async function createTasks(employees) {
           title: 'Payment Systems Training',
           description: 'Complete Nets payment platform training',
           category: 'training',
-          status: 'completed',
+          employment_status: 'completed',
           priority: 'high',
           assigned_by: 'Product Team',
           assigned_at: '2024-01-16T09:00:00Z',
@@ -592,7 +592,7 @@ async function createTasks(employees) {
           title: 'Security Clearance Verification',
           description: 'Complete high-level security clearance process',
           category: 'security',
-          status: 'completed',
+          employment_status: 'completed',
           priority: 'high',
           assigned_by: 'Security Team',
           assigned_at: '2024-01-12T09:00:00Z',
@@ -602,13 +602,13 @@ async function createTasks(employees) {
     },
     // Erik Larsen - Product manager
     {
-      employee_code: 'emp-002',
+      person_code: 'emp-002',
       tasks: [
         {
           title: 'Product Training',
           description: 'Complete product knowledge training modules',
           category: 'training',
-          status: 'completed',
+          employment_status: 'completed',
           priority: 'medium',
           assigned_by: 'Product Team',
           assigned_at: '2024-02-01T09:00:00Z',
@@ -618,7 +618,7 @@ async function createTasks(employees) {
           title: 'Stakeholder Introductions',
           description: 'Meet key internal and external stakeholders',
           category: 'networking',
-          status: 'completed',
+          employment_status: 'completed',
           priority: 'medium',
           assigned_by: 'Maria Andersen',
           assigned_at: '2024-02-02T09:00:00Z',
@@ -628,13 +628,13 @@ async function createTasks(employees) {
     },
     // Sofia Berg - Pending onboarding
     {
-      employee_code: 'emp-003',
+      person_code: 'emp-003',
       tasks: [
         {
           title: 'Design Tools Setup',
           description: 'Install and configure Figma, Adobe Creative Suite',
           category: 'equipment',
-          status: 'in_progress',
+          employment_status: 'in_progress',
           priority: 'high',
           assigned_by: 'Design Team',
           assigned_at: '2024-03-01T09:00:00Z',
@@ -644,7 +644,7 @@ async function createTasks(employees) {
           title: 'Complete Company Handbook',
           description: 'Read and acknowledge company policies',
           category: 'compliance',
-          status: 'not_started',
+          employment_status: 'not_started',
           priority: 'medium',
           assigned_by: 'HR Team',
           assigned_at: '2024-03-01T09:00:00Z',
@@ -654,7 +654,7 @@ async function createTasks(employees) {
           title: 'Design System Familiarization',
           description: 'Learn Nets design system and brand guidelines',
           category: 'training',
-          status: 'not_started',
+          employment_status: 'not_started',
           priority: 'medium',
           assigned_by: 'Design Team',
           assigned_at: '2024-03-01T10:00:00Z',
@@ -664,13 +664,13 @@ async function createTasks(employees) {
     },
     // Magnus Johansson - Offboarded
     {
-      employee_code: 'emp-004',
+      person_code: 'emp-004',
       tasks: [
         {
           title: 'Knowledge Transfer Sessions',
           description: 'Conduct handover sessions for all managed systems',
           category: 'knowledge_transfer',
-          status: 'completed',
+          employment_status: 'completed',
           priority: 'high',
           assigned_by: 'Lars Nielsen',
           assigned_at: '2024-03-01T09:00:00Z',
@@ -680,7 +680,7 @@ async function createTasks(employees) {
           title: 'Access Revocation Audit',
           description: 'Verify all system access has been properly revoked',
           category: 'security',
-          status: 'completed',
+          employment_status: 'completed',
           priority: 'high',
           assigned_by: 'Security Team',
           assigned_at: '2024-03-14T09:00:00Z',
@@ -690,13 +690,13 @@ async function createTasks(employees) {
     },
     // Mette Sørensen - Offboarding in progress
     {
-      employee_code: 'emp-006',
+      person_code: 'emp-006',
       tasks: [
         {
           title: 'Campaign Handover',
           description: 'Transfer ownership of active marketing campaigns',
           category: 'knowledge_transfer',
-          status: 'in_progress',
+          employment_status: 'in_progress',
           priority: 'high',
           assigned_by: 'Erik Larsen',
           assigned_at: '2024-03-16T09:00:00Z',
@@ -706,7 +706,7 @@ async function createTasks(employees) {
           title: 'Brand Asset Organization',
           description: 'Organize and document brand assets and guidelines',
           category: 'knowledge_transfer',
-          status: 'not_started',
+          employment_status: 'not_started',
           priority: 'medium',
           assigned_by: 'Marketing Director',
           assigned_at: '2024-03-16T10:00:00Z',
@@ -716,13 +716,13 @@ async function createTasks(employees) {
     },
     // John Smith - Security consultant
     {
-      employee_code: 'emp-007',
+      person_code: 'emp-007',
       tasks: [
         {
           title: 'Security Assessment Training',
           description: 'Complete Nets-specific security protocols training',
           category: 'training',
-          status: 'in_progress',
+          employment_status: 'in_progress',
           priority: 'high',
           assigned_by: 'Security Director',
           assigned_at: '2024-03-01T09:00:00Z',
@@ -732,7 +732,7 @@ async function createTasks(employees) {
           title: 'Access Credential Setup',
           description: 'Set up high-security access credentials and tokens',
           category: 'security',
-          status: 'not_started',
+          employment_status: 'not_started',
           priority: 'high',
           assigned_by: 'IT Security',
           assigned_at: '2024-03-01T10:00:00Z',
@@ -742,13 +742,13 @@ async function createTasks(employees) {
     },
     // Astrid Lindberg - Finance
     {
-      employee_code: 'emp-008',
+      person_code: 'emp-008',
       tasks: [
         {
           title: 'Financial Systems Training',
           description: 'Learn Nets financial reporting and analysis systems',
           category: 'training',
-          status: 'completed',
+          employment_status: 'completed',
           priority: 'high',
           assigned_by: 'Finance Director',
           assigned_at: '2024-01-08T09:00:00Z',
@@ -758,7 +758,7 @@ async function createTasks(employees) {
           title: 'Compliance Certification',
           description: 'Complete financial compliance and audit training',
           category: 'compliance',
-          status: 'completed',
+          employment_status: 'completed',
           priority: 'high',
           assigned_by: 'Compliance Team',
           assigned_at: '2024-01-10T09:00:00Z',
@@ -770,13 +770,13 @@ async function createTasks(employees) {
   
   const createdTasks = [];
   for (const empTasks of tasksData) {
-    const employee = employees.find(e => e.employee_code === empTasks.employee_code);
+    const employee = employees.find(e => e.person_code === empTasks.person_code);
     if (!employee) continue;
     
     for (const taskData of empTasks.tasks) {
       const task = await apiCall('tasks', 'POST', {
         ...taskData,
-        employee_id: employee.id
+        person_id: employee.id
       });
       createdTasks.push(task[0]);
     }
@@ -792,7 +792,7 @@ function generateJWTHash(employee, appCode) {
   const jwtPayload = {
     iss: 'api.thepia.com',
     aud: 'flows.thepia.net',
-    sub: `inv-${employee.employee_code}-${Date.now()}`,
+    sub: `inv-${employee.person_code}-${Date.now()}`,
     exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60),
     iat: Math.floor(Date.now() / 1000),
     invitation: {
@@ -818,23 +818,23 @@ async function createRichInvitations(clientId, applications, employees) {
   
   const invitationsData = [
     {
-      employee_code: 'emp-005', // Lars - new onboarding invitation
+      person_code: 'emp-005', // Lars - new onboarding invitation
       app_code: 'onboarding',
-      status: 'pending',
+      employment_status: 'future',
       created_by: 'Anna Hansen',
       permissions: ['document_upload', 'task_completion', 'training_access']
     },
     {
-      employee_code: 'emp-006', // Mette - offboarding invitation
+      person_code: 'emp-006', // Mette - offboarding invitation
       app_code: 'offboarding',
-      status: 'pending',
+      employment_status: 'future',
       created_by: 'Erik Larsen',
       permissions: ['document_upload', 'equipment_return', 'exit_interview']
     },
     {
-      employee_code: 'emp-007', // John - expired onboarding invitation
+      person_code: 'emp-007', // John - expired onboarding invitation
       app_code: 'onboarding',
-      status: 'expired',
+      employment_status: 'expired',
       created_by: 'Anna Hansen',
       permissions: ['document_upload', 'security_clearance', 'training_access']
     }
@@ -842,7 +842,7 @@ async function createRichInvitations(clientId, applications, employees) {
   
   const createdInvitations = [];
   for (const invData of invitationsData) {
-    const employee = employees.find(e => e.employee_code === invData.employee_code);
+    const employee = employees.find(e => e.person_code === invData.person_code);
     const appId = appMap[invData.app_code];
     
     if (!employee || !appId) continue;
@@ -862,15 +862,15 @@ async function createRichInvitations(clientId, applications, employees) {
       permissions: invData.permissions,
       restrictions: {
         max_sessions: 5,
-        employee_code: employee.employee_code,
+        person_code: employee.person_code,
         department: employee.department
       },
-      status: invData.status,
+      employment_status: invData.status,
       expires_at: expiresAt.toISOString(),
       created_by: invData.created_by,
       client_data: {
-        employee_id: employee.id,
-        employee_code: employee.employee_code,
+        person_id: employee.id,
+        person_code: employee.person_code,
         department: employee.department,
         position: employee.position,
         demo_invitation: true

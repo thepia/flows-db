@@ -4,7 +4,7 @@ import { Button } from '$lib/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
 import { Input } from '$lib/components/ui/input';
 import { EmployeeCard } from '$lib/components/employee';
-import { employees, loading, loadDemoData, people } from '$lib/stores/data';
+import { employees, loading, loadDemoData, people, totalPeopleCount } from '$lib/stores/data';
 import { UserPlus, Search, Filter, Users, Briefcase } from 'lucide-svelte';
 import { onMount } from 'svelte';
 
@@ -57,7 +57,7 @@ $: filteredPeople = $people.filter((person) => {
 });
 
 // Statistics
-$: totalPeople = $people.length;
+$: totalPeople = $totalPeopleCount || $people.length;
 $: activeEmployees = $people.filter(p => p.employmentStatus === 'active').length;
 $: associates = $people.filter(p => p.associateStatus).length;
 $: futureEmployees = $people.filter(p => p.employmentStatus === 'future').length;

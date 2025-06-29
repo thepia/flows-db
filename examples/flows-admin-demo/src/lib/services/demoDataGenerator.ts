@@ -199,7 +199,8 @@ function generateEmployee(
   companyCode: string,
   department: string,
   position: string,
-  location: string
+  location: string,
+  index: number
 ): Partial<Employee> {
   const firstName = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
   const lastName = LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)];
@@ -216,16 +217,21 @@ function generateEmployee(
   ];
   const status = statuses[Math.floor(Math.random() * statuses.length)];
 
+  const employeeId = `${companyCode}-${String(index).padStart(4, '0')}`;
+  
   return {
-    email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@${company.domain}`,
-    firstName,
-    lastName,
+    person_code: employeeId,
+    company_email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${index}@${company.domain}`,
+    first_name: firstName,
+    last_name: lastName,
     department,
     position,
-    startDate: startDate.toISOString().split('T')[0],
-    status,
     location,
-    phone: `+1-${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 9000) + 1000}`,
+    start_date: startDate.toISOString().split('T')[0],
+    employment_status: status === 'previous' ? 'former' : status === 'future' ? 'future' : 'active',
+    employment_type: 'full_time',
+    work_location: Math.random() > 0.5 ? 'office' : (Math.random() > 0.5 ? 'remote' : 'hybrid'),
+    security_clearance: Math.random() > 0.8 ? 'high' : (Math.random() > 0.5 ? 'medium' : 'low'),
     manager:
       Math.random() > 0.7
         ? `${FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)]} ${LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)]}`
@@ -307,6 +313,7 @@ export async function generateDemoDataForCompany(
   // Generate employees
   const employees: any[] = [];
   const employeesPerDept = Math.ceil(config.employeeCount / companyInfo.departments.length);
+  let employeeIndex = 1;
 
   for (const department of companyInfo.departments) {
     const positions = companyInfo.positions[department as keyof typeof companyInfo.positions];
@@ -316,7 +323,7 @@ export async function generateDemoDataForCompany(
       const location =
         companyInfo.locations[Math.floor(Math.random() * companyInfo.locations.length)];
 
-      const employee = generateEmployee(config.companyId, department, position, location);
+      const employee = generateEmployee(config.companyId, department, position, location, employeeIndex++);
       employees.push({
         ...employee,
         client_id: clientData.id,
@@ -331,7 +338,7 @@ export async function generateDemoDataForCompany(
   const batchSize = 50;
   for (let i = 0; i < employees.length; i += batchSize) {
     const batch = employees.slice(i, i + batchSize);
-    const { error } = await supabase.from('employees').insert(batch);
+    const { error } = await supabase.from('people').insert(batch);
 
     if (error) {
       console.error('Error inserting employees batch:', error);
@@ -404,8 +411,7 @@ export async function generateDemoDataForCompany(
 
   for (const employee of activeEmployees) {
     enrollments.push({
-      employee_id: employee.id,
-      client_id: clientData.id,
+      person_id: employee.id,
       onboarding_completed: Math.random() > 0.3,
       completion_percentage: Math.floor(Math.random() * 100),
       last_activity: randomDate(
@@ -416,7 +422,7 @@ export async function generateDemoDataForCompany(
   }
 
   if (enrollments.length > 0) {
-    const { error } = await supabase.from('employee_enrollments').insert(enrollments);
+    const { error } = await supabase.from('people_enrollments').insert(enrollments);
 
     if (error) {
       console.error('Error inserting enrollments:', error);

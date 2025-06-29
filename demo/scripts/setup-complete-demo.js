@@ -183,7 +183,7 @@ async function createEmployees(clientId, spinner) {
   
   const employeesData = [
     {
-      employee_code: 'emp-001',
+      person_code: 'emp-001',
       first_name: 'Anna',
       last_name: 'Hansen',
       company_email: 'anna.hansen@nets.eu',
@@ -192,7 +192,7 @@ async function createEmployees(clientId, spinner) {
       location: 'Copenhagen, Denmark',
       manager: 'Lars Nielsen',
       start_date: '2024-01-15',
-      status: 'active',
+      employment_status: 'active',
       security_clearance: 'high',
       employment_type: 'full_time',
       work_location: 'hybrid',
@@ -200,7 +200,7 @@ async function createEmployees(clientId, spinner) {
       languages: ['Danish', 'English', 'Swedish']
     },
     {
-      employee_code: 'emp-002',
+      person_code: 'emp-002',
       first_name: 'Erik',
       last_name: 'Larsen',
       company_email: 'erik.larsen@nets.eu',
@@ -209,7 +209,7 @@ async function createEmployees(clientId, spinner) {
       location: 'Copenhagen, Denmark',
       manager: 'Maria Andersen',
       start_date: '2024-02-01',
-      status: 'active',
+      employment_status: 'active',
       security_clearance: 'medium',
       employment_type: 'full_time',
       work_location: 'office',
@@ -217,7 +217,7 @@ async function createEmployees(clientId, spinner) {
       languages: ['Danish', 'English', 'Norwegian']
     },
     {
-      employee_code: 'emp-003',
+      person_code: 'emp-003',
       first_name: 'Sofia',
       last_name: 'Berg',
       company_email: 'sofia.berg@nets.eu',
@@ -226,7 +226,7 @@ async function createEmployees(clientId, spinner) {
       location: 'Stockholm, Sweden',
       manager: 'Peter Olsen',
       start_date: '2024-03-01',
-      status: 'pending',
+      employment_status: 'future',
       security_clearance: 'medium',
       employment_type: 'full_time',
       work_location: 'remote',
@@ -234,7 +234,7 @@ async function createEmployees(clientId, spinner) {
       languages: ['Swedish', 'English', 'Danish']
     },
     {
-      employee_code: 'emp-004',
+      person_code: 'emp-004',
       first_name: 'Magnus',
       last_name: 'Johansson',
       company_email: 'magnus.johansson@nets.eu',
@@ -244,7 +244,7 @@ async function createEmployees(clientId, spinner) {
       manager: 'Lars Nielsen',
       start_date: '2023-12-01',
       end_date: '2024-03-15',
-      status: 'offboarded',
+      employment_status: 'former',
       security_clearance: 'high',
       employment_type: 'full_time',
       work_location: 'hybrid',
@@ -252,7 +252,7 @@ async function createEmployees(clientId, spinner) {
       languages: ['Swedish', 'English']
     },
     {
-      employee_code: 'emp-005',
+      person_code: 'emp-005',
       first_name: 'Lars',
       last_name: 'Petersen',
       company_email: 'lars.petersen@nets.eu',
@@ -261,7 +261,7 @@ async function createEmployees(clientId, spinner) {
       location: 'Copenhagen, Denmark',
       manager: 'Anna Hansen',
       start_date: '2024-03-20',
-      status: 'invited',
+      employment_status: 'future',
       security_clearance: 'medium',
       employment_type: 'full_time',
       work_location: 'hybrid',
@@ -269,7 +269,7 @@ async function createEmployees(clientId, spinner) {
       languages: ['Danish', 'English', 'German']
     },
     {
-      employee_code: 'emp-006',
+      person_code: 'emp-006',
       first_name: 'Mette',
       last_name: 'Sørensen',
       company_email: 'mette.sorensen@nets.eu',
@@ -279,7 +279,7 @@ async function createEmployees(clientId, spinner) {
       manager: 'Erik Larsen',
       start_date: '2023-11-15',
       end_date: '2024-03-20',
-      status: 'offboarding_initiated',
+      employment_status: 'active',
       security_clearance: 'low',
       employment_type: 'full_time',
       work_location: 'office',
@@ -287,7 +287,7 @@ async function createEmployees(clientId, spinner) {
       languages: ['Danish', 'English', 'French']
     },
     {
-      employee_code: 'emp-007',
+      person_code: 'emp-007',
       first_name: 'John',
       last_name: 'Smith',
       company_email: 'john.smith@nets.eu',
@@ -296,15 +296,15 @@ async function createEmployees(clientId, spinner) {
       location: 'Copenhagen, Denmark',
       manager: 'Security Director',
       start_date: '2024-03-01',
-      status: 'pending',
+      associate_status: 'contractor',
       security_clearance: 'high',
-      employment_type: 'contractor',
+      employment_type: 'full_time',
       work_location: 'office',
       skills: ['Cybersecurity', 'Risk Assessment', 'Compliance', 'Audit', 'GDPR'],
       languages: ['English', 'Danish']
     },
     {
-      employee_code: 'emp-008',
+      person_code: 'emp-008',
       first_name: 'Astrid',
       last_name: 'Lindberg',
       company_email: 'astrid.lindberg@nets.eu',
@@ -313,7 +313,7 @@ async function createEmployees(clientId, spinner) {
       location: 'Stockholm, Sweden',
       manager: 'Finance Director',
       start_date: '2024-01-08',
-      status: 'active',
+      employment_status: 'active',
       security_clearance: 'high',
       employment_type: 'full_time',
       work_location: 'hybrid',
@@ -324,7 +324,7 @@ async function createEmployees(clientId, spinner) {
   
   const createdEmployees = [];
   for (const empData of employeesData) {
-    const employee = await apiCall('employees', 'POST', {
+    const employee = await apiCall('people', 'POST', {
       ...empData,
       client_id: clientId
     });
@@ -361,25 +361,25 @@ async function createAllRelatedData(employees, applications, clientId, spinner) 
 // Helper functions (condensed versions from rich demo script)
 async function createEmployeeEnrollments(employees) {
   const enrollmentsData = [
-    { employee_code: 'emp-001', onboarding_completed: true, completion_percentage: 100, mentor: 'Lars Nielsen', buddy_program: true },
-    { employee_code: 'emp-002', onboarding_completed: true, completion_percentage: 100, mentor: 'Maria Andersen', buddy_program: true },
-    { employee_code: 'emp-003', onboarding_completed: false, completion_percentage: 45, mentor: 'Peter Olsen', buddy_program: true },
-    { employee_code: 'emp-004', onboarding_completed: true, completion_percentage: 100, mentor: 'Lars Nielsen', buddy_program: true, offboarding_completed: true },
-    { employee_code: 'emp-005', onboarding_completed: false, completion_percentage: 0, mentor: 'Anna Hansen', buddy_program: true },
-    { employee_code: 'emp-006', onboarding_completed: true, completion_percentage: 100, mentor: 'Erik Larsen', buddy_program: true, offboarding_initiated: true },
-    { employee_code: 'emp-007', onboarding_completed: false, completion_percentage: 20, mentor: 'Security Director', buddy_program: false },
-    { employee_code: 'emp-008', onboarding_completed: true, completion_percentage: 100, mentor: 'Finance Director', buddy_program: true }
+    { person_code: 'emp-001', onboarding_completed: true, completion_percentage: 100, mentor: 'Lars Nielsen', buddy_program: true },
+    { person_code: 'emp-002', onboarding_completed: true, completion_percentage: 100, mentor: 'Maria Andersen', buddy_program: true },
+    { person_code: 'emp-003', onboarding_completed: false, completion_percentage: 45, mentor: 'Peter Olsen', buddy_program: true },
+    { person_code: 'emp-004', onboarding_completed: true, completion_percentage: 100, mentor: 'Lars Nielsen', buddy_program: true, offboarding_completed: true },
+    { person_code: 'emp-005', onboarding_completed: false, completion_percentage: 0, mentor: 'Anna Hansen', buddy_program: true },
+    { person_code: 'emp-006', onboarding_completed: true, completion_percentage: 100, mentor: 'Erik Larsen', buddy_program: true, offboarding_initiated: true },
+    { person_code: 'emp-007', onboarding_completed: false, completion_percentage: 20, mentor: 'Security Director', buddy_program: false },
+    { person_code: 'emp-008', onboarding_completed: true, completion_percentage: 100, mentor: 'Finance Director', buddy_program: true }
   ];
   
   const created = [];
   for (const enrollData of enrollmentsData) {
-    const employee = employees.find(e => e.employee_code === enrollData.employee_code);
+    const employee = employees.find(e => e.person_code === enrollData.person_code);
     if (!employee) continue;
     
-    const { employee_code, ...enrollmentData } = enrollData;
-    const enrollment = await apiCall('employee_enrollments', 'POST', {
+    const { person_code, ...enrollmentData } = enrollData;
+    const enrollment = await apiCall('people_enrollments', 'POST', {
       ...enrollmentData,
-      employee_id: employee.id
+      person_id: employee.id
     });
     created.push(enrollment[0]);
   }
@@ -397,10 +397,10 @@ async function createDocuments(employees) {
       const statuses = ['verified', 'pending', 'uploaded'];
       
       const doc = await apiCall('documents', 'POST', {
-        employee_id: employee.id,
+        person_id: employee.id,
         name: `Document ${j + 1} for ${employee.first_name}`,
         type: docTypes[j % docTypes.length],
-        status: statuses[j % statuses.length],
+        employment_status: statuses[j % statuses.length],
         uploaded_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
         reviewed_by: j % 2 === 0 ? 'HR Team' : null
       });
@@ -422,11 +422,11 @@ async function createTasks(employees) {
       const priorities = ['high', 'medium', 'low'];
       
       const task = await apiCall('tasks', 'POST', {
-        employee_id: employee.id,
+        person_id: employee.id,
         title: `Task ${j + 1} for ${employee.first_name}`,
         description: `Demo task description ${j + 1}`,
         category: categories[j % categories.length],
-        status: statuses[j % statuses.length],
+        employment_status: statuses[j % statuses.length],
         priority: priorities[j % priorities.length],
         assigned_by: 'Demo System',
         assigned_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
@@ -444,14 +444,14 @@ async function createInvitations(clientId, applications, employees) {
   });
   
   const invitationsData = [
-    { employee_code: 'emp-005', app_code: 'onboarding', status: 'pending' },
-    { employee_code: 'emp-006', app_code: 'offboarding', status: 'pending' },
-    { employee_code: 'emp-007', app_code: 'onboarding', status: 'expired' }
+    { person_code: 'emp-005', app_code: 'onboarding', employment_status: 'future' },
+    { person_code: 'emp-006', app_code: 'offboarding', employment_status: 'future' },
+    { person_code: 'emp-007', app_code: 'onboarding', employment_status: 'expired' }
   ];
   
   const created = [];
   for (const invData of invitationsData) {
-    const employee = employees.find(e => e.employee_code === invData.employee_code);
+    const employee = employees.find(e => e.person_code === invData.person_code);
     const appId = appMap[invData.app_code];
     
     if (!employee || !appId) continue;
@@ -474,14 +474,14 @@ async function createInvitations(clientId, applications, employees) {
       app_id: appId,
       jwt_token_hash: jwtHash,
       permissions: ['document_upload', 'task_completion'],
-      restrictions: { max_sessions: 5, employee_code: employee.employee_code },
-      status: invData.status,
+      restrictions: { max_sessions: 5, person_code: employee.person_code },
+      employment_status: invData.status,
       expires_at: expiresAt.toISOString(),
       created_at: createdAt.toISOString(),
       created_by: 'Demo System',
       client_data: {
-        employee_id: employee.id,
-        employee_code: employee.employee_code,
+        person_id: employee.id,
+        person_code: employee.person_code,
         department: employee.department,
         demo_invitation: true
       }
