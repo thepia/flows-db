@@ -146,7 +146,7 @@ $: pendingInvitations = $invitations.filter((inv) => inv.status === 'pending').l
 
 <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" data-testid="app-loaded">
 		<!-- Tab Navigation -->
-		<div class="border-b border-gray-200 mb-8">
+		<div class="sticky top-0 z-10 bg-gray-50 border-b border-gray-200 mb-8 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 pt-2 pb-1">
 			<nav class="-mb-px flex space-x-8">
 				<!-- People Tab -->
 				<button

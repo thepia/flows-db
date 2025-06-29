@@ -14,7 +14,7 @@ $: recentInvitations = invitations
   .slice(0, 5);
 </script>
 
-<Card class="sticky top-4">
+<Card class="sticky top-16">
 	<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
 		<CardTitle class="text-base font-medium">Recent Invitations</CardTitle>
 		<Button variant="ghost" size="sm" href="/invitations" class="text-xs">
