@@ -256,7 +256,7 @@ async function loadClientSpecificData(clientId: string) {
         throw appsError;
       }
 
-      if (appsData) {
+      if (appsData && appsData.length > 0) {
         const transformedApps: Application[] = appsData.map((app: any) => ({
           id: app.id,
           clientId: app.client_id,
@@ -274,6 +274,43 @@ async function loadClientSpecificData(clientId: string) {
           createdAt: app.created_at,
         }));
         applications.set(transformedApps);
+      } else {
+        // Fallback to mock applications if none found in database
+        const mockApps: Application[] = [
+          {
+            id: 'app-offboarding-001',
+            clientId: clientData.id,
+            name: 'Employee Offboarding',
+            code: 'offboarding',
+            type: 'offboarding',
+            status: 'active',
+            version: '1.0.0',
+            description: 'Task-oriented employee offboarding and departure management',
+            features: ['task-management', 'document-upload', 'compliance-tracking'],
+            configuration: {},
+            permissions: {},
+            maxConcurrentUsers: 50,
+            lastAccessed: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+          },
+          {
+            id: 'app-onboarding-001',
+            clientId: clientData.id,
+            name: 'Employee Onboarding',
+            code: 'onboarding',
+            type: 'onboarding',
+            status: 'active',
+            version: '1.0.0',
+            description: 'Streamlined employee onboarding and setup',
+            features: ['invitation-management', 'document-collection', 'task-tracking'],
+            configuration: {},
+            permissions: {},
+            maxConcurrentUsers: 50,
+            lastAccessed: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+          }
+        ];
+        applications.set(mockApps);
       }
 
       // Load employees

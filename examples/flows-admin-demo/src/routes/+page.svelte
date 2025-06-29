@@ -4,9 +4,11 @@ import InvitationsSidebar from '$lib/components/dashboard/InvitationsSidebar.sve
 import EmployeeDirectory from '$lib/components/employee/EmployeeDirectory.svelte';
 import FloatingStatusButton from '$lib/components/FloatingStatusButton.svelte';
 import LoadingAnimation from '$lib/components/shared/LoadingAnimation.svelte';
+import OffboardingDashboard from '$lib/components/offboarding/OffboardingDashboard.svelte';
 import TemplateManager from '$lib/components/offboarding/TemplateManager.svelte';
 import ProcessManager from '$lib/components/offboarding/ProcessManager.svelte';
 import TaskManager from '$lib/components/offboarding/TaskManager.svelte';
+import ProcessList from '$lib/components/offboarding/ProcessList.svelte';
 import { Button } from '$lib/components/ui/button';
 import {
   applications,
@@ -24,6 +26,7 @@ import {
 import { settingsStore } from '$lib/stores/settings';
 import { AlertCircle, Briefcase, Plus, UserMinus, UserPlus, Users } from 'lucide-svelte';
 import { onMount } from 'svelte';
+import { getMockOffboardingData, getTasksForProcess } from '$lib/mockData/offboarding';
 
 // Tab state
 let activeTab = 'people';
@@ -33,13 +36,68 @@ let onboardingCount = 0;
 let offboardingCount = 0;
 
 // Offboarding state
-let offboardingView = 'templates'; // 'templates', 'processes', 'tasks'
+let offboardingView = 'overview'; // 'overview', 'templates', 'processes', 'tasks'
 let selectedTemplate = null;
 let selectedProcess = null;
 let offboardingTemplates = [];
 let offboardingProcesses = [];
 let offboardingTasks = [];
 let metricsLoading = false;
+
+// Process filtering state
+let processFilters = {
+	status: null,
+	timeframe: null,
+	search: '',
+	department: null,
+	priority: null,
+	template: null
+};
+let showProcessList = false;
+
+// Filter handling functions
+function applyProcessFilter(filterType, filterValue) {
+	// Reset filters
+	processFilters = {
+		status: null,
+		timeframe: null,
+		search: '',
+		department: null,
+		priority: null,
+		template: null
+	};
+	
+	// Apply specific filter
+	processFilters[filterType] = filterValue;
+	showProcessList = true;
+	
+	// Scroll to process list
+	setTimeout(() => {
+		const processListElement = document.getElementById('process-list-section');
+		if (processListElement) {
+			processListElement.scrollIntoView({ behavior: 'smooth' });
+		}
+	}, 100);
+}
+
+function clearProcessFilters() {
+	processFilters = {
+		status: null,
+		timeframe: null,
+		search: '',
+		department: null,
+		priority: null,
+		template: null
+	};
+	showProcessList = false;
+}
+
+// Load mock offboarding data
+function loadOffboardingData() {
+  const mockData = getMockOffboardingData();
+  offboardingTemplates = mockData.templates;
+  offboardingProcesses = mockData.processes;
+}
 
 // Load data on component mount
 onMount(async () => {
@@ -50,6 +108,9 @@ onMount(async () => {
   // Load demo data (falls back to default client if no settings)
   await loadDemoData();
   await loadMetrics();
+  
+  // Load mock offboarding data
+  loadOffboardingData();
 });
 
 // Load business metrics
@@ -82,12 +143,14 @@ $: pendingInvitations = $invitations.filter((inv) => inv.status === 'pending').l
 	<title>Flows Admin - {$client?.name || 'Loading...'}</title>
 </svelte:head>
 
-<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" data-testid="app-loaded">
 		<!-- Tab Navigation -->
 		<div class="border-b border-gray-200 mb-8">
 			<nav class="-mb-px flex space-x-8">
 				<!-- People Tab -->
 				<button
+					data-testid="tab-people"
+					data-active={activeTab === 'people'}
 					on:click={() => activeTab = 'people'}
 					class="py-2 px-1 border-b-2 font-medium text-sm {
 						activeTab === 'people' 
@@ -103,6 +166,8 @@ $: pendingInvitations = $invitations.filter((inv) => inv.status === 'pending').l
 				<!-- Application Tabs -->
 				{#each $applications as app}
 					<button
+						data-testid="tab-{app.code}"
+						data-active={activeTab === app.code}
 						on:click={() => activeTab = app.code}
 						class="py-2 px-1 border-b-2 font-medium text-sm {
 							activeTab === app.code 
@@ -118,7 +183,7 @@ $: pendingInvitations = $invitations.filter((inv) => inv.status === 'pending').l
 		</div>
 		<!-- Loading State -->
 		{#if $loading}
-			<div class="flex items-center justify-center py-16">
+			<div class="flex items-center justify-center py-16" data-testid="loading-indicator">
 				<LoadingAnimation message="Loading your demo workspace..." size="lg" />
 			</div>
 		{:else if $error}
@@ -135,7 +200,7 @@ $: pendingInvitations = $invitations.filter((inv) => inv.status === 'pending').l
 			<!-- Tab Content -->
 			{#if activeTab === 'people'}
 				<!-- People Tab Content -->
-				<div class="space-y-8">
+				<div class="space-y-8" data-testid="view-people">
 					<!-- Dashboard Stats -->
 					<DashboardMetrics 
 						{totalEmployees}
@@ -200,6 +265,17 @@ $: pendingInvitations = $invitations.filter((inv) => inv.status === 'pending').l
 								<!-- Navigation Tabs -->
 								<div class="flex items-center gap-2">
 									<Button 
+										data-testid="offboarding-view-overview"
+										data-active={offboardingView === 'overview'}
+										variant={offboardingView === 'overview' ? 'default' : 'outline'}
+										size="sm"
+										on:click={() => offboardingView = 'overview'}
+									>
+										Overview
+									</Button>
+									<Button 
+										data-testid="offboarding-view-templates"
+										data-active={offboardingView === 'templates'}
 										variant={offboardingView === 'templates' ? 'default' : 'outline'}
 										size="sm"
 										on:click={() => offboardingView = 'templates'}
@@ -207,6 +283,8 @@ $: pendingInvitations = $invitations.filter((inv) => inv.status === 'pending').l
 										Templates
 									</Button>
 									<Button 
+										data-testid="offboarding-view-processes"
+										data-active={offboardingView === 'processes'}
 										variant={offboardingView === 'processes' ? 'default' : 'outline'}
 										size="sm"
 										on:click={() => offboardingView = 'processes'}
@@ -215,6 +293,8 @@ $: pendingInvitations = $invitations.filter((inv) => inv.status === 'pending').l
 									</Button>
 									{#if selectedProcess}
 										<Button 
+											data-testid="offboarding-view-tasks"
+											data-active={offboardingView === 'tasks'}
 											variant={offboardingView === 'tasks' ? 'default' : 'outline'}
 											size="sm"
 											on:click={() => offboardingView = 'tasks'}
@@ -226,11 +306,36 @@ $: pendingInvitations = $invitations.filter((inv) => inv.status === 'pending').l
 							</div>
 
 							<!-- View Content -->
-							{#if offboardingView === 'templates'}
+							{#if offboardingView === 'overview'}
+								<div data-testid="view-overview">
+								<OffboardingDashboard 
+									processes={offboardingProcesses}
+									employees={$employees}
+									onFilterByStatus={(status) => {
+										applyProcessFilter('status', status);
+									}}
+									onFilterByTimeframe={(timeframe) => {
+										applyProcessFilter('timeframe', timeframe);
+									}}
+									onViewProcess={(process) => {
+										selectedProcess = process;
+										offboardingTasks = getTasksForProcess(process.id);
+										offboardingView = 'tasks';
+									}}
+									onCreateOffboarding={() => {
+										offboardingView = 'templates';
+									}}
+									loading={$loading}
+								/>
+								</div>
+							{:else if offboardingView === 'templates'}
+								<div data-testid="view-templates">
 								<TemplateManager 
 									templates={offboardingTemplates}
 									onTemplateSelect={(template) => {
 										selectedTemplate = template;
+										// Show processes using this template
+										applyProcessFilter('template', template.id);
 									}}
 									onCreateTemplate={() => {
 										console.log('Create new template');
@@ -240,11 +345,14 @@ $: pendingInvitations = $invitations.filter((inv) => inv.status === 'pending').l
 									}}
 									loading={$loading}
 								/>
+								</div>
 							{:else if offboardingView === 'processes'}
+								<div data-testid="view-processes">
 								<ProcessManager 
 									processes={offboardingProcesses}
 									onProcessSelect={(process) => {
 										selectedProcess = process;
+										offboardingTasks = getTasksForProcess(process.id);
 										offboardingView = 'tasks';
 									}}
 									onCreateProcess={() => {
@@ -255,7 +363,9 @@ $: pendingInvitations = $invitations.filter((inv) => inv.status === 'pending').l
 									}}
 									loading={$loading}
 								/>
+								</div>
 							{:else if offboardingView === 'tasks' && selectedProcess}
+								<div data-testid="view-tasks">
 								<TaskManager 
 									process={selectedProcess}
 									tasks={offboardingTasks}
@@ -273,6 +383,22 @@ $: pendingInvitations = $invitations.filter((inv) => inv.status === 'pending').l
 									}}
 									onUploadDocument={(taskId, file) => {
 										console.log('Upload document for task:', taskId, file);
+									}}
+									loading={$loading}
+								/>
+								</div>
+							{/if}
+							
+							<!-- Process List - Always shown when filters are applied -->
+							{#if showProcessList}
+								<ProcessList 
+									processes={offboardingProcesses}
+									filters={processFilters}
+									onClearFilters={clearProcessFilters}
+									onProcessSelect={(process) => {
+										selectedProcess = process;
+										offboardingTasks = getTasksForProcess(process.id);
+										offboardingView = 'tasks';
 									}}
 									loading={$loading}
 								/>

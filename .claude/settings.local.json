@@ -28,7 +28,10 @@
       "Bash(pnpm demo:complete:*)",
       "Bash(pnpm demo:setup:*)",
       "Bash(pnpm demo:reset:*)",
-      "Bash(pnpm demo:refresh:*)"
+      "Bash(pnpm demo:refresh:*)",
+      "Bash(touch:*)",
+      "Bash(pnpm exec playwright test:*)",
+      "Bash(pnpm test:*)"
     ],
     "deny": []
   }
