@@ -34,7 +34,7 @@ The Flows Admin Demo is evolving from a basic demonstration tool into a comprehe
 ### 🔄 **In Progress Systems**
 
 #### **Business Logic Layer**
-- **Consumable Credit System** (175EUR per workflow) - *Pending*
+- **Thepia Flow Credits (TFC) System** (150 EUR/CHF per workflow, bulk discounts available) - *Pending*
 - **Comprehensive Data Editing** for all entities - *Pending*
 - **Application Tab Integration** for process workflows - *Pending*
 
@@ -48,22 +48,27 @@ The Flows Admin Demo is evolving from a basic demonstration tool into a comprehe
 
 ### **Consumable Credit System**
 ```typescript
-interface CreditSystem {
+interface TFCSystem {
+  creditName: 'Thepia Flow Credits (TFC)';
   pricing: {
-    onboardingCredit: 175; // EUR per workflow initiated
-    offboardingCredit: 175; // EUR per workflow initiated
+    basePrice: 150; // EUR/CHF per workflow initiated
+    bulkDiscounts: {
+      tier1: { range: [500, 1000], discount: 0.25, price: 112.50 }; // 25% off
+      tier2: { range: [2500, Infinity], discount: 0.30, price: 105 }; // 30% off
+    };
   };
   
   usage: {
     deductionTrigger: 'workflow_initiation'; // Not completion
     trackingLevel: 'per_employee_per_process';
     refundPolicy: 'no_refunds_after_initiation';
+    paymentModel: 'pay_per_process_initiated'; // Not subscription-based
   };
   
   billing: {
-    frequency: 'monthly';
+    supportedCurrencies: ['EUR', 'CHF'];
     minimumPurchase: 10; // credits
-    bulkDiscounts: true;
+    bulkPurchaseAdvantages: true;
     enterpriseNegotiation: true;
   };
 }
@@ -124,9 +129,9 @@ CREATE TABLE api.credit_transactions (
   client_id UUID REFERENCES api.clients(id),
   transaction_type VARCHAR(20) CHECK (transaction_type IN ('purchase', 'usage', 'refund')),
   credit_amount INTEGER NOT NULL,
-  price_per_credit DECIMAL(10,2) DEFAULT 175.00,
+  price_per_credit DECIMAL(10,2) DEFAULT 150.00, -- Base TFC price
   total_amount DECIMAL(12,2) NOT NULL,
-  currency VARCHAR(3) DEFAULT 'EUR',
+  currency VARCHAR(3) DEFAULT 'EUR' CHECK (currency IN ('EUR', 'CHF')),
   process_type VARCHAR(20) CHECK (process_type IN ('onboarding', 'offboarding')),
   employee_id UUID REFERENCES api.employees(id),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -225,7 +230,7 @@ interface WorkflowProcess {
   phases: WorkflowPhase[];
   creditConsumption: {
     triggeredAt: 'initiation'; // Key business rule
-    amount: 175; // EUR
+    baseAmount: 150; // EUR/CHF (bulk discounts may apply)
     refundable: false;
   };
 }
@@ -475,7 +480,7 @@ interface DocumentationGaps {
   ];
   
   business: [
-    'PRICING_MODEL.md',           // Credit system and pricing tiers
+    'PRICING_MODEL.md',           // TFC system and pricing tiers
     'COMPLIANCE_FRAMEWORK.md',    // Legal and regulatory requirements
     'COMPETITIVE_ANALYSIS.md',    // Market positioning
     'CUSTOMER_ONBOARDING.md'     // Client implementation guide
@@ -514,7 +519,7 @@ COMPREHENSIVE_SYSTEM_ARCHITECTURE.md (this document)
 ## 🎯 **Refined Priority Roadmap**
 
 ### **Phase 1: Business Model Completion (Week 1)**
-1. **Implement Credit System** - 175EUR consumable per workflow
+1. **Implement TFC System** - 150 EUR/CHF per workflow (bulk discounts available)
 2. **Add Billing Dashboard** - Credit balance, usage analytics
 3. **Create Pricing Tiers** - Multiple subscription options
 4. **Build Usage Reporting** - Cost per employee insights
@@ -562,7 +567,7 @@ COMPREHENSIVE_SYSTEM_ARCHITECTURE.md (this document)
 ## 📋 **Implementation Checklist**
 
 ### **Immediate Actions (This Week)**
-- [ ] Complete credit system implementation
+- [ ] Complete TFC system implementation
 - [ ] Finalize comprehensive data editing interface
 - [ ] Connect application tabs to actual workflows
 - [ ] Create missing documentation (API reference, deployment guide)

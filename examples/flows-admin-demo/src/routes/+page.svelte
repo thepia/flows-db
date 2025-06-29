@@ -26,7 +26,8 @@ import {
 } from '$lib/stores/data';
 import { settingsStore } from '$lib/stores/settings';
 import { supabase } from '$lib/supabase';
-import { AlertCircle, Briefcase, Plus, UserMinus, UserPlus, Users, Settings } from 'lucide-svelte';
+import { AlertCircle, Briefcase, Plus, UserMinus, UserPlus, Users, Settings, CreditCard, FileText, Shield, Download } from 'lucide-svelte';
+import TFCManagementPanel from '$lib/components/tfc/TFCManagementPanel.svelte';
 import { onMount } from 'svelte';
 import { getMockOffboardingData, getTasksForProcess } from '$lib/mockData/offboarding';
 
@@ -57,6 +58,12 @@ let processFilters = {
 	template: null
 };
 let showProcessList = false;
+
+// Account/TFC state
+let tfcBalance = null;
+let recentInvoices = [];
+let accountContacts = [];
+let loadingAccount = false;
 
 // Filter handling functions
 function applyProcessFilter(filterType, filterValue) {
@@ -93,6 +100,74 @@ function clearProcessFilters() {
 		template: null
 	};
 	showProcessList = false;
+}
+
+// Helper function to format currency
+function formatCurrency(amount, currency = 'EUR') {
+	if (!amount) return `${currency} 0`;
+	return `${currency} ${parseFloat(amount).toLocaleString()}`;
+}
+
+// Load account data (TFC balance, invoices, contacts)
+async function loadAccountData() {
+	if (!$client?.id) return;
+	
+	loadingAccount = true;
+	try {
+		// Load TFC balance
+		const { data: balanceData, error: balanceError } = await supabase
+			.from('tfc_client_balances')
+			.select('*')
+			.eq('client_id', $client.id)
+			.single();
+		
+		if (balanceError) {
+			console.warn('No TFC balance found:', balanceError);
+			tfcBalance = null;
+		} else {
+			tfcBalance = balanceData;
+		}
+		
+		// Load recent invoices (last 5)
+		const { data: invoicesData, error: invoicesError } = await supabase
+			.from('tfc_invoices')
+			.select('*')
+			.eq('client_id', $client.id)
+			.order('invoice_date', { ascending: false })
+			.limit(5);
+		
+		if (invoicesError) {
+			console.warn('Error loading invoices:', invoicesError);
+			recentInvoices = [];
+		} else {
+			recentInvoices = invoicesData || [];
+		}
+		
+		// Load account contacts
+		const { data: contactsData, error: contactsError } = await supabase
+			.from('account_contacts')
+			.select('*')
+			.eq('client_id', $client.id)
+			.order('created_at', { ascending: true });
+		
+		if (contactsError) {
+			console.warn('Error loading contacts:', contactsError);
+			accountContacts = [];
+		} else {
+			accountContacts = contactsData || [];
+		}
+		
+		console.log('📊 Account data loaded:', {
+			balance: tfcBalance,
+			invoices: recentInvoices.length,
+			contacts: accountContacts.length
+		});
+		
+	} catch (error) {
+		console.error('Error loading account data:', error);
+	} finally {
+		loadingAccount = false;
+	}
 }
 
 // Generate demo process data
@@ -399,6 +474,7 @@ async function loadMetrics() {
 // Reactive to client changes
 $: if ($client) {
   loadMetrics();
+  loadAccountData();
 }
 
 // Dashboard statistics (reactive to store changes)
@@ -463,6 +539,21 @@ $: pendingInvitations = $invitations.filter((inv) => inv.status === 'pending').l
 						{app.name}
 					</button>
 				{/each}
+
+				<!-- Account Tab -->
+				<button
+					data-testid="tab-account"
+					data-active={activeTab === 'account'}
+					on:click={() => activeTab = 'account'}
+					class="py-2 px-1 border-b-2 font-medium text-sm {
+						activeTab === 'account' 
+							? 'border-blue-500 text-blue-600' 
+							: 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+					}"
+				>
+					<Settings class="w-4 h-4 mr-2 inline" />
+					Account
+				</button>
 			</nav>
 		</div>
 		<!-- Loading State -->
@@ -877,6 +968,401 @@ $: pendingInvitations = $invitations.filter((inv) => inv.status === 'pending').l
 					</div>
 					{/if}
 				{/if}
+			{:else if activeTab === 'account'}
+				<!-- Account Tab Content -->
+				<div class="space-y-8" data-testid="view-account">
+					<!-- Account Header -->
+					<div class="flex justify-between items-center">
+						<div>
+							<h2 class="text-2xl font-bold text-gray-900">Account Management</h2>
+							<p class="text-gray-600">Manage your company account, billing, and access</p>
+						</div>
+					</div>
+
+					<!-- Account Overview Grid -->
+					<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+						<!-- Company Information -->
+						<div class="lg:col-span-2 space-y-6">
+							<!-- Company Details Card -->
+							<div class="bg-white rounded-lg shadow-sm border">
+								<div class="px-6 py-4 border-b">
+									<h3 class="text-lg font-medium text-gray-900">Company Information</h3>
+								</div>
+								<div class="p-6">
+									<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
+											<div class="text-sm text-gray-900">{$client?.legal_name || $client?.name || 'Loading...'}</div>
+										</div>
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-1">Client Code</label>
+											<div class="text-sm text-gray-900 font-mono">{$client?.client_code || $client?.code || 'Loading...'}</div>
+										</div>
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-1">Industry</label>
+											<div class="text-sm text-gray-900">{$client?.industry || 'Not specified'}</div>
+										</div>
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-1">Domain</label>
+											<div class="text-sm text-gray-900">{$client?.domain || 'Not specified'}</div>
+										</div>
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-1">Account Tier</label>
+											<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {
+												$client?.tier === 'enterprise' ? 'bg-purple-100 text-purple-800' :
+												$client?.tier === 'pro' ? 'bg-blue-100 text-blue-800' :
+												'bg-gray-100 text-gray-800'
+											}">
+												{$client?.tier || 'standard'}
+											</span>
+										</div>
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+											<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {
+												$client?.status === 'active' ? 'bg-green-100 text-green-800' :
+												$client?.status === 'trial' ? 'bg-yellow-100 text-yellow-800' :
+												'bg-gray-100 text-gray-800'
+											}">
+												{$client?.status || 'active'}
+											</span>
+										</div>
+									</div>
+									
+									{#if $client?.description}
+										<div class="mt-4">
+											<label class="block text-sm font-medium text-gray-700 mb-1">Company Description</label>
+											<div class="text-sm text-gray-600 leading-relaxed">{$client.description}</div>
+										</div>
+									{/if}
+								</div>
+							</div>
+
+							<!-- Comprehensive TFC Management Panel -->
+							<TFCManagementPanel clientId={$client?.id} />
+
+							<!-- Recent Invoices -->
+							<div class="bg-white rounded-lg shadow-sm border">
+								<div class="px-6 py-4 border-b">
+									<div class="flex justify-between items-center">
+										<h3 class="text-lg font-medium text-gray-900">Recent Invoices</h3>
+										<button class="text-blue-600 hover:text-blue-700 text-sm font-medium">View All</button>
+									</div>
+								</div>
+								<div class="divide-y">
+									{#if loadingAccount}
+										<div class="px-6 py-8 text-center text-gray-500">
+											<LoadingAnimation message="Loading invoices..." size="sm" />
+										</div>
+									{:else if recentInvoices.length > 0}
+										{#each recentInvoices as invoice}
+											<div class="px-6 py-4 flex items-center justify-between">
+												<div class="flex items-center gap-4">
+													<FileText class="w-5 h-5 text-gray-400" />
+													<div>
+														<div class="font-medium text-gray-900">{invoice.invoice_number}</div>
+														<div class="text-sm text-gray-500">
+															{new Date(invoice.invoice_date).toLocaleDateString()} 
+															{#if invoice.line_items && invoice.line_items.length > 0}
+																• {invoice.line_items.map(item => item.description).join(', ')}
+															{/if}
+														</div>
+													</div>
+												</div>
+												<div class="flex items-center gap-4">
+													<div class="text-right">
+														<div class="font-medium text-gray-900">{formatCurrency(invoice.total_amount, invoice.currency)}</div>
+														<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {
+															invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
+															invoice.status === 'overdue' ? 'bg-red-100 text-red-800' :
+															invoice.status === 'sent' ? 'bg-yellow-100 text-yellow-800' :
+															'bg-gray-100 text-gray-800'
+														}">
+															{invoice.status}
+														</span>
+													</div>
+													<button class="text-gray-400 hover:text-gray-600" title="Download Invoice">
+														<Download class="w-4 h-4" />
+													</button>
+												</div>
+											</div>
+										{/each}
+									{:else}
+										<div class="px-6 py-8 text-center text-gray-500">
+											<div class="text-lg font-medium">No invoices yet</div>
+											<div class="text-sm mt-1">Invoices will appear here after TFC purchases</div>
+										</div>
+									{/if}
+								</div>
+							</div>
+
+							<!-- TFC Transaction History -->
+							<div class="bg-white rounded-lg shadow-sm border">
+								<div class="px-6 py-4 border-b">
+									<div class="flex justify-between items-center">
+										<h3 class="text-lg font-medium text-gray-900">TFC Transaction History</h3>
+										<button class="text-blue-600 hover:text-blue-700 text-sm font-medium">View All</button>
+									</div>
+								</div>
+								<div class="divide-y">
+									{#each [
+										{ 
+											id: 'tfc-001', 
+											type: 'purchase', 
+											date: '2024-06-15', 
+											description: '2,500 TFC Purchase (30% bulk discount)', 
+											credits: '+2,500', 
+											amount: '€262,500', 
+											status: 'completed',
+											tier: 'bulk_tier_2'
+										},
+										{ 
+											id: 'tfc-002', 
+											type: 'usage', 
+											date: '2024-06-14', 
+											description: 'Offboarding: Maria Schmidt', 
+											credits: '-1', 
+											amount: '€105', 
+											status: 'completed',
+											workflow: 'offboarding'
+										},
+										{ 
+											id: 'tfc-003', 
+											type: 'usage', 
+											date: '2024-06-14', 
+											description: 'Onboarding: Lars Petersen', 
+											credits: '-1', 
+											amount: '€105', 
+											status: 'completed',
+											workflow: 'onboarding'
+										},
+										{ 
+											id: 'tfc-004', 
+											type: 'purchase', 
+											date: '2024-05-15', 
+											description: '1,000 TFC Purchase (25% bulk discount)', 
+											credits: '+1,000', 
+											amount: '€112,500', 
+											status: 'completed',
+											tier: 'bulk_tier_1'
+										}
+									] as transaction}
+										<div class="px-6 py-4">
+											<div class="flex items-start justify-between">
+												<div class="flex items-start gap-3">
+													<div class="w-2 h-2 rounded-full mt-2 {
+														transaction.type === 'purchase' ? 'bg-green-500' :
+														transaction.type === 'usage' ? 'bg-blue-500' :
+														'bg-gray-400'
+													}"></div>
+													<div>
+														<div class="font-medium text-gray-900 text-sm">{transaction.description}</div>
+														<div class="text-xs text-gray-500 mt-1">
+															{transaction.date} • Transaction ID: {transaction.id}
+															{#if transaction.tier}
+																• {transaction.tier === 'bulk_tier_1' ? '25% discount' : '30% discount'}
+															{/if}
+														</div>
+													</div>
+												</div>
+												<div class="text-right">
+													<div class="font-medium text-sm {
+														transaction.type === 'purchase' ? 'text-green-600' :
+														transaction.type === 'usage' ? 'text-blue-600' :
+														'text-gray-900'
+													}">
+														{transaction.credits} TFC
+													</div>
+													<div class="text-xs text-gray-500">{transaction.amount}</div>
+												</div>
+											</div>
+										</div>
+									{/each}
+								</div>
+								<div class="px-6 py-4 bg-gray-50 text-center">
+									<button class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+										Export Transaction History
+									</button>
+								</div>
+							</div>
+						</div>
+
+						<!-- Sidebar -->
+						<div class="space-y-6">
+							<!-- Payment Method -->
+							<div class="bg-white rounded-lg shadow-sm border">
+								<div class="px-6 py-4 border-b">
+									<h3 class="text-lg font-medium text-gray-900">Payment Method</h3>
+								</div>
+								<div class="p-6">
+									<div class="flex items-center gap-3 mb-4">
+										<CreditCard class="w-8 h-8 text-gray-400" />
+										<div>
+											<div class="font-medium text-gray-900">•••• •••• •••• 4242</div>
+											<div class="text-sm text-gray-500">Expires 12/2027</div>
+										</div>
+									</div>
+									<button class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+										Update Payment Method
+									</button>
+								</div>
+							</div>
+
+							<!-- Account Contacts -->
+							<div class="bg-white rounded-lg shadow-sm border">
+								<div class="px-6 py-4 border-b">
+									<div class="flex justify-between items-center">
+										<h3 class="text-lg font-medium text-gray-900">Account Contacts</h3>
+										<button class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+											Add Contact
+										</button>
+									</div>
+								</div>
+								<div class="p-6">
+									{#if loadingAccount}
+										<div class="flex justify-center py-4">
+											<LoadingAnimation message="Loading contacts..." size="sm" />
+										</div>
+									{:else if accountContacts.length > 0}
+										<div class="space-y-4">
+											{#each accountContacts as contact}
+												<div class="flex items-start gap-3 p-3 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors">
+													<div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+														<span class="text-xs font-medium text-blue-600">
+															{contact.first_name?.charAt(0)}{contact.last_name?.charAt(0)}
+														</span>
+													</div>
+													<div class="flex-1 min-w-0">
+														<div class="flex items-center gap-2">
+															<h4 class="font-medium text-gray-900 text-sm">{contact.first_name} {contact.last_name}</h4>
+															{#if contact.is_primary_contact}
+																<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+																	Primary
+																</span>
+															{/if}
+														</div>
+														<div class="text-sm text-gray-600">{contact.email}</div>
+														{#if contact.job_title}
+															<div class="text-sm text-gray-500">{contact.job_title}</div>
+														{/if}
+														{#if contact.department}
+															<div class="text-xs text-gray-400">{contact.department}</div>
+														{/if}
+														<div class="mt-2 flex flex-wrap gap-1">
+															{#if contact.can_purchase_credits}
+																<span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">Purchase</span>
+															{/if}
+															{#if contact.can_view_billing}
+																<span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">Billing</span>
+															{/if}
+															{#if contact.can_manage_users}
+																<span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700">Users</span>
+															{/if}
+														</div>
+													</div>
+												</div>
+											{/each}
+										</div>
+									{:else}
+										<div class="text-center py-6 text-gray-500">
+											<div class="text-sm font-medium">No contacts found</div>
+											<div class="text-xs mt-1">Add contacts to manage account access</div>
+										</div>
+									{/if}
+								</div>
+							</div>
+
+							<!-- TFC Account Settings -->
+							<div class="bg-white rounded-lg shadow-sm border">
+								<div class="px-6 py-4 border-b">
+									<h3 class="text-lg font-medium text-gray-900">TFC Settings</h3>
+								</div>
+								<div class="p-6 space-y-4">
+									{#if tfcBalance}
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-2">Auto-Replenish</label>
+											<div class="flex items-center gap-3">
+												<input type="checkbox" class="rounded border-gray-300" checked={tfcBalance.auto_replenish_enabled} disabled />
+												<span class="text-sm text-gray-600">
+													{#if tfcBalance.auto_replenish_enabled}
+														Automatically purchase {tfcBalance.auto_replenish_amount} TFC when balance drops below {tfcBalance.auto_replenish_threshold}
+													{:else}
+														Auto-replenish disabled
+													{/if}
+												</span>
+											</div>
+										</div>
+										
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-1">Balance Alerts</label>
+											<div class="text-sm text-gray-600">
+												Low balance: {tfcBalance.low_balance_threshold} TFC • Critical: {tfcBalance.critical_balance_threshold} TFC
+											</div>
+										</div>
+									{:else}
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-2">Auto-Replenish</label>
+											<div class="text-sm text-gray-500">TFC settings will appear here once configured</div>
+										</div>
+									{/if}
+									
+									<div>
+										<label class="block text-sm font-medium text-gray-700 mb-1">Preferred Currency</label>
+										<div class="text-sm text-gray-900">
+											{#if tfcBalance?.preferred_currency}
+												{tfcBalance.preferred_currency} ({tfcBalance.preferred_currency === 'EUR' ? 'Euro' : 'Swiss Franc'})
+											{:else}
+												EUR (Euro)
+											{/if}
+										</div>
+									</div>
+									
+									<div>
+										<label class="block text-sm font-medium text-gray-700 mb-1">Billing Contact</label>
+										{#if accountContacts.length > 0}
+											{@const primaryContact = accountContacts.find(c => c.is_primary_contact) || accountContacts[0]}
+											<div class="text-sm text-gray-600">{primaryContact.first_name} {primaryContact.last_name} ({primaryContact.job_title || 'Contact'})</div>
+										{:else}
+											<div class="text-sm text-gray-500">No billing contact set</div>
+										{/if}
+									</div>
+								</div>
+							</div>
+
+							<!-- Security & Compliance -->
+							<div class="bg-white rounded-lg shadow-sm border">
+								<div class="px-6 py-4 border-b">
+									<h3 class="text-lg font-medium text-gray-900">Security & Compliance</h3>
+								</div>
+								<div class="p-6">
+									<div class="space-y-3 text-sm">
+										<div class="flex items-center justify-between">
+											<span class="text-gray-700">Two-Factor Authentication</span>
+											<span class="text-green-600 font-medium">Enabled</span>
+										</div>
+										<div class="flex items-center justify-between">
+											<span class="text-gray-700">GDPR Compliance</span>
+											<span class="text-green-600 font-medium">Active</span>
+										</div>
+										<div class="flex items-center justify-between">
+											<span class="text-gray-700">Data Retention</span>
+											<span class="text-gray-600">7 years</span>
+										</div>
+										<div class="flex items-center justify-between">
+											<span class="text-gray-700">Audit Logs</span>
+											<span class="text-green-600 font-medium">Enabled</span>
+										</div>
+									</div>
+									<div class="mt-4 pt-4 border-t">
+										<button class="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium">
+											<Shield class="w-4 h-4" />
+											Security Settings
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
 			{/if}
 		{/if}
 	</main>

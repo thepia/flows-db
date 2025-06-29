@@ -1,39 +1,60 @@
-# Business Model Architecture - 175EUR Consumable Credit System
-*Updated: 2025-06-27*
+# Business Model Architecture - Thepia Flow Credits (TFC) System
+*Updated: 2025-06-29*
 
 ## 🎯 Executive Summary
 
-The Flows Admin platform operates on a **consumable credit model** where clients purchase credits at **175 EUR each**. One credit is consumed when an onboarding or offboarding workflow is **initiated** (not completed), providing predictable revenue while incentivizing process efficiency.
+The Flows Admin platform operates on a **Thepia Flow Credits (TFC)** model where clients purchase credits at **150 EUR/CHF each**. One credit is consumed when an onboarding or offboarding workflow is **initiated** (not completed), providing predictable revenue while incentivizing process efficiency. Bulk purchase discounts encourage annual commitments and larger volume purchases.
 
 ## 💰 Credit System Architecture
 
-### **Core Pricing Model**
+### **Thepia Flow Credits (TFC) Pricing Model**
 ```typescript
-interface CreditPricing {
-  basePrice: 175; // EUR per credit
-  currency: 'EUR';
+interface TFCPricing {
+  creditName: 'Thepia Flow Credits';
+  abbreviation: 'TFC';
+  basePrice: 150; // EUR/CHF per credit
+  supportedCurrencies: ['EUR', 'CHF'];
   consumption: {
     trigger: 'workflow_initiation'; // Key: charged when started, not completed
     processes: ['onboarding', 'offboarding'];
     refundPolicy: 'no_refunds_after_initiation';
   };
+  
+  bulkDiscounts: {
+    individual: { quantity: [1, 499], discount: 0 }, // 150 EUR/CHF each
+    bulk_tier_1: { quantity: [500, 1000], discount: 0.25 }, // 25% off = 112.50 EUR/CHF each
+    bulk_tier_2: { quantity: [2500, Infinity], discount: 0.30 } // 30% off = 105 EUR/CHF each
+  };
 }
 ```
 
 ### **Business Logic Rules**
-1. **Initiation Trigger**: Credit deducted when workflow moves from 'draft' to 'active'
-2. **No Completion Dependency**: Credit consumed regardless of process success/failure
-3. **Single Deduction**: One credit per employee per process type
-4. **No Refunds**: Credits non-refundable once workflow initiated
+1. **Per-Process Payment**: One TFC is charged when each onboarding/offboarding process is **initiated** (not monthly/annually)
+2. **Initiation Trigger**: Credit deducted when workflow moves from 'draft' to 'active'
+3. **No Completion Dependency**: Credit consumed regardless of process success/failure
+4. **Single Deduction**: One credit per employee per process type
+5. **No Refunds**: Credits non-refundable once workflow initiated
+6. **No Subscriptions**: No recurring monthly or annual fees - only pay when processes are started
 
 ## 📊 Pricing Tiers & Packages
 
-### **Starter Tier**
+### **Starter Package**
 ```typescript
-interface StarterTier {
-  monthlyCredits: 25;
-  monthlyPrice: 3938; // EUR (25 * 175 with 10% discount)
-  annualPrice: 39375; // EUR (12 months with 15% annual discount)
+interface StarterPackage {
+  // Pay-per-process model - charged when process is initiated
+  pricePerProcess: 150; // EUR/CHF per onboarding/offboarding initiated
+  
+  // Typical usage estimates (for planning purposes only)
+  estimatedMonthlyProcesses: 25;
+  estimatedMonthlyCost: 3750; // EUR/CHF (25 processes * 150)
+  
+  // Bulk purchase option
+  bulkPurchaseOption: {
+    minimumCredits: 100,
+    discount: 0, // No bulk discount for starter tier
+    pricePerCredit: 150 // EUR/CHF
+  };
+  
   features: [
     'basic_onboarding_workflows',
     'standard_offboarding_workflows', 
@@ -49,12 +70,25 @@ interface StarterTier {
 }
 ```
 
-### **Professional Tier**
+### **Professional Package**
 ```typescript
-interface ProfessionalTier {
-  monthlyCredits: 100;
-  monthlyPrice: 14000; // EUR (100 * 175 with 20% discount)
-  annualPrice: 126000; // EUR (15% annual discount)
+interface ProfessionalPackage {
+  // Pay-per-process model - charged when process is initiated
+  pricePerProcess: 112.50; // EUR/CHF per onboarding/offboarding (with bulk discount)
+  
+  // Bulk purchase requirement for discount
+  bulkPurchaseRequirement: {
+    minimumCredits: 500, // Qualifies for bulk_tier_1 discount (25% off)
+    maximumCredits: 1000,
+    discount: 0.25, // 25% bulk discount
+    basePrice: 150, // EUR/CHF
+    discountedPrice: 112.50 // EUR/CHF per process initiated
+  };
+  
+  // Typical usage estimates (for planning purposes only)
+  estimatedMonthlyProcesses: 100;
+  estimatedMonthlyCost: 11250; // EUR/CHF (100 processes * 112.50)
+  
   features: [
     'advanced_workflow_customization',
     'multi_location_support',
@@ -72,11 +106,31 @@ interface ProfessionalTier {
 }
 ```
 
-### **Enterprise Tier**
+### **Enterprise Package**
 ```typescript
-interface EnterpriseTier {
-  monthlyCredits: 'unlimited';
-  monthlyPrice: 'custom_negotiated'; // Typically 40k-80k EUR/month
+interface EnterprisePackage {
+  // Pay-per-process model - charged when process is initiated
+  pricePerProcess: 105; // EUR/CHF per onboarding/offboarding (with bulk discount)
+  
+  // Bulk purchase requirement for maximum discount
+  bulkPurchaseRequirement: {
+    minimumCredits: 2500, // Qualifies for bulk_tier_2 discount (30% off)
+    discount: 0.30, // 30% bulk discount
+    basePrice: 150, // EUR/CHF
+    discountedPrice: 105 // EUR/CHF per process initiated
+  };
+  
+  // Custom enterprise pricing available for large volume commitments
+  customPricing: {
+    available: true,
+    minimumCommitment: 10000, // processes annually
+    negotiatedRates: 'Available for 10,000+ processes/year'
+  };
+  
+  // Typical usage estimates (for planning purposes only)
+  estimatedMonthlyProcesses: 'varies_widely';
+  estimatedMonthlyCost: 'custom_based_on_usage';
+  
   features: [
     'unlimited_workflows',
     'white_label_branding',
@@ -97,17 +151,37 @@ interface EnterpriseTier {
 
 ## 💳 Credit Purchase & Management
 
-### **Purchase Options**
+### **Thepia Flow Credits Purchase Options**
 ```typescript
-interface CreditPurchasing {
+interface TFCPurchasing {
+  creditName: 'Thepia Flow Credits (TFC)';
+  basePriceEUR: 150;
+  basePriceCHF: 150;
   minimumPurchase: 10; // credits
   maximumPurchase: 10000; // credits (anti-fraud)
   
   bulkDiscounts: {
-    '50_99_credits': 0.05,    // 5% discount
-    '100_499_credits': 0.10,  // 10% discount  
-    '500_999_credits': 0.15,  // 15% discount
-    '1000_plus_credits': 0.20 // 20% discount
+    'individual': {
+      range: [1, 499],
+      discount: 0,
+      priceEUR: 150,
+      priceCHF: 150,
+      description: 'Standard individual pricing'
+    },
+    'bulk_tier_1': {
+      range: [500, 1000], 
+      discount: 0.25, // 25% discount
+      priceEUR: 112.50,
+      priceCHF: 112.50,
+      description: 'Bulk Tier 1: 500-1000 credits'
+    },
+    'bulk_tier_2': {
+      range: [2500, Infinity],
+      discount: 0.30, // 30% discount  
+      priceEUR: 105,
+      priceCHF: 105,
+      description: 'Bulk Tier 2: 2500+ credits'
+    }
   };
   
   paymentMethods: [
@@ -116,6 +190,11 @@ interface CreditPurchasing {
     'invoice_net30',
     'purchase_order'
   ];
+  
+  annualCommitmentBonus: {
+    additionalDiscount: 0.15, // 15% off annual purchases
+    description: 'Additional discount for 12-month commitments'
+  };
 }
 ```
 
@@ -141,27 +220,36 @@ interface CreditBalance {
 
 ## 📈 Revenue Model Analysis
 
-### **Revenue Predictability**
+### **TFC Revenue Predictability**
 ```typescript
-interface RevenueMetrics {
-  // Average customer usage patterns
+interface TFCRevenueMetrics {
+  // Usage-based revenue patterns (pay-per-process initiated)
   typical_usage: {
     small_company_50_employees: {
-      monthly_onboarding: 4, // 4 * 175 = 700 EUR
-      monthly_offboarding: 3, // 3 * 175 = 525 EUR
-      monthly_revenue: 1225 // EUR
+      processes_initiated_monthly: 7, // 4 onboarding + 3 offboarding
+      cost_per_process: 150, // EUR/CHF (individual pricing)
+      monthly_spend_estimate: 1050, // EUR/CHF (7 * 150)
+      annual_spend_estimate: 12600, // EUR/CHF
+      payment_model: 'pay_per_process_initiated',
+      tfc_tier: 'individual'
     };
     
     medium_company_500_employees: {
-      monthly_onboarding: 15, // 15 * 175 = 2625 EUR
-      monthly_offboarding: 12, // 12 * 175 = 2100 EUR  
-      monthly_revenue: 4725 // EUR
+      processes_initiated_monthly: 27, // 15 onboarding + 12 offboarding
+      cost_per_process: 112.50, // EUR/CHF (25% bulk discount applied)
+      monthly_spend_estimate: 3037.50, // EUR/CHF (27 * 112.50)
+      annual_spend_estimate: 36450, // EUR/CHF
+      payment_model: 'pay_per_process_initiated',
+      tfc_tier: 'bulk_tier_1'
     };
     
     large_company_2000_employees: {
-      monthly_onboarding: 45, // 45 * 175 = 7875 EUR
-      monthly_offboarding: 35, // 35 * 175 = 6125 EUR
-      monthly_revenue: 14000 // EUR
+      processes_initiated_monthly: 80, // 45 onboarding + 35 offboarding
+      cost_per_process: 105, // EUR/CHF (30% bulk discount applied)
+      monthly_spend_estimate: 8400, // EUR/CHF (80 * 105)
+      annual_spend_estimate: 100800, // EUR/CHF
+      payment_model: 'pay_per_process_initiated',
+      tfc_tier: 'bulk_tier_2'
     };
   };
 }
@@ -173,7 +261,7 @@ interface MarketPosition {
   competition: {
     bambooHR: 'Per employee/month pricing (~6-8 EUR)';
     workday: 'Per employee/month pricing (~15-25 EUR)';
-    flows: 'Per process pricing (175 EUR)';
+    flows: 'Per process TFC pricing (150 EUR/CHF, bulk discounts available)';
   };
   
   advantages: [
@@ -200,11 +288,11 @@ CREATE TABLE api.credit_transactions (
   client_id UUID NOT NULL REFERENCES api.clients(id),
   transaction_type VARCHAR(20) NOT NULL CHECK (transaction_type IN ('purchase', 'usage', 'refund', 'adjustment')),
   
-  -- Credit details
+  -- TFC Credit details
   credit_amount INTEGER NOT NULL,
-  price_per_credit DECIMAL(10,2) NOT NULL DEFAULT 175.00,
+  price_per_credit DECIMAL(10,2) NOT NULL DEFAULT 150.00, -- Base TFC price (before bulk discounts)
   total_amount DECIMAL(12,2) NOT NULL,
-  currency VARCHAR(3) NOT NULL DEFAULT 'EUR',
+  currency VARCHAR(3) NOT NULL DEFAULT 'EUR' CHECK (currency IN ('EUR', 'CHF')),
   
   -- Usage tracking (for 'usage' transactions)
   process_type VARCHAR(20) CHECK (process_type IN ('onboarding', 'offboarding')),

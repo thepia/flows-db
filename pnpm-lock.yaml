@@ -151,6 +151,9 @@ importers:
       vite-node:
         specifier: ^3.2.4
         version: 3.2.4(@types/node@20.19.1)(jiti@1.21.7)(yaml@2.8.0)
+      vite-plugin-restart:
+        specifier: ^0.4.2
+        version: 0.4.2(vite@6.3.5(@types/node@20.19.1)(jiti@1.21.7)(yaml@2.8.0))
       vitest:
         specifier: ^2.1.4
         version: 2.1.9(@types/node@20.19.1)
@@ -2516,6 +2519,11 @@ packages:
     resolution: {integrity: sha512-EbKSKh+bh1E1IFxeO0pg1n4dvoOTt0UDiXMd/qn++r98+jPO1xtJilvXldeuQ8giIB5IkpjCgMleHMNEsGH6pg==}
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
+
+  vite-plugin-restart@0.4.2:
+    resolution: {integrity: sha512-9aWN2ScJ8hbT7aC8SDeZnsbWapnslz1vhNq6Vgf2GU9WdN4NExlrWhtnu7pmtOUG3Guj8y6lPcUZ+ls7SVP33w==}
+    peerDependencies:
+      vite: ^2.9.0 || ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0
 
   vite@5.4.19:
     resolution: {integrity: sha512-qO3aKv3HoQC8QKiNSTuUM1l9o/XX3+c+VTgLHbJWHZGeTPVAg2XwazI9UWzoxjIJCGCV2zU60uqMzjeLZuULqA==}
@@ -5064,6 +5072,11 @@ snapshots:
       - terser
       - tsx
       - yaml
+
+  vite-plugin-restart@0.4.2(vite@6.3.5(@types/node@20.19.1)(jiti@1.21.7)(yaml@2.8.0)):
+    dependencies:
+      micromatch: 4.0.8
+      vite: 6.3.5(@types/node@20.19.1)(jiti@1.21.7)(yaml@2.8.0)
 
   vite@5.4.19(@types/node@20.19.1):
     dependencies:

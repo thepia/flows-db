@@ -39,7 +39,8 @@
       "Bash(pnpm vite-node:*)",
       "Bash(true)",
       "Bash(chmod:*)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(psql:*)"
     ],
     "deny": []
   }
