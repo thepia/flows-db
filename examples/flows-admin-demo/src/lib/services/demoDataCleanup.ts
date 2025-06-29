@@ -21,7 +21,7 @@ export async function resetDemoDataForCompany(
 
   // Delete enrollments first (has foreign keys)
   const { error: enrollmentsError } = await supabase
-    .from('employee_enrollments')
+    .from('people_enrollments')
     .delete()
     .eq('client_id', clientData.id);
 
@@ -31,30 +31,30 @@ export async function resetDemoDataForCompany(
 
   progressCallback?.(40, 'Removing tasks and documents...');
 
-  // Get all employees for this client to clean up their related data
-  const { data: employees } = await supabase
-    .from('employees')
+  // Get all people for this client to clean up their related data
+  const { data: people } = await supabase
+    .from('people')
     .select('id')
     .eq('client_id', clientData.id);
 
-  if (employees && employees.length > 0) {
-    const employeeIds = employees.map((emp) => emp.id);
+  if (people && people.length > 0) {
+    const personIds = people.map((person) => person.id);
 
-    // Delete tasks
+    // Delete tasks (still using employee_id column for backward compatibility)
     const { error: tasksError } = await supabase
       .from('tasks')
       .delete()
-      .in('employee_id', employeeIds);
+      .in('employee_id', personIds);
 
     if (tasksError) {
       console.error('Error deleting tasks:', tasksError);
     }
 
-    // Delete documents
+    // Delete documents (still using employee_id column for backward compatibility)
     const { error: documentsError } = await supabase
       .from('documents')
       .delete()
-      .in('employee_id', employeeIds);
+      .in('employee_id', personIds);
 
     if (documentsError) {
       console.error('Error deleting documents:', documentsError);
@@ -73,17 +73,17 @@ export async function resetDemoDataForCompany(
     console.error('Error deleting invitations:', invitationsError);
   }
 
-  progressCallback?.(80, 'Removing employees...');
+  progressCallback?.(80, 'Removing people...');
 
-  // Delete employees
-  const { error: employeesError } = await supabase
-    .from('employees')
+  // Delete people
+  const { error: peopleError } = await supabase
+    .from('people')
     .delete()
     .eq('client_id', clientData.id);
 
-  if (employeesError) {
-    console.error('Error deleting employees:', employeesError);
-    throw employeesError;
+  if (peopleError) {
+    console.error('Error deleting people:', peopleError);
+    throw peopleError;
   }
 
   progressCallback?.(100, 'Data cleanup completed successfully');
@@ -102,15 +102,16 @@ export async function exportDemoData(companyCode: string): Promise<object> {
   }
 
   // Export all data
-  const [employeesResult, invitationsResult, enrollmentsResult] = await Promise.all([
-    supabase.from('employees').select('*').eq('client_id', clientData.id),
+  const [peopleResult, invitationsResult, enrollmentsResult] = await Promise.all([
+    supabase.from('people').select('*').eq('client_id', clientData.id),
     supabase.from('invitations').select('*').eq('client_id', clientData.id),
-    supabase.from('employee_enrollments').select('*').eq('client_id', clientData.id),
+    supabase.from('people_enrollments').select('*').eq('client_id', clientData.id),
   ]);
 
   return {
     company: clientData,
-    employees: employeesResult.data || [],
+    people: peopleResult.data || [],
+    employees: peopleResult.data || [], // Backward compatibility
     invitations: invitationsResult.data || [],
     enrollments: enrollmentsResult.data || [],
     exportedAt: new Date().toISOString(),
@@ -142,10 +143,10 @@ export async function getDemoMetrics(companyCode?: string): Promise<{
   }
 
   // Get metrics
-  const [companiesResult, employeesResult, invitationsResult, documentsResult, tasksResult] =
+  const [companiesResult, peopleResult, invitationsResult, documentsResult, tasksResult] =
     await Promise.all([
       supabase.from('clients').select('id', { count: 'exact' }).ilike('client_code', '%demo%'),
-      supabase.from('employees').select('id', { count: 'exact' }).match(clientFilter),
+      supabase.from('people').select('id', { count: 'exact' }).match(clientFilter),
       supabase.from('invitations').select('id, status', { count: 'exact' }).match(clientFilter),
       supabase.from('documents').select('id', { count: 'exact' }).match(clientFilter),
       supabase.from('tasks').select('id', { count: 'exact' }).match(clientFilter),
@@ -159,7 +160,7 @@ export async function getDemoMetrics(companyCode?: string): Promise<{
 
   return {
     totalCompanies: companiesResult.count || 0,
-    totalEmployees: employeesResult.count || 0,
+    totalEmployees: peopleResult.count || 0,
     activeProcesses,
     completedProcesses,
     totalDocuments: documentsResult.count || 0,

@@ -84,12 +84,21 @@ export async function POST({ request }) {
 
     console.log('═'.repeat(70));
 
-    return json({
-      success: true,
-      message: 'Admin error report logged successfully',
-      timestamp,
-      type: reportType,
-    });
+    return json(
+      {
+        success: true,
+        message: 'Admin error report logged successfully',
+        timestamp,
+        type: reportType,
+      },
+      {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
+      }
+    );
   } catch (error) {
     console.error('❌ [Admin Error Reporting] Failed to process error report:', error);
 
@@ -99,20 +108,49 @@ export async function POST({ request }) {
         message: 'Failed to process admin error report',
         error: error.message,
       },
-      { status: 500 }
+      {
+        status: 500,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
+      }
     );
   }
 }
 
 // GET endpoint for health check
 export async function GET() {
-  return json({
-    status: 'healthy',
-    service: 'flows-admin-demo-error-reporting',
-    timestamp: new Date().toISOString(),
-    endpoints: {
-      POST: 'Submit admin error reports',
-      GET: 'Health check',
+  return json(
+    {
+      status: 'healthy',
+      service: 'flows-admin-demo-error-reporting',
+      timestamp: new Date().toISOString(),
+      endpoints: {
+        POST: 'Submit admin error reports',
+        GET: 'Health check',
+        OPTIONS: 'CORS preflight',
+      },
+    },
+    {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
+    }
+  );
+}
+
+// OPTIONS endpoint for CORS preflight
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
     },
   });
 }

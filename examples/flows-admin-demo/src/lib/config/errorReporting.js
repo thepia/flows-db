@@ -35,13 +35,20 @@ async function checkServerHealth(endpoint) {
   if (!endpoint) return false;
 
   try {
+    // Create abort controller for timeout (AbortSignal.timeout is not widely supported)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
+
     const response = await fetch(endpoint, {
       method: 'GET',
       headers: { Accept: 'application/json' },
-      signal: AbortSignal.timeout(2000), // 2 second timeout
+      signal: controller.signal,
     });
+    
+    clearTimeout(timeoutId);
     return response.ok;
   } catch (error) {
+    // Return false for any error (timeout, network, etc)
     return false;
   }
 }

@@ -26,6 +26,7 @@ The Thepia Flows product consists of interconnected repositories:
 - **Component breakdown** - Regular refactoring to avoid module bloat
 - **automation** - Run automated checks to ensure quality. Build out GitHub Actions.
 - **Document First** - Document before implementing new features. Write in /docs/ and reference in README.md
+- **Client only code** - We only use serverside code in demos for functionality that is scaffolding, the parts that demonstrate what would be put in production must be client only. 
 
 #### Demo Patterns (Mandatory)
 ```bash

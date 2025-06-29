@@ -1,4 +1,4 @@
-export interface Employee {
+export interface Person {
   id: string;
   email: string;
   firstName: string;
@@ -6,20 +6,31 @@ export interface Employee {
   department: string;
   position: string;
   startDate: string;
-  status: 'active' | 'previous' | 'future' | 'other';
+  employmentStatus?: 'active' | 'former' | 'future';
+  associateStatus?: 'board_member' | 'consultant' | 'advisor' | 'contractor' | 'volunteer' | 'partner' | 'other';
   avatar?: string;
   phone?: string;
   manager?: string;
   location: string;
 }
 
-export interface EmployeeEnrollment {
-  employeeId: string;
+// Keep Employee interface for backward compatibility during transition
+export interface Employee extends Person {
+  status: 'active' | 'previous' | 'future' | 'other';
+}
+
+export interface PersonEnrollment {
+  personId: string;
   onboardingCompleted: boolean;
   documentsStatus: DocumentStatus[];
   tasksStatus: TaskStatus[];
   lastActivity: string;
   completionPercentage: number;
+}
+
+// Keep EmployeeEnrollment interface for backward compatibility during transition
+export interface EmployeeEnrollment extends PersonEnrollment {
+  employeeId: string;
 }
 
 export interface DocumentStatus {

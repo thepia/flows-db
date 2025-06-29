@@ -106,7 +106,7 @@ function handleKeydown(e) {
 		<EmployeeStatusBadge status={employee.status} size={compact ? 'sm' : 'md'} />
 		
 		{#if !compact}
-			<Button variant="outline" size="sm" href="/employees/{employee.id}">
+			<Button variant="outline" size="sm" href="/people/{employee.id}">
 				View Details
 			</Button>
 		{/if}

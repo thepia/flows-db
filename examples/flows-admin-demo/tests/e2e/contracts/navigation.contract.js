@@ -19,6 +19,16 @@ export const NavigationContract = {
         actions: ['new-invitation']
       }
     },
+    processes: {
+      id: 'tab-processes',
+      label: 'Processes',
+      icon: 'Settings',
+      defaultActive: false,
+      content: {
+        sections: ['processes-header', 'process-list'],
+        actions: ['new-process']
+      }
+    },
     // Dynamic tabs based on applications
     applications: {
       // These will be dynamically populated based on actual data
@@ -222,6 +232,7 @@ export const NavigationContract = {
 export const NavigationPaths = {
   dashboard: () => '/',
   peopleTab: () => '/?tab=people',
+  processesTab: () => '/?tab=processes',
   applicationTab: (appCode) => `/?tab=${appCode}`,
   offboardingView: (appCode, view) => `/?tab=${appCode}&view=${view}`,
   offboardingProcess: (appCode, processId) => `/?tab=${appCode}&view=tasks&processId=${processId}`
@@ -232,6 +243,11 @@ export const NavigationActions = {
   switchTab: async (page, tabId) => {
     await page.click(`[data-testid="${tabId}"]`);
     await NavigationContract.testHelpers.waitForNavigation(page, tabId);
+  },
+  
+  switchToProcesses: async (page) => {
+    await page.click(`[data-testid="tab-processes"]`);
+    await NavigationContract.testHelpers.waitForNavigation(page, 'processes');
   },
   
   switchOffboardingView: async (page, viewId) => {

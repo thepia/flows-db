@@ -14,6 +14,8 @@ export class NavigationHelper {
    * Navigate to the main offboarding tab
    */
   async navigateToOffboarding() {
+    // Wait for applications to load and offboarding tab to be available
+    await this.page.waitForSelector('[data-testid="tab-offboarding"]', { state: 'visible' });
     await this.page.click('[data-testid="tab-offboarding"]');
     await this.page.waitForSelector('[data-testid="view-overview"]', { state: 'visible' });
     await this.verifyOffboardingTabActive();

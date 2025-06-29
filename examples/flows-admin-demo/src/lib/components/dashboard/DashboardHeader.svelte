@@ -31,9 +31,9 @@ export const loading: boolean = false;
 						Dashboard
 					</Button>
 				{/if}
-				<Button variant="outline" href="/employees/new">
+				<Button variant="outline" href="/people/new">
 					<UserPlus class="w-4 h-4 mr-2" />
-					New Employee
+					New Person
 				</Button>
 				<Button variant="outline" href="/invitations/new">
 					<UserPlus class="w-4 h-4 mr-2" />

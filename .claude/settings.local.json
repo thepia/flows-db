@@ -31,7 +31,10 @@
       "Bash(pnpm demo:refresh:*)",
       "Bash(touch:*)",
       "Bash(pnpm exec playwright test:*)",
-      "Bash(pnpm test:*)"
+      "Bash(pnpm test:*)",
+      "Bash(npm run build:*)",
+      "Bash(mv:*)",
+      "Bash(git rm:*)"
     ],
     "deny": []
   }

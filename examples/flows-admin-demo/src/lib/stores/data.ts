@@ -7,6 +7,8 @@ import type {
   DocumentStatus,
   Employee,
   EmployeeEnrollment,
+  Person,
+  PersonEnrollment,
   Invitation,
   TaskStatus,
 } from '../types.js';
@@ -29,52 +31,65 @@ export const error = writable<string | null>(null);
 export const client = writable<Client | null>(null);
 export const clients = writable<Client[]>([]);
 export const applications = writable<Application[]>([]);
-export const employees = writable<Employee[]>([]);
-export const enrollments = writable<EmployeeEnrollment[]>([]);
+export const people = writable<Person[]>([]);
+export const enrollments = writable<PersonEnrollment[]>([]);
 export const documents = writable<DocumentStatus[]>([]);
 export const tasks = writable<TaskStatus[]>([]);
 export const invitations = writable<Invitation[]>([]);
 
-// Helper function to transform database employee to UI format
-function transformEmployee(dbEmployee: any): Employee {
-  // Map legacy database status values to new UI status values
-  const mapLegacyStatus = (legacyStatus: string): string => {
-    switch (legacyStatus) {
-      case 'active':
-        return 'active';
-      case 'offboarded':
-        return 'previous';
-      case 'future':
-        return 'future';
-      case 'invited':
-      case 'pending':
-      case 'offboarding_initiated':
-      default:
-        return 'other';
-    }
-  };
+// Backward compatibility
+export const employees = people; // Alias for backward compatibility
 
+// Helper function to transform database person to UI format
+function transformPerson(dbPerson: any): Person {
   return {
-    id: dbEmployee.id,
-    email: dbEmployee.company_email,
-    firstName: dbEmployee.first_name,
-    lastName: dbEmployee.last_name,
-    department: dbEmployee.department,
-    position: dbEmployee.position,
-    startDate: dbEmployee.start_date,
-    status: mapLegacyStatus(dbEmployee.status),
+    id: dbPerson.id,
+    email: dbPerson.company_email,
+    firstName: dbPerson.first_name,
+    lastName: dbPerson.last_name,
+    department: dbPerson.department,
+    position: dbPerson.position,
+    startDate: dbPerson.start_date,
+    employmentStatus: dbPerson.employment_status,
+    associateStatus: dbPerson.associate_status,
     phone: '', // Not in database schema
-    manager: dbEmployee.manager || '',
-    location: dbEmployee.location,
+    manager: dbPerson.manager || '',
+    location: dbPerson.location,
   };
 }
 
-// Helper function to transform database enrollment to UI format
-function transformEnrollment(
+// Backward compatibility: transform person to old employee format
+function transformPersonToEmployee(dbPerson: any): Employee {
+  const mapToLegacyStatus = (employmentStatus: string | null, associateStatus: string | null): string => {
+    if (employmentStatus === 'active') return 'active';
+    if (employmentStatus === 'former') return 'previous';
+    if (employmentStatus === 'future') return 'future';
+    return 'other';
+  };
+
+  return {
+    id: dbPerson.id,
+    email: dbPerson.company_email,
+    firstName: dbPerson.first_name,
+    lastName: dbPerson.last_name,
+    department: dbPerson.department,
+    position: dbPerson.position,
+    startDate: dbPerson.start_date,
+    status: mapToLegacyStatus(dbPerson.employment_status, dbPerson.associate_status),
+    employmentStatus: dbPerson.employment_status,
+    associateStatus: dbPerson.associate_status,
+    phone: '', // Not in database schema
+    manager: dbPerson.manager || '',
+    location: dbPerson.location,
+  };
+}
+
+// Helper function to transform database person enrollment to UI format
+function transformPersonEnrollment(
   dbEnrollment: any,
   dbDocuments: any[],
   dbTasks: any[]
-): EmployeeEnrollment {
+): PersonEnrollment {
   // Transform documents
   const documentsStatus = dbDocuments.map(
     (doc: any): DocumentStatus => ({
@@ -105,12 +120,21 @@ function transformEnrollment(
   );
 
   return {
-    employeeId: dbEnrollment.employee_id,
+    personId: dbEnrollment.person_id,
     onboardingCompleted: dbEnrollment.onboarding_completed,
     documentsStatus,
     tasksStatus,
     lastActivity: dbEnrollment.last_activity,
     completionPercentage: dbEnrollment.completion_percentage,
+  };
+}
+
+// Backward compatibility: transform to old employee enrollment format
+function transformToEmployeeEnrollment(dbEnrollment: any, dbDocuments: any[], dbTasks: any[]): EmployeeEnrollment {
+  const personEnrollment = transformPersonEnrollment(dbEnrollment, dbDocuments, dbTasks);
+  return {
+    ...personEnrollment,
+    employeeId: dbEnrollment.person_id, // Map person_id to employeeId for backward compatibility
   };
 }
 
@@ -313,49 +337,59 @@ async function loadClientSpecificData(clientId: string) {
         applications.set(mockApps);
       }
 
-      // Load employees
-      const { data: employeesData, error: employeesError } = await supabase
-        .from('employees')
+      // Load people (employees and associates)
+      const { data: peopleData, error: peopleError } = await supabase
+        .from('people')
         .select('*')
         .eq('client_id', clientData.id);
 
-      if (employeesError) {
-        await reportSupabaseError('employees', 'select', employeesError, {
+      if (peopleError) {
+        await reportSupabaseError('people', 'select', peopleError, {
           client_id: clientData.id,
         });
-        throw employeesError;
+        throw peopleError;
       }
 
-      if (employeesData) {
-        const transformedEmployees: Employee[] = employeesData.map(transformEmployee);
+      if (peopleData) {
+        const transformedPeople: Person[] = peopleData.map(transformPerson);
+        people.set(transformedPeople);
+        
+        // Backward compatibility: also set employees store with transformed data
+        const transformedEmployees: Employee[] = peopleData.map(transformPersonToEmployee);
         employees.set(transformedEmployees);
 
         // Load enrollments with related data
-        const enrollmentsData: EmployeeEnrollment[] = [];
+        const enrollmentsData: PersonEnrollment[] = [];
+        const employeeEnrollmentsData: EmployeeEnrollment[] = [];
 
-        for (const employee of employeesData) {
+        for (const person of peopleData) {
           // Get enrollment
           const { data: enrollmentData } = await supabase
-            .from('employee_enrollments')
+            .from('people_enrollments')
             .select('*')
-            .eq('employee_id', employee.id)
+            .eq('person_id', person.id)
             .single();
 
-          // Get documents
+          // Get documents (still use employee_id for backward compatibility until documents table is updated)
           const { data: documentsData } = await supabase
             .from('documents')
             .select('*')
-            .eq('employee_id', employee.id);
+            .eq('employee_id', person.id);
 
-          // Get tasks
+          // Get tasks (still use employee_id for backward compatibility until tasks table is updated)
           const { data: tasksData } = await supabase
             .from('tasks')
             .select('*')
-            .eq('employee_id', employee.id);
+            .eq('employee_id', person.id);
 
           if (enrollmentData) {
             enrollmentsData.push(
-              transformEnrollment(enrollmentData, documentsData || [], tasksData || [])
+              transformPersonEnrollment(enrollmentData, documentsData || [], tasksData || [])
+            );
+            
+            // Backward compatibility
+            employeeEnrollmentsData.push(
+              transformToEmployeeEnrollment(enrollmentData, documentsData || [], tasksData || [])
             );
           }
 
@@ -399,6 +433,9 @@ async function loadClientSpecificData(clientId: string) {
         }
 
         enrollments.set(enrollmentsData);
+        
+        // For backward compatibility, also update old employees store if other parts of app expect it
+        // This can be removed once all components are updated to use people store
       }
 
       // Load invitations
@@ -737,24 +774,26 @@ export async function createEmployee(employeeData: {
     };
 
     // Insert into database
-    const { data: newEmployee, error } = await supabase
-      .from('employees')
+    const { data: newPerson, error } = await supabase
+      .from('people')
       .insert(dbEmployeeData)
       .select('*')
       .single();
 
     if (error) {
-      await reportSupabaseError('employees', 'insert', error, {
+      await reportSupabaseError('people', 'insert', error, {
         client_id: currentClient.id,
-        employee_code: employeeCode,
+        person_code: employeeCode,
       });
       throw error;
     }
 
     // Transform to UI format
-    const transformedEmployee = transformEmployee(newEmployee);
+    const transformedPerson = transformPerson(newPerson);
+    const transformedEmployee = transformPersonToEmployee(newPerson);
 
-    // Update local store
+    // Update local stores
+    people.update((current) => [...current, transformedPerson]);
     employees.update((current) => [...current, transformedEmployee]);
 
     return transformedEmployee;
@@ -782,33 +821,33 @@ export async function getClientMetrics() {
     // For now, use a simplified approach based on existing data
     // TODO: Replace with proper database functions after schema migration
 
-    // Get all employees for this client
-    const { data: employeeData, error: employeeError } = await supabase
-      .from('employees')
-      .select('id, status')
+    // Get all people for this client
+    const { data: peopleData, error: peopleError } = await supabase
+      .from('people')
+      .select('id, employment_status, associate_status')
       .eq('client_id', currentClient.id);
 
-    if (employeeError) {
-      await reportSupabaseError('employees', 'select', employeeError, {
+    if (peopleError) {
+      await reportSupabaseError('people', 'select', peopleError, {
         client_id: currentClient.id,
       });
-      throw employeeError;
+      throw peopleError;
     }
 
-    // Get all enrollments for these employees
-    const employeeIds = employeeData?.map((e) => e.id) || [];
+    // Get all enrollments for these people
+    const personIds = peopleData?.map((p) => p.id) || [];
 
-    if (employeeIds.length === 0) {
+    if (personIds.length === 0) {
       return { onboardingCount: 0, offboardingCount: 0 };
     }
 
     const { data: enrollmentData, error: enrollmentError } = await supabase
-      .from('employee_enrollments')
-      .select('employee_id, onboarding_completed, completion_percentage')
-      .in('employee_id', employeeIds);
+      .from('people_enrollments')
+      .select('person_id, onboarding_completed, completion_percentage')
+      .in('person_id', personIds);
 
     if (enrollmentError) {
-      await reportSupabaseError('employee_enrollments', 'select', enrollmentError, {
+      await reportSupabaseError('people_enrollments', 'select', enrollmentError, {
         client_id: currentClient.id,
       });
       throw enrollmentError;

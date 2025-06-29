@@ -151,3 +151,5 @@ analytics/
 # package-lock.json
 # pnpm-lock.yaml
 # yarn.lock
+
+playwright-report/

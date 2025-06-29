@@ -59,6 +59,10 @@ export class TestSetup {
     await this.page.goto('/');
     await this.page.waitForSelector('[data-testid="app-loaded"]', { state: 'visible' });
     await this.page.waitForLoadState('networkidle');
+    // Wait for loading indicator to be hidden to ensure demo data has loaded
+    await this.page.waitForSelector('[data-testid="loading-indicator"]', { state: 'hidden' }).catch(() => {
+      // Loading indicator might not exist, which is fine
+    });
   }
 
   /**

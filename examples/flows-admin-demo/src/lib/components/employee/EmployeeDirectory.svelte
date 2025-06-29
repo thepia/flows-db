@@ -27,7 +27,7 @@ function getEmployeeEnrollment(employeeId: string): EmployeeEnrollment | undefin
 					Manage employees and associates
 				</CardDescription>
 			</div>
-			<Button href="/employees/new">
+			<Button href="/people/new">
 				<UserPlus class="w-4 h-4 mr-2" />
 				New Person
 			</Button>

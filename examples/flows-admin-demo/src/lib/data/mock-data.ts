@@ -4,6 +4,8 @@ import type {
   DocumentStatus,
   Employee,
   EmployeeEnrollment,
+  Person,
+  PersonEnrollment,
   Invitation,
   TaskStatus,
 } from '$lib/types';
@@ -41,66 +43,99 @@ export const mockApplications: Application[] = [
   },
 ];
 
-// Mock employees
-export const mockEmployees: Employee[] = [
+// Mock people (employees and associates)
+export const mockPeople: Person[] = [
   {
-    id: 'emp-001',
+    id: 'person-001',
     email: 'anna.hansen@nets.eu',
     firstName: 'Anna',
     lastName: 'Hansen',
     department: 'Engineering',
     position: 'Senior Software Engineer',
     startDate: '2024-01-15',
-    status: 'active',
+    employmentStatus: 'active',
     phone: '+45 12 34 56 78',
     manager: 'Lars Nielsen',
     location: 'Copenhagen, Denmark',
   },
   {
-    id: 'emp-002',
+    id: 'person-002',
     email: 'erik.larsen@nets.eu',
     firstName: 'Erik',
     lastName: 'Larsen',
     department: 'Product',
     position: 'Product Manager',
     startDate: '2024-02-01',
-    status: 'active',
+    employmentStatus: 'active',
     phone: '+45 87 65 43 21',
     manager: 'Maria Andersen',
     location: 'Copenhagen, Denmark',
   },
   {
-    id: 'emp-003',
+    id: 'person-003',
     email: 'sofia.berg@nets.eu',
     firstName: 'Sofia',
     lastName: 'Berg',
     department: 'Design',
     position: 'UX Designer',
     startDate: '2024-03-01',
-    status: 'pending',
+    employmentStatus: 'future',
     phone: '+45 23 45 67 89',
     manager: 'Peter Olsen',
     location: 'Stockholm, Sweden',
   },
   {
-    id: 'emp-004',
+    id: 'person-004',
     email: 'magnus.johansson@nets.eu',
     firstName: 'Magnus',
     lastName: 'Johansson',
     department: 'Engineering',
     position: 'DevOps Engineer',
     startDate: '2023-12-01',
-    status: 'offboarded',
+    employmentStatus: 'former',
     phone: '+46 70 123 45 67',
     manager: 'Lars Nielsen',
     location: 'Stockholm, Sweden',
   },
+  // Associates
+  {
+    id: 'person-005',
+    email: 'john.board@nets.eu',
+    firstName: 'John',
+    lastName: 'Board',
+    department: 'Board',
+    position: 'Board Member',
+    startDate: '2023-01-01',
+    associateStatus: 'board_member',
+    phone: '+45 11 22 33 44',
+    location: 'Copenhagen, Denmark',
+  },
+  {
+    id: 'person-006',
+    email: 'jane.consultant@external.com',
+    firstName: 'Jane',
+    lastName: 'Consultant',
+    department: 'Strategy',
+    position: 'Strategy Consultant',
+    startDate: '2024-06-01',
+    associateStatus: 'consultant',
+    phone: '+45 55 66 77 88',
+    location: 'Remote',
+  },
 ];
 
+// Backward compatibility: Export employees with old format
+export const mockEmployees: Employee[] = mockPeople.map(person => ({
+  ...person,
+  status: person.employmentStatus === 'active' ? 'active' :
+          person.employmentStatus === 'former' ? 'previous' :
+          person.employmentStatus === 'future' ? 'future' : 'other'
+}));
+
 // Mock enrollment data
-export const mockEnrollments: EmployeeEnrollment[] = [
+export const mockPersonEnrollments: PersonEnrollment[] = [
   {
-    employeeId: 'emp-001',
+    personId: 'person-001',
     onboardingCompleted: true,
     documentsStatus: [
       {
@@ -139,7 +174,7 @@ export const mockEnrollments: EmployeeEnrollment[] = [
     completionPercentage: 100,
   },
   {
-    employeeId: 'emp-002',
+    personId: 'person-002',
     onboardingCompleted: true,
     documentsStatus: [
       {
@@ -169,7 +204,7 @@ export const mockEnrollments: EmployeeEnrollment[] = [
     completionPercentage: 100,
   },
   {
-    employeeId: 'emp-003',
+    personId: 'person-003',
     onboardingCompleted: false,
     documentsStatus: [
       {
@@ -270,7 +305,27 @@ export const mockInvitations: Invitation[] = [
   },
 ];
 
+// Backward compatibility: Export enrollments with old format
+export const mockEnrollments: EmployeeEnrollment[] = mockPersonEnrollments.map(enrollment => ({
+  ...enrollment,
+  employeeId: enrollment.personId
+}));
+
 // Helper functions to get related data
+export function getPersonEnrollment(personId: string): PersonEnrollment | undefined {
+  return mockPersonEnrollments.find((e) => e.personId === personId);
+}
+
+export function getPersonInvitations(personId: string): Invitation[] {
+  const person = mockPeople.find((p) => p.id === personId);
+  if (!person) return [];
+
+  return mockInvitations.filter(
+    (inv) => inv.companyEmail === person.email || inv.privateEmail === person.email
+  );
+}
+
+// Backward compatibility functions
 export function getEmployeeEnrollment(employeeId: string): EmployeeEnrollment | undefined {
   return mockEnrollments.find((e) => e.employeeId === employeeId);
 }
