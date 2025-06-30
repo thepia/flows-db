@@ -123,7 +123,7 @@ export async function initializeAdminErrorReporting() {
   if (!browser) return false;
 
   try {
-    const { initializeAdminErrorReporter } = await import('../utils/errorReporter.js');
+    const { initializeAdminErrorReporter } = await import('../utils/errorReporter');
     const config = await getAdminErrorReportingConfig();
 
     await initializeAdminErrorReporter(config);
@@ -152,7 +152,7 @@ export function enableGlobalAdminErrorReporting() {
     console.error('[Admin Demo] Unhandled error:', event.error);
 
     try {
-      const { reportAdminError } = await import('../utils/errorReporter.js');
+      const { reportAdminError } = await import('../utils/errorReporter');
       await reportAdminError('ui-interaction', event.error, {
         filename: event.filename,
         lineno: event.lineno,
@@ -169,7 +169,7 @@ export function enableGlobalAdminErrorReporting() {
     console.error('[Admin Demo] Unhandled promise rejection:', event.reason);
 
     try {
-      const { reportAdminError } = await import('../utils/errorReporter.js');
+      const { reportAdminError } = await import('../utils/errorReporter');
       await reportAdminError('api-call', event.reason, {
         type: 'unhandled-promise-rejection',
       });
@@ -204,7 +204,7 @@ export async function reportSupabaseError(table, operation, error, context = {})
   if (!browser) return;
 
   try {
-    const { reportDataError } = await import('../utils/errorReporter.js');
+    const { reportDataError } = await import('../utils/errorReporter');
 
     await reportDataError(table, operation, error, {
       supabase: true,
@@ -222,7 +222,7 @@ export async function reportComponentError(component, action, error, context = {
   if (!browser) return;
 
   try {
-    const { reportUiError } = await import('../utils/errorReporter.js');
+    const { reportUiError } = await import('../utils/errorReporter');
 
     await reportUiError(component, action, error, {
       ui: true,
@@ -240,7 +240,7 @@ export async function flushAdminErrorReports() {
   if (!browser) return;
 
   try {
-    const { flushAdminErrorReports } = await import('../utils/errorReporter.js');
+    const { flushAdminErrorReports } = await import('../utils/errorReporter');
     await flushAdminErrorReports();
   } catch (error) {
     console.error('[Admin Demo] Failed to flush error reports:', error);

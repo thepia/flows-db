@@ -21,12 +21,20 @@ A demo admin application for managing employees and invitations in the Thepia Fl
 
 ## Demo Data
 
-The application uses mock data representing:
+The application supports multiple demo companies with persistent client switching:
 
-- **Nets A/S** as the demo client
-- 4 sample employees with different statuses
-- Document and task tracking
-- Invitation workflows for onboarding/offboarding
+- **Hygge & Hvidløg ApS** - Primary internal demo (European food tech)
+- **Meridian Brands International** - Primary prospect demo (Global consumer products)  
+- **Test Demo Corporation** - Testing client
+- **Nets Demo Corporation** - Legacy fallback
+
+Each client has rich demo data including employees, processes, invitations, and branding.
+
+### Client Switching Architecture
+
+For detailed information about client persistence and demo data patterns:
+- 📖 **[Demo Data Architecture](docs/demo-data-architecture.md)** - Implementation patterns and data flow
+- 🔧 **[Demo Data Troubleshooting](docs/demo-data-troubleshooting.md)** - Common issues and solutions
 
 ## Getting Started
 

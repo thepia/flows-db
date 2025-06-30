@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
 import { reportSupabaseError } from '../config/errorReporting.js';
 import { supabase } from '../supabase.js';
+import { getCurrentClientId } from '$lib/utils/client-persistence';
 import type {
   Application,
   Client,
@@ -594,21 +595,37 @@ async function loadClientSpecificData(clientId: string) {
   }
 }
 
-// Load demo data using default client (backwards compatibility)
+// Load demo data using current client from localStorage
 export async function loadDemoData() {
   loading.set(true);
   error.set(null);
 
   try {
-    // Priority order for demo clients - prioritize rich demo companies
+    // Get current client from localStorage (single source of truth)
+    const currentClientId = getCurrentClientId();
+    console.log(`[loadDemoData] Loading data for current client: ${currentClientId}`);
+
+    // Try to load the current client
+    const { data: clientData, error: clientError } = await supabase
+      .from('clients')
+      .select('*')
+      .eq('client_code', currentClientId)
+      .single();
+
+    if (!clientError && clientData) {
+      console.log(`[loadDemoData] Found client: ${clientData.client_code}`);
+      await loadClientData(clientData.id);
+      return;
+    }
+
+    // If current client doesn't exist, try fallback priorities
+    console.warn(`[loadDemoData] Current client ${currentClientId} not found, trying fallbacks`);
     const DEMO_PRIORITIES = [
-      'hygge-hvidlog',     // Primary internal demo - European food tech
-      'meridian-brands',   // Primary prospect demo - Global consumer products
-      'flows-ci-test',     // CI testing client (when created)
-      'nets-demo'          // Legacy fallback
+      'hygge-hvidlog',
+      'meridian-brands', 
+      'nets-demo'
     ];
 
-    // Try each demo client in priority order
     for (const clientCode of DEMO_PRIORITIES) {
       const { data: clientData, error: clientError } = await supabase
         .from('clients')

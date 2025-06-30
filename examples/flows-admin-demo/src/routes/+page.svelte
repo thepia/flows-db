@@ -25,6 +25,7 @@ import {
   totalPeopleCount,
 } from '$lib/stores/data';
 import { settingsStore } from '$lib/stores/settings';
+import { clientStore } from '$lib/stores/domains/client/client.store';
 import { supabase } from '$lib/supabase';
 import { AlertCircle, Briefcase, Plus, UserMinus, UserPlus, Users, Settings, CreditCard, FileText, Shield, Download } from 'lucide-svelte';
 import TFCManagementPanel from '$lib/components/tfc/TFCManagementPanel.svelte';
@@ -440,12 +441,18 @@ function calculateProcessProgress(process) {
 
 // Load data on component mount
 onMount(async () => {
-  // Initialize settings and load all clients first
+  console.log('[MainPage] onMount starting...');
+  
+  // Initialize settings
   settingsStore.init();
+  
+  // Load legacy clients for backward compatibility
   await loadAllClients();
-
-  // Load demo data (falls back to default client if no settings)
+  
+  // loadDemoData now uses localStorage as single source of truth - always call it
+  console.log('[MainPage] Loading demo data (uses localStorage for client selection)');
   await loadDemoData();
+  
   await loadMetrics();
   
   // Load mock offboarding data
@@ -453,6 +460,8 @@ onMount(async () => {
   
   // Load real processes data
   await loadProcessesData();
+  
+  console.log('[MainPage] onMount completed');
 });
 
 // Load business metrics
@@ -473,6 +482,7 @@ async function loadMetrics() {
 
 // Reactive to client changes
 $: if ($client) {
+  console.log(`[MainPage] Client changed to: ${$client.client_code || $client.code}, reloading data`);
   loadMetrics();
   loadAccountData();
 }

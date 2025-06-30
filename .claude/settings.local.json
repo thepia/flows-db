@@ -40,7 +40,8 @@
       "Bash(true)",
       "Bash(chmod:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(psql:*)"
+      "Bash(psql:*)",
+      "Bash(npm test:*)"
     ],
     "deny": []
   }

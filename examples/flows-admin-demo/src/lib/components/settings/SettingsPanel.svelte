@@ -57,9 +57,14 @@ $: if (
   $settings.selectedClient !== lastLoadedClientId
 ) {
   lastLoadedClientId = $settings.selectedClient;
-  loadClientData($settings.selectedClient).catch((error) => {
-    console.error('Failed to load selected client data:', error);
-  });
+  
+  // Find the client by code to get the database ID
+  const clientToLoad = $clients.find(c => c.code === $settings.selectedClient);
+  if (clientToLoad) {
+    loadClientData(clientToLoad.id).catch((error) => {
+      console.error('Failed to load selected client data:', error);
+    });
+  }
 }
 
 // Reactive available clients (with safety checks)
@@ -71,34 +76,37 @@ function handleBrandingChange(brandingId: string) {
 }
 
 // Handle client selection
-async function handleClientChange(clientId: string) {
-  settingsStore.selectClient(clientId);
+async function handleClientChange(clientCode: string) {
+  // Find the client by code to get the database ID
+  const selectedClient = $clients.find((c) => c.code === clientCode);
+  if (!selectedClient) {
+    console.error('Client not found:', clientCode);
+    return;
+  }
 
-  // Also load the data for this client
-  if (clientId) {
-    loadingClientData = true;
-    try {
-      await loadClientData(clientId);
+  // Store client code in settings (not database ID)
+  settingsStore.selectClient(clientCode);
 
-      // Apply client-specific branding if available
-      const selectedClient = $clients.find((c) => c.id === clientId);
-      if (selectedClient) {
-        const clientBranding = getBrandingForClient(selectedClient.code);
-        if (clientBranding) {
-          // Update the branding selection in settings
-          settingsStore.selectBranding(clientBranding.id);
+  // Also load the data for this client using database ID
+  loadingClientData = true;
+  try {
+    await loadClientData(selectedClient.id);
 
-          // Apply the branding to the document
-          await applyBrandingToDocument(clientBranding);
+    // Apply client-specific branding if available
+    const clientBranding = getBrandingForClient(selectedClient.code);
+    if (clientBranding) {
+      // Update the branding selection in settings
+      settingsStore.selectBranding(clientBranding.id);
 
-          console.log(`Applied branding for ${selectedClient.name}:`, clientBranding.displayName);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to load client data:', error);
-    } finally {
-      loadingClientData = false;
+      // Apply the branding to the document
+      await applyBrandingToDocument(clientBranding);
+
+      console.log(`Applied branding for ${selectedClient.name}:`, clientBranding.displayName);
     }
+  } catch (error) {
+    console.error('Failed to load client data:', error);
+  } finally {
+    loadingClientData = false;
   }
 }
 
@@ -500,11 +508,11 @@ function formatLastUpdated(dateString: string) {
 				<!-- Rich Client Cards -->
 				<div class="grid grid-cols-1 gap-3">
 					{#each availableClients as client}
-						{@const isSelected = $settings?.selectedClient === client.id}
+						{@const isSelected = $settings?.selectedClient === client.code}
 						{@const isDetailedDemo = client.code === 'hygge-hvidlog' || client.code === 'meridian-brands'}
 						<button
 							type="button"
-							on:click={() => handleClientChange(client.id)}
+							on:click={() => handleClientChange(client.code)}
 							class="text-left p-4 border rounded-lg transition-all duration-200 hover:shadow-md {
 								isSelected 
 									? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' 
@@ -605,7 +613,7 @@ function formatLastUpdated(dateString: string) {
 
 			<!-- Selected Client & Branding Summary -->
 			{#if $settings?.selectedClient}
-				{@const selectedClient = $clients.find(c => c.id === $settings.selectedClient)}
+				{@const selectedClient = $clients.find(c => c.code === $settings.selectedClient)}
 				{#if selectedClient}
 					<div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
 						<div class="flex items-center justify-between">

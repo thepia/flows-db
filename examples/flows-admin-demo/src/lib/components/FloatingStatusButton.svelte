@@ -13,14 +13,20 @@ import {
   WifiOff,
   XCircle,
   Zap,
+  Building2,
 } from 'lucide-svelte';
 import { onMount } from 'svelte';
+import { goto } from '$app/navigation';
+import { clientStore } from '$lib/stores/domains/client/client.store';
+import { demoClientSwitcher } from '$lib/orchestrators/demo-client-switcher';
+import { setCurrentClientId } from '$lib/utils/client-persistence';
 
 // Status states
 let isOpen = false;
 let errorReportingConfig: any = null;
 let queueSize = 0;
 let lastRefresh = '';
+let isSwitchingClient = false;
 
 // Service status (future)
 const authStatus = 'connected'; // 'connected' | 'disconnected' | 'error'
@@ -31,7 +37,7 @@ async function loadSystemStatus() {
   try {
     // Load error reporting status
     const { getAdminErrorReportingConfig } = await import('../config/errorReporting.js');
-    const { getAdminErrorReportQueueSize } = await import('../utils/errorReporter.js');
+    const { getAdminErrorReportQueueSize } = await import('../utils/errorReporter');
 
     errorReportingConfig = await getAdminErrorReportingConfig();
     queueSize = getAdminErrorReportQueueSize();
@@ -43,6 +49,13 @@ async function loadSystemStatus() {
     // - Database connectivity
   } catch (error) {
     console.error('Failed to load system status:', error);
+    // Set some default values on error
+    errorReportingConfig = {
+      enabled: false,
+      serverType: 'Error loading config',
+      environment: 'unknown'
+    };
+    queueSize = 0;
   }
 }
 
@@ -70,14 +83,31 @@ async function testErrorReporting() {
 }
 
 function toggleStatus() {
+  console.log('[FloatingStatusButton] Toggle clicked, current isOpen:', isOpen);
   isOpen = !isOpen;
+  console.log('[FloatingStatusButton] New isOpen state:', isOpen);
   if (isOpen) {
     loadSystemStatus();
   }
 }
 
-onMount(() => {
+onMount(async () => {
+  console.log('[FloatingStatusButton] Component mounted');
   loadSystemStatus();
+  
+  // Load clients if not already loaded (handled automatically by clientStore)
+  try {
+    // The clientStore automatically loads clients on mount
+    console.log('[FloatingStatusButton] Clients loading handled by clientStore');
+    console.log('[FloatingStatusButton] Current clientStore state:', {
+      clients: $clientStore.clients,
+      currentClient: $clientStore.currentClient,
+      loading: $clientStore.loading,
+      error: $clientStore.error
+    });
+  } catch (error) {
+    console.error('[FloatingStatusButton] Failed to load clients:', error);
+  }
 
   // Refresh status every 10 seconds
   const interval = setInterval(loadSystemStatus, 10000);
@@ -130,7 +160,7 @@ $: ringColor =
 <div class="fixed bottom-4 right-4 z-50">
 	{#if isOpen}
 		<!-- Status Popover -->
-		<div class="absolute bottom-16 right-0 w-80 mb-2">
+		<div class="absolute bottom-16 right-0 w-80 mb-2 max-h-[600px] overflow-y-auto">
 			<Card class="shadow-lg border-2">
 				<CardHeader class="pb-3">
 					<div class="flex items-center justify-between">
@@ -217,8 +247,69 @@ $: ringColor =
 							</div>
 							<div class="flex justify-between">
 								<span class="text-muted-foreground">Client:</span>
-								<span class="text-muted-foreground">nets-demo</span>
+								<span class="text-muted-foreground">{$clientStore.currentClient?.client_code || 'Loading...'}</span>
 							</div>
+						</div>
+					</div>
+
+					<!-- Demo Client Switcher -->
+					<div class="space-y-2">
+						<h4 class="font-medium text-sm flex items-center gap-2">
+							<Building2 class="w-3 h-3" />
+							Demo Client
+						</h4>
+						<div class="pl-5 space-y-2">
+							{#if $clientStore.clients && $clientStore.clients.length > 0}
+								<select
+									class="w-full px-2 py-1 text-xs border rounded-md bg-white"
+									value={$clientStore.currentClient?.client_id || ''}
+									disabled={isSwitchingClient || $clientStore.loading}
+									on:change={async (e) => {
+										const clientId = e.target.value;
+										console.log(`[FloatingStatusButton] User selected client: ${clientId}`);
+										
+										if (clientId) {
+											try {
+												isSwitchingClient = true;
+												// Ultra-simple: just store in localStorage and refresh
+												setCurrentClientId(clientId);
+												console.log(`[FloatingStatusButton] Client stored in localStorage, refreshing page`);
+												
+												// Refresh the page - loadDemoData will use the stored client
+												await goto('/', { replaceState: true, invalidateAll: true });
+												isOpen = false;
+											} catch (error) {
+												console.error('[FloatingStatusButton] Failed to switch client:', error);
+												alert('Failed to switch client. Please try again.');
+											} finally {
+												isSwitchingClient = false;
+											}
+										}
+									}}
+								>
+									{#each $clientStore.clients as c}
+										<option value={c.client_id}>
+											{c.legal_name} ({c.client_code})
+										</option>
+									{/each}
+								</select>
+								{#if isSwitchingClient || $clientStore.loading}
+									<div class="text-xs text-blue-600 flex items-center gap-1">
+										<RefreshCw class="w-3 h-3 animate-spin" />
+										{isSwitchingClient ? 'Switching client...' : 'Loading clients...'}
+									</div>
+								{:else}
+									<div class="text-xs text-muted-foreground">
+										{$clientStore.currentClient?.industry || 'No industry set'}
+									</div>
+								{/if}
+							{:else if $clientStore.loading}
+								<div class="text-xs text-muted-foreground">Loading clients...</div>
+							{:else if $clientStore.error}
+								<div class="text-xs text-red-600">Error: {$clientStore.error}</div>
+							{:else}
+								<div class="text-xs text-muted-foreground">No clients available</div>
+							{/if}
 						</div>
 					</div>
 
@@ -284,13 +375,17 @@ $: ringColor =
 	{/if}
 
 	<!-- Floating Button -->
-	<Button 
+	<button 
 		on:click={toggleStatus}
-		class="w-12 h-12 rounded-full shadow-lg ring-2 {ringColor} ring-offset-2 transition-all hover:scale-105"
-		variant={overallStatus === 'good' ? 'default' : overallStatus === 'warning' ? 'secondary' : 'destructive'}
+		class="w-14 h-14 rounded-full shadow-lg ring-2 {ringColor} ring-offset-2 transition-all hover:scale-105 bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center"
+		aria-label="System Status"
 	>
-		<svelte:component this={statusIcon} class="w-5 h-5" />
-	</Button>
+		{#if statusIcon}
+			<svelte:component this={statusIcon} class="w-6 h-6" />
+		{:else}
+			<span class="text-xl">🔧</span>
+		{/if}
+	</button>
 </div>
 
 <!-- Click outside to close -->

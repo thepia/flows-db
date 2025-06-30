@@ -23,6 +23,9 @@
     "test:regression": "node test-client-regression.js",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
+    "test:client-persistence": "vitest run src/lib/tests/client-persistence.test.ts",
+    "test:floating-button": "vitest run src/lib/tests/FloatingStatusButton.test.ts",
+    "test:client-regression": "vitest run src/lib/tests/client-persistence.test.ts src/lib/tests/FloatingStatusButton.test.ts",
     "populate-demo": "vite-node populate-demo-data.ts"
   },
   "devDependencies": {
@@ -31,8 +34,11 @@
     "@sveltejs/adapter-auto": "^6.0.0",
     "@sveltejs/kit": "^2.16.0",
     "@sveltejs/vite-plugin-svelte": "^5.0.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/svelte": "^5.2.8",
     "autoprefixer": "^10.4.20",
     "bits-ui": "^1.8.0",
+    "jsdom": "^26.1.0",
     "postcss": "^8.4.47",
     "svelte": "^5.0.0",
     "svelte-check": "^4.0.0",

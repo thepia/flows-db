@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Client Switcher</title>
+</head>
+<body>
+    <h1>Client Switcher Test</h1>
+    <p>This is a simple test to verify the client switcher is working.</p>
+    
+    <div id="test-results"></div>
+    
+    <script>
+    // Simple test to check if the components are loading
+    console.log('Testing client switcher integration...');
+    
+    // Check if we can access the demo environment
+    const isDemoMode = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    
+    const resultsDiv = document.getElementById('test-results');
+    resultsDiv.innerHTML = `
+        <h2>Test Results:</h2>
+        <p><strong>Demo Mode:</strong> ${isDemoMode ? 'YES' : 'NO'}</p>
+        <p><strong>URL:</strong> ${window.location.href}</p>
+        <p><strong>Hostname:</strong> ${window.location.hostname}</p>
+        <p>
+            <a href="/">Go to Main Demo App</a> to test the client switcher
+        </p>
+    `;
+    </script>
+</body>
+</html>

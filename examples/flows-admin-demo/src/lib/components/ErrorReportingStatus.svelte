@@ -11,7 +11,7 @@ let lastRefresh = '';
 async function loadErrorReportingStatus() {
   try {
     const { getAdminErrorReportingConfig } = await import('../config/errorReporting.js');
-    const { getAdminErrorReportQueueSize } = await import('../utils/errorReporter.js');
+    const { getAdminErrorReportQueueSize } = await import('../utils/errorReporter');
 
     config = await getAdminErrorReportingConfig();
     queueSize = getAdminErrorReportQueueSize();
