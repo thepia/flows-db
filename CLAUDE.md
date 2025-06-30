@@ -5,6 +5,62 @@
 - You cant check in secrets and tokens
 - We use vite-plugin-restart. You can trigger a restart by changing schemas, scripts or the vite configuration.
 
+## Flows Repositories
+
+This section must be replicated across the directories of the Thepia Flows product to ensure consistency. Capture lessons learned.
+
+The repositories are all saved as subdirectories of `/Volumes/Projects/Thepia/`.
+
+### Repository Standards and Consensus
+
+**📋 COMPLETE STANDARDS**: See [thepia.com/docs/flows/repository-standards.md](https://github.com/thepia/thepia.com/blob/main/docs/flows/repository-standards.md) for comprehensive development standards that must be applied across all Flows repositories.
+
+#### Repository Ecosystem
+
+The Thepia Flows product consists of interconnected repositories:
+
+- **`thepia.com`**`: Main website and API server with authentication backend
+- **`flows-auth`**: Frontend sign-in UI library (Svelte) with WebAuthn support. Examples `flows-app-demo` and `tasks-app-demo` in `examples/` directory.
+- **`flows-db`**: Database schema and functionality with admin demo application(flows-admin-demo)  
+- **`flows.thepia.net`**: Public demo website (upcoming) with production database integration
+
+#### Critical Development Standards
+
+- **PNPM only** - Package manager across all repositories
+- **Biome configuration** - Exact biome.json required (see standards doc)
+- **`NODE_AUTH_TOKEN`** - Local .env file for GitHub package installation
+- **Error reporting system** - Mandatory implementation in all demos
+- **@thepia/branding integration** - Required for client-specific theming
+- **Component breakdown** - Regular refactoring to avoid module bloat
+- **automation** - Run automated checks to ensure quality. Build out GitHub Actions.
+- **Document First** - Document before implementing new features. Write in /docs/ and reference in README.md
+
+#### Demo Patterns (Mandatory)
+
+```bash
+# Required scripts in all demo repositories
+pnpm demo:setup     # Initialize demo environment
+pnpm demo:*         # Various demo operations  
+pnpm build         # Ensure correctness before commits
+pnpm lint          # Biome linting (must pass)
+```
+
+#### Quality Requirements
+
+- **Strict code standards** for maintaining development velocity
+- **Build must pass** before any commit (`pnpm build`)
+- **Error reporting to demo server console** for AI debugging
+- **File logging** for AI assistant error tracking
+- **Consistent patterns** across repositories for generated code quality
+
+#### Cross-Repository Integration
+
+- **GitHub packages** for shared functionality
+- **GitHub Actions** for automated workflows
+- **Mature demo components** migrate to shared libraries
+- **Synchronized standards** across all CLAUDE.md files
+
+
 ## Root Cause of My schema Mistakes
 
   I keep defaulting to "standard Supabase patterns" instead of remembering this project's specific
