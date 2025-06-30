@@ -33,7 +33,7 @@ onMount(() => {
 
 $: personId = $page.params.id;
 $: person = $people.find((p) => p.id === personId);
-$: enrollment = $enrollments.find((e) => e.employeeId === personId);
+$: enrollment = $enrollments.find((e) => e.personId === personId || e.employeeId === personId);
 
 // Edit mode state
 let isEditing = false;
@@ -230,7 +230,7 @@ function formatDateTime(dateString: string) {
 </svelte:head>
 
 {#if !person}
-	<div class="min-h-screen bg-gray-50 flex items-center justify-center">
+	<div class="min-h-screen bg-gray-50 flex items-center justify-center" data-testid="person-not-found">
 		<div class="text-center">
 			<h1 class="text-2xl font-bold text-gray-900 mb-2">Person Not Found</h1>
 			<p class="text-gray-600 mb-4">The person you're looking for doesn't exist.</p>
@@ -238,25 +238,25 @@ function formatDateTime(dateString: string) {
 		</div>
 	</div>
 {:else}
-	<div class="min-h-screen bg-gray-50">
+	<div class="min-h-screen bg-gray-50" data-testid="person-detail">
 		<!-- Header -->
 		<header class="bg-white border-b border-gray-200">
 			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div class="flex items-center justify-between py-6">
 					<div class="flex items-center space-x-4">
-						<Button variant="ghost" href="/people" class="p-2">
+						<Button variant="ghost" href="/people" class="p-2" data-testid="back-to-people">
 							<ArrowLeft class="w-5 h-5" />
 						</Button>
-						<div>
-							<h1 class="text-2xl font-bold text-gray-900">
+						<div data-testid="person-header">
+							<h1 class="text-2xl font-bold text-gray-900" data-testid="person-name">
 								{person.firstName} {person.lastName}
 							</h1>
 							<p class="text-sm text-gray-500">
-								{person.position} • {person.department}
+	<span data-testid="person-position">{person.position}</span> • {person.department}
 								{#if personType === 'employee'}
-									<span class="text-blue-600"> • Employee</span>
+									<span class="text-blue-600" data-testid="employment-status"> • Employee</span>
 								{:else}
-									<span class="text-purple-600"> • Associate ({person.associateStatus?.replace('_', ' ')})</span>
+									<span class="text-purple-600" data-testid="associate-type"> • Associate ({person.associateStatus?.replace('_', ' ')})</span>
 								{/if}
 							</p>
 						</div>
@@ -265,15 +265,15 @@ function formatDateTime(dateString: string) {
 						{#if !isEditing}
 							<Button variant="outline">Send Message</Button>
 							<Button variant="outline">Generate Report</Button>
-							<Button on:click={startEditing}>
+							<Button on:click={startEditing} data-testid="edit-person-button">
 								<Edit class="w-4 h-4 mr-2" />
 								Edit Details
 							</Button>
 						{:else}
-							<Button variant="outline" on:click={cancelEditing} disabled={isSaving}>
+							<Button variant="outline" on:click={cancelEditing} disabled={isSaving} data-testid="cancel-edit-button">
 								Cancel
 							</Button>
-							<Button on:click={saveChanges} disabled={isSaving}>
+							<Button on:click={saveChanges} disabled={isSaving} data-testid="save-changes-button">
 								{#if isSaving}
 									<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span>
 									Saving...
@@ -313,7 +313,7 @@ function formatDateTime(dateString: string) {
 								<div class="space-y-3">
 									<div class="flex items-center space-x-3">
 										<Mail class="w-4 h-4 text-gray-400" />
-										<span class="text-sm">{person.email}</span>
+										<span class="text-sm" data-testid="person-email">{person.email}</span>
 									</div>
 									
 									{#if person.phone}
@@ -330,7 +330,7 @@ function formatDateTime(dateString: string) {
 									
 									<div class="flex items-center space-x-3">
 										<Building class="w-4 h-4 text-gray-400" />
-										<span class="text-sm">{person.department}</span>
+										<span class="text-sm" data-testid="person-department">{person.department}</span>
 									</div>
 									
 									{#if person.startDate}
@@ -378,7 +378,7 @@ function formatDateTime(dateString: string) {
 								</div>
 							{:else}
 								<!-- Edit Mode -->
-								<div class="space-y-4">
+								<div class="space-y-4" data-testid="person-edit-form">
 									{#if saveError}
 										<div class="p-3 border border-red-300 rounded-md bg-red-50 text-red-700 text-sm">
 											{saveError}
@@ -418,6 +418,7 @@ function formatDateTime(dateString: string) {
 											<label for="firstName" class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
 											<input
 												id="firstName"
+												name="firstName"
 												type="text"
 												bind:value={editFormData.firstName}
 												class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
@@ -427,6 +428,7 @@ function formatDateTime(dateString: string) {
 											<label for="lastName" class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
 											<input
 												id="lastName"
+												name="lastName"
 												type="text"
 												bind:value={editFormData.lastName}
 												class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
@@ -439,6 +441,7 @@ function formatDateTime(dateString: string) {
 										<label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
 										<input
 											id="email"
+											name="email"
 											type="email"
 											bind:value={editFormData.email}
 											class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
@@ -572,7 +575,7 @@ function formatDateTime(dateString: string) {
 					</Card>
 
 					{#if enrollment}
-						<Card>
+						<Card data-testid="enrollment-progress">
 							<CardHeader>
 								<CardTitle>Onboarding Progress</CardTitle>
 							</CardHeader>
@@ -581,7 +584,7 @@ function formatDateTime(dateString: string) {
 									<div>
 										<div class="flex items-center justify-between mb-2">
 											<span class="text-sm font-medium">Overall Progress</span>
-											<span class="text-sm font-bold {enrollment.completionPercentage >= 80 ? 'text-green-600' : enrollment.completionPercentage >= 50 ? 'text-yellow-600' : 'text-red-600'}">
+											<span class="text-sm font-bold {enrollment.completionPercentage >= 80 ? 'text-green-600' : enrollment.completionPercentage >= 50 ? 'text-yellow-600' : 'text-red-600'}" data-testid="completion-percentage">
 												{enrollment.completionPercentage}%
 											</span>
 										</div>
@@ -621,7 +624,7 @@ function formatDateTime(dateString: string) {
 				<div class="lg:col-span-2 space-y-6">
 					{#if enrollment}
 						<!-- Documents -->
-						<Card>
+						<Card data-testid="documents-section">
 							<CardHeader>
 								<CardTitle class="flex items-center space-x-2">
 									<FileText class="w-5 h-5" />
@@ -681,7 +684,7 @@ function formatDateTime(dateString: string) {
 						</Card>
 
 						<!-- Tasks -->
-						<Card>
+						<Card data-testid="tasks-section">
 							<CardHeader>
 								<CardTitle class="flex items-center space-x-2">
 									<CheckCircle class="w-5 h-5" />
@@ -736,7 +739,7 @@ function formatDateTime(dateString: string) {
 							</CardContent>
 						</Card>
 					{:else}
-						<Card>
+						<Card data-testid="no-enrollment-message">
 							<CardContent class="text-center py-12">
 								<User class="w-12 h-12 text-gray-400 mx-auto mb-4" />
 								<h3 class="text-lg font-medium text-gray-900 mb-2">No Enrollment Data</h3>

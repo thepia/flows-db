@@ -73,7 +73,6 @@ This directory contains promotional screenshots of the flows-admin-demo applicat
 ## Directory Structure
 
 - \`desktop/\` - High-resolution desktop screenshots (1920x1080)
-- \`mobile/\` - Mobile screenshots (390x844, 2x scale)
 - \`tablet/\` - Tablet screenshots (1024x768, 2x scale)
 
 ## Screenshots Include
@@ -82,7 +81,7 @@ This directory contains promotional screenshots of the flows-admin-demo applicat
 - **Employee Management** - Employee list and detail views
 - **Invitation Management** - Invitation creation and management interface
 - **Client Switching** - Multi-client branding demonstration
-- **Mobile Views** - Responsive mobile interface
+- **Tablet Views** - Responsive tablet interface optimized for admin workflows
 - **Branding Showcase** - Different client branding examples
 
 ## Regenerating Screenshots
@@ -132,7 +131,6 @@ async function main() {
     // Ensure target directories exist
     await ensureDirectoryExists(TARGET_DIR);
     await ensureDirectoryExists(path.join(TARGET_DIR, 'desktop'));
-    await ensureDirectoryExists(path.join(TARGET_DIR, 'mobile'));
     await ensureDirectoryExists(path.join(TARGET_DIR, 'tablet'));
     
     // Generate README

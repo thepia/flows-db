@@ -10,6 +10,14 @@ import ProcessManager from '$lib/components/offboarding/ProcessManager.svelte';
 import TaskManager from '$lib/components/offboarding/TaskManager.svelte';
 import ProcessList from '$lib/components/offboarding/ProcessList.svelte';
 import { Button } from '$lib/components/ui/button';
+import { 
+  PeopleHeader, 
+  PeopleStatsCards, 
+  PeopleFilters, 
+  PeopleActiveFilters, 
+  PeopleGrid, 
+  PeopleLoadMore 
+} from '$lib/components/people';
 import {
   applications,
   client,
@@ -22,6 +30,7 @@ import {
   loadAllClients,
   loadDemoData,
   loading,
+  people,
   totalPeopleCount,
 } from '$lib/stores/data';
 import { settingsStore } from '$lib/stores/settings';
@@ -38,6 +47,11 @@ let activeTab = 'people';
 // Metrics state
 let onboardingCount = 0;
 let offboardingCount = 0;
+
+// People tab search and filter state
+let searchTerm = '';
+let selectedStatus = 'all';
+let selectedType = 'all';
 
 // Offboarding state
 let offboardingView = 'overview'; // 'overview', 'templates', 'processes', 'tasks'
@@ -490,6 +504,37 @@ $: if ($client) {
 // Dashboard statistics (reactive to store changes)
 $: totalEmployees = $totalPeopleCount || $employees.length;
 $: pendingInvitations = $invitations.filter((inv) => inv.status === 'pending').length;
+
+
+// Filtered people based on search and filters
+$: filteredPeople = $people.filter((person) => {
+  // Search filter
+  const matchesSearch = searchTerm === '' || 
+    person.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    person.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    person.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    person.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    person.position.toLowerCase().includes(searchTerm.toLowerCase());
+
+  // Status filter
+  const matchesStatus = selectedStatus === 'all' || 
+    (selectedStatus === 'active' && person.employmentStatus === 'active') ||
+    (selectedStatus === 'former' && person.employmentStatus === 'former') ||
+    (selectedStatus === 'future' && person.employmentStatus === 'future');
+
+  // Type filter
+  const matchesType = selectedType === 'all' ||
+    (selectedType === 'employee' && person.employmentStatus) ||
+    (selectedType === 'associate' && person.associateStatus);
+
+  return matchesSearch && matchesStatus && matchesType;
+});
+
+// Statistics for People tab
+$: totalPeople = $totalPeopleCount || $people.length;
+$: activeEmployees = $people.filter(p => p.employmentStatus === 'active').length;
+$: associates = $people.filter(p => p.associateStatus).length;
+$: futureEmployees = $people.filter(p => p.employmentStatus === 'future').length;
 </script>
 
 <svelte:head>
@@ -585,35 +630,41 @@ $: pendingInvitations = $invitations.filter((inv) => inv.status === 'pending').l
 			<!-- Tab Content -->
 			{#if activeTab === 'people'}
 				<!-- People Tab Content -->
-				<div class="space-y-8" data-testid="view-people">
-					<!-- Dashboard Stats -->
-					<DashboardMetrics 
-						{totalEmployees}
-						{onboardingCount}
-						{offboardingCount}
-						{pendingInvitations}
-						loading={metricsLoading}
-					/>
-
-					<!-- Main Content Grid: Employee Directory + Sidebar -->
-					<div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-						<!-- Employee Directory -->
-						<div class="xl:col-span-2">
-							<EmployeeDirectory 
-								employees={$employees}
-								enrollments={$enrollments}
-								loading={false}
-							/>
-						</div>
-
-						<!-- Sidebar: Recent Invitations -->
-						<div class="xl:col-span-1">
-							<InvitationsSidebar 
-								invitations={$invitations}
-								loading={false}
-							/>
-						</div>
-					</div>
+				<div class="space-y-6" data-testid="view-people">
+					<PeopleHeader />
+				
+				<PeopleStatsCards 
+					{totalPeople}
+					{activeEmployees}
+					{associates}
+					{futureEmployees}
+				/>
+				
+				<PeopleFilters 
+					bind:searchTerm
+					bind:selectedStatus
+					bind:selectedType
+				/>
+				
+				<PeopleActiveFilters 
+					bind:searchTerm
+					bind:selectedStatus
+					bind:selectedType
+					filteredCount={filteredPeople.length}
+					totalCount={totalPeople}
+				/>
+				
+				<PeopleGrid 
+					people={filteredPeople}
+					loading={$loading}
+					hasActiveFilters={searchTerm || selectedStatus !== 'all' || selectedType !== 'all'}
+				/>
+				
+				<PeopleLoadMore 
+					currentCount={$people.length}
+					totalCount={$totalPeopleCount || 0}
+					hasActiveFilters={searchTerm || selectedStatus !== 'all' || selectedType !== 'all'}
+				/>
 				</div>
 			{:else if activeTab === 'processes'}
 				<!-- Processes Tab Content -->

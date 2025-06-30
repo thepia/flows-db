@@ -60,6 +60,10 @@ pnpm lint          # Biome linting (must pass)
 - **Mature demo components** migrate to shared libraries
 - **Synchronized standards** across all CLAUDE.md files
 
+#### Architecture Documentation
+
+- **Notifications System**: See [thepia.com/docs/flows/notifications-architecture.md](https://github.com/thepia/thepia.com/blob/main/docs/flows/notifications-architecture.md) for comprehensive notification system architecture recommendations for Flows platform applications
+
 
 ## Root Cause of My schema Mistakes
 

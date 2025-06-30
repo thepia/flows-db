@@ -56,7 +56,7 @@
     "demo:build": "pnpm --filter flows-admin-demo build",
     "demo:screenshots": "playwright test tests/e2e/promotional-screenshots.spec.ts --headed",
     "demo:screenshots:ci": "playwright test tests/e2e/promotional-screenshots.spec.ts",
-    "demo:screenshots:all": "playwright test tests/e2e/promotional-screenshots.spec.ts --project=promotional-screenshots --project=mobile-screenshots --project=tablet-screenshots",
+    "demo:screenshots:all": "playwright test tests/e2e/promotional-screenshots.spec.ts --project=promotional-screenshots --project=tablet-screenshots",
     "demo:screenshots:copy": "node scripts/copy-screenshots-to-thepia.js",
     "demo:screenshots:full": "pnpm demo:screenshots:all && pnpm demo:screenshots:copy",
     "offboarding:demo-data": "node scripts/create-offboarding-demo-data.js"

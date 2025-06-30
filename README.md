@@ -342,6 +342,10 @@ pnpm run test:reset
 - **[Security Guide](docs/SECURITY.md)** - Security implementation and best practices
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
 
+### Architecture Documentation
+
+- **[Notifications System Architecture](https://github.com/thepia/thepia.com/blob/main/docs/flows/notifications-architecture.md)** - Comprehensive notification system recommendations for Flows platform applications
+
 ## 🤝 Contributing
 
 ### Development Setup

@@ -2,11 +2,16 @@
 import { Badge } from '$lib/components/ui/badge';
 import { Button } from '$lib/components/ui/button';
 import EmployeeStatusBadge from './EmployeeStatusBadge.svelte';
+import { onMount } from 'svelte';
 
 export let employee;
 export let compact = false;
 export let enrollment = null;
 export let onSelect = null;
+
+onMount(() => {
+  console.log('EmployeeCard mounted for', employee.id, 'onSelect:', typeof onSelect, 'onSelect value:', onSelect);
+});
 
 function getCompletionColor(percentage) {
   if (percentage >= 80) return 'text-green-600';
@@ -15,6 +20,7 @@ function getCompletionColor(percentage) {
 }
 
 function handleClick() {
+  console.log('EmployeeCard clicked:', employee.id);
   onSelect?.(employee);
 }
 
@@ -29,6 +35,7 @@ function handleKeydown(e) {
 {#if onSelect}
 <button 
 	class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer w-full text-left {compact ? 'p-3' : 'p-4'}"
+	data-testid="person-card-{employee.id}"
 	on:click={handleClick}
 	on:keydown={handleKeydown}
 >
@@ -73,6 +80,7 @@ function handleKeydown(e) {
 {:else}
 <div 
 	class="flex items-center justify-between p-4 border rounded-lg {compact ? 'p-3' : 'p-4'}"
+	data-testid="person-card-{employee.id}"
 >
 	<div class="flex items-center space-x-4">
 		<div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
