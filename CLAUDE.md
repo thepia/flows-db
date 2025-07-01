@@ -4,6 +4,7 @@
 - We save SQL scripts to be run in Supabase Dashboard under /schemas
 - You cant check in secrets and tokens
 - We use vite-plugin-restart. You can trigger a restart by changing schemas, scripts or the vite configuration.
+- Don't try to start the demo dev server, ask me to do it. I will keep it running. You do not yet have the ability to run resident processes
 
 ## Flows Repositories
 

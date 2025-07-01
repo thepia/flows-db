@@ -18,7 +18,7 @@
     "test:debug": "playwright test --debug",
     "test:navigation": "playwright test offboarding",
     "test:people": "playwright test people-navigation",
-    "test:consistency": "playwright test data-consistency", 
+    "test:consistency": "playwright test data-consistency",
     "test:errors": "playwright test error-states",
     "test:cross-app": "playwright test cross-app-navigation",
     "test:headed": "playwright test --headed",
@@ -56,6 +56,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
     "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
     "lucide-svelte": "^0.451.0",
     "shadcn-svelte": "^0.14.1",
     "tailwind-merge": "^2.5.4",

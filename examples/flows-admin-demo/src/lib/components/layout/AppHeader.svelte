@@ -3,12 +3,16 @@ import { goto } from '$app/navigation';
 import { page } from '$app/stores';
 import { Button } from '$lib/components/ui/button';
 import { client, loadingProgress } from '$lib/stores/data';
-import { ArrowLeft, ChevronLeft, Inbox, Settings, User } from 'lucide-svelte';
+import { ArrowLeft, ChevronLeft, Settings, User } from 'lucide-svelte';
 import LogoWrapper from '../branding/LogoWrapper.svelte';
+import { NotificationBell, NotificationPanel } from '$lib/components/notifications';
 
 // Props
 export const title: string = 'Flows Dashboard';
 export const showBackButton: boolean = false;
+
+// Notification state
+let showNotifications = false;
 
 // Navigation handlers
 function navigateToSettings() {
@@ -21,9 +25,12 @@ function navigateBack() {
   window.location.href = '/';
 }
 
-// Placeholder handlers for future functionality
-function openInbox() {
-  console.log('Inbox clicked - feature coming soon');
+function toggleNotifications() {
+  showNotifications = !showNotifications;
+}
+
+function closeNotifications() {
+  showNotifications = false;
 }
 
 function openProfile() {
@@ -97,16 +104,11 @@ function openProfile() {
 					</button>
 				{/if}
 
-				<!-- Inbox button -->
-				<Button 
-					variant="ghost" 
-					size="icon"
-					on:click={openInbox}
-					class="w-9 h-9 rounded-md hover:bg-gray-100"
-					title="Inbox"
-				>
-					<Inbox class="w-5 h-5 text-gray-600" />
-				</Button>
+				<!-- Notifications -->
+				<NotificationBell 
+					onClick={toggleNotifications}
+					size="md"
+				/>
 
 				<!-- Profile button -->
 				<Button 
@@ -122,6 +124,12 @@ function openProfile() {
 		</div>
 	</div>
 </header>
+
+<!-- Notification Panel -->
+<NotificationPanel 
+	isOpen={showNotifications}
+	onClose={closeNotifications}
+/>
 
 <style>
 	/* Ensure consistent icon button styling */

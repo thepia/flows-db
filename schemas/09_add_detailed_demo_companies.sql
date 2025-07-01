@@ -108,8 +108,8 @@ INSERT INTO api.client_applications (
   ),
   (
     (SELECT id FROM api.clients WHERE client_code = 'meridian-brands'),
-    'transition-management',
-    'Global Transition Management', 
+    'offboarding-management',
+    'Offboarding', 
     '2.7.0',
     'High-volume offboarding and transition management for fast-paced environment',
     'active',

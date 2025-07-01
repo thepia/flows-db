@@ -14,9 +14,33 @@ export class NavigationHelper {
    * Navigate to the main offboarding tab
    */
   async navigateToOffboarding() {
-    // Wait for applications to load and offboarding tab to be available
-    await this.page.waitForSelector('[data-testid="tab-offboarding"]', { state: 'visible' });
-    await this.page.click('[data-testid="tab-offboarding"]');
+    // Wait for applications to load completely first
+    await this.waitForApplicationsToLoad();
+    
+    // Find the offboarding tab - it could have different codes depending on database
+    // We look for any tab that contains "offboarding" in its text (case-insensitive)
+    const offboardingTab = await this.page.locator('[data-testid^="tab-"]:has-text("offboarding")').first();
+    
+    // If not found by text, try to find by the test id pattern
+    let tabToClick = offboardingTab;
+    if (!(await offboardingTab.isVisible())) {
+      // Try common variations
+      const possibleTabIds = ['tab-offboarding', 'tab-knowledge-offboarding', 'tab-knowledge-transfer-offboarding', 'tab-employee-offboarding'];
+      for (const tabId of possibleTabIds) {
+        const tab = this.page.locator(`[data-testid="${tabId}"]`);
+        if (await tab.isVisible()) {
+          tabToClick = tab;
+          break;
+        }
+      }
+    }
+    
+    // Click the found tab
+    await tabToClick.click();
+    
+    // Wait for the tab to be active before checking for the view
+    await this.page.waitForTimeout(500); // Small delay to ensure state update
+    
     await this.page.waitForSelector('[data-testid="view-overview"]', { state: 'visible' });
     await this.verifyOffboardingTabActive();
   }
@@ -44,8 +68,12 @@ export class NavigationHelper {
    * Verify offboarding tab is active
    */
   async verifyOffboardingTabActive() {
-    const tab = this.page.locator('[data-testid="tab-offboarding"]');
-    await expect(tab).toHaveAttribute('data-active', 'true');
+    // Find the active offboarding tab using a more flexible approach
+    const activeTab = await this.page.locator('[data-testid^="tab-"][data-active="true"]:has-text("offboarding")').first();
+    
+    // Verify it exists and is active
+    await expect(activeTab).toBeVisible();
+    await expect(activeTab).toHaveAttribute('data-active', 'true');
   }
 
   /**
@@ -99,6 +127,27 @@ export class NavigationHelper {
     }
     
     return viewIds;
+  }
+
+  /**
+   * Wait for applications to load completely
+   */
+  async waitForApplicationsToLoad() {
+    // First wait for page to load
+    await this.page.waitForLoadState('networkidle');
+    
+    // Wait for at least one application tab to be visible (not just People tab)
+    await this.page.waitForFunction(
+      () => {
+        const tabs = document.querySelectorAll('[data-testid^="tab-"]');
+        // Check if we have more than just the People tab
+        return tabs.length > 1;
+      },
+      { timeout: 15000 }
+    );
+    
+    // Give a small buffer for the applications to fully render
+    await this.page.waitForTimeout(1000);
   }
 
   /**

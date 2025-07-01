@@ -188,8 +188,8 @@ async function addDetailedDemoCompanies() {
         },
         {
           client_id: meridianCompany.id,
-          app_code: 'transition-management',
-          app_name: 'Global Transition Management',
+          app_code: 'offboarding-management',
+          app_name: 'Offboarding',
           app_version: '2.7.0',
           app_description: 'High-volume offboarding and transition management for fast-paced environment',
           status: 'active',
