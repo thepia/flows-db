@@ -47,7 +47,10 @@
       "Bash(timeout 60s pnpm playwright test:*)",
       "Bash(timeout 180s pnpm test:people --reporter=line)",
       "Bash(timeout:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(git checkout:*)",
+      "Bash(npm run lint)",
+      "Bash(awk:*)"
     ],
     "deny": []
   }

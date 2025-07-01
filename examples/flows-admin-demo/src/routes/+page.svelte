@@ -535,6 +535,31 @@ $: totalPeople = $totalPeopleCount || $people.length;
 $: activeEmployees = $people.filter(p => p.employmentStatus === 'active').length;
 $: associates = $people.filter(p => p.associateStatus).length;
 $: futureEmployees = $people.filter(p => p.employmentStatus === 'future').length;
+
+// Applications reactive logic with proper guards
+$: applicationsLoaded = $applications && Array.isArray($applications) && $applications.length > 0;
+
+// Reactive selectedApp calculation that updates when either activeTab or applications change
+$: selectedApp = $applications?.find(app => app.code === activeTab) || null;
+
+// Debug reactive statements (remove in production)
+// $: console.log('🔍 REACTIVITY DEBUG:', {
+//	activeTab,
+//	applicationsCount: $applications?.length || 0,
+//	applicationCodes: $applications?.map(app => app.code) || [],
+//	selectedAppName: selectedApp?.name || 'none',
+//	selectedAppType: selectedApp?.type || 'none'
+// });
+
+$: {
+	if (applicationsLoaded) {
+		// Auto-select first application if current tab is invalid
+		const validTabs = ['people', 'processes', 'account', ...$applications.map(app => app.code)];
+		if (!validTabs.includes(activeTab)) {
+			activeTab = 'people'; // Default to people tab instead of forcing app selection
+		}
+	}
+}
 </script>
 
 <svelte:head>
@@ -579,11 +604,15 @@ $: futureEmployees = $people.filter(p => p.employmentStatus === 'future').length
 				</button>
 
 				<!-- Application Tabs -->
-				{#each $applications as app}
+				{#if applicationsLoaded}
+					{#each $applications as app}
 					<button
 						data-testid="tab-{app.code}"
 						data-active={activeTab === app.code}
-						on:click={() => activeTab = app.code}
+						on:click={() => {
+							console.log('🚀 Application tab clicked:', app.name, app.code);
+							activeTab = app.code;
+						}}
 						class="py-2 px-1 border-b-2 font-medium text-sm {
 							activeTab === app.code 
 								? 'border-blue-500 text-blue-600' 
@@ -593,7 +622,8 @@ $: futureEmployees = $people.filter(p => p.employmentStatus === 'future').length
 						<Briefcase class="w-4 h-4 mr-2 inline" />
 						{app.name}
 					</button>
-				{/each}
+					{/each}
+				{/if}
 
 				<!-- Account Tab -->
 				<button
@@ -705,330 +735,6 @@ $: futureEmployees = $people.filter(p => p.employmentStatus === 'future').length
 						</div>
 					{/if}
 				</div>
-			{:else}
-				<!-- Application Tab Content -->
-				{@const selectedApp = $applications.find(app => app.code === activeTab)}
-				{#if selectedApp}
-					{#if selectedApp.type === 'offboarding'}
-						<!-- Task-Oriented Offboarding Application -->
-						<div class="space-y-6">
-							<!-- Application Header -->
-							<div class="flex justify-between items-start">
-								<div>
-									<div class="flex items-center gap-3 mb-2">
-										<h2 class="text-xl font-semibold text-gray-900">{selectedApp.name}</h2>
-										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {
-											selectedApp.status === 'active' ? 'bg-green-100 text-green-800' :
-											selectedApp.status === 'maintenance' ? 'bg-yellow-100 text-yellow-800' :
-											selectedApp.status === 'deprecated' ? 'bg-red-100 text-red-800' :
-											'bg-gray-100 text-gray-800'
-										}">
-											{selectedApp.status}
-										</span>
-										<span class="text-sm text-gray-400">v{selectedApp.version}</span>
-									</div>
-									<p class="text-sm text-gray-500 mt-1">
-										Task-oriented employee offboarding and departure management
-									</p>
-									<div class="flex items-center gap-4 mt-2 text-xs text-gray-400">
-										<span>Process Templates</span>
-										<span>Task Management</span>
-										<span>Department-Specific</span>
-									</div>
-								</div>
-								
-								<!-- Navigation Tabs -->
-								<div class="flex items-center gap-2">
-									<Button 
-										data-testid="offboarding-view-overview"
-										data-active={offboardingView === 'overview'}
-										variant={offboardingView === 'overview' ? 'default' : 'outline'}
-										size="sm"
-										on:click={() => offboardingView = 'overview'}
-									>
-										Overview
-									</Button>
-									<Button 
-										data-testid="offboarding-view-templates"
-										data-active={offboardingView === 'templates'}
-										variant={offboardingView === 'templates' ? 'default' : 'outline'}
-										size="sm"
-										on:click={() => offboardingView = 'templates'}
-									>
-										Templates
-									</Button>
-									<Button 
-										data-testid="offboarding-view-processes"
-										data-active={offboardingView === 'processes'}
-										variant={offboardingView === 'processes' ? 'default' : 'outline'}
-										size="sm"
-										on:click={() => offboardingView = 'processes'}
-									>
-										Processes
-									</Button>
-									{#if selectedProcess}
-										<Button 
-											data-testid="offboarding-view-tasks"
-											data-active={offboardingView === 'tasks'}
-											variant={offboardingView === 'tasks' ? 'default' : 'outline'}
-											size="sm"
-											on:click={() => offboardingView = 'tasks'}
-										>
-											Tasks
-										</Button>
-									{/if}
-								</div>
-							</div>
-
-							<!-- View Content -->
-							{#if offboardingView === 'overview'}
-								<div data-testid="view-overview">
-								<OffboardingDashboard 
-									processes={offboardingProcesses}
-									employees={$employees}
-									onFilterByStatus={(status) => {
-										applyProcessFilter('status', status);
-									}}
-									onFilterByTimeframe={(timeframe) => {
-										applyProcessFilter('timeframe', timeframe);
-									}}
-									onViewProcess={(process) => {
-										selectedProcess = process;
-										offboardingTasks = getTasksForProcess(process.id);
-										offboardingView = 'tasks';
-									}}
-									onCreateOffboarding={() => {
-										offboardingView = 'templates';
-									}}
-									loading={$loading}
-								/>
-								</div>
-							{:else if offboardingView === 'templates'}
-								<div data-testid="view-templates">
-								<TemplateManager 
-									templates={offboardingTemplates}
-									onTemplateSelect={(template) => {
-										selectedTemplate = template;
-										// Show processes using this template
-										applyProcessFilter('template', template.id);
-									}}
-									onCreateTemplate={() => {
-										console.log('Create new template');
-									}}
-									onEditTemplate={(template) => {
-										console.log('Edit template:', template);
-									}}
-									loading={$loading}
-								/>
-								</div>
-							{:else if offboardingView === 'processes'}
-								<div data-testid="view-processes">
-								<ProcessManager 
-									processes={offboardingProcesses}
-									onProcessSelect={(process) => {
-										selectedProcess = process;
-										offboardingTasks = getTasksForProcess(process.id);
-										offboardingView = 'tasks';
-									}}
-									onCreateProcess={() => {
-										offboardingView = 'templates';
-									}}
-									onUpdateProcessStatus={(processId, status) => {
-										console.log('Update process status:', processId, status);
-									}}
-									loading={$loading}
-								/>
-								</div>
-							{:else if offboardingView === 'tasks' && selectedProcess}
-								<div data-testid="view-tasks">
-								<TaskManager 
-									process={selectedProcess}
-									tasks={offboardingTasks}
-									onTaskUpdate={(taskId, updates) => {
-										console.log('Update task:', taskId, updates);
-									}}
-									onTaskComplete={(taskId) => {
-										console.log('Complete task:', taskId);
-									}}
-									onTaskStart={(taskId) => {
-										console.log('Start task:', taskId);
-									}}
-									onAddNote={(taskId, note) => {
-										console.log('Add note to task:', taskId, note);
-									}}
-									onUploadDocument={(taskId, file) => {
-										console.log('Upload document for task:', taskId, file);
-									}}
-									loading={$loading}
-								/>
-								</div>
-							{/if}
-							
-							<!-- Process List - Always shown when filters are applied -->
-							{#if showProcessList}
-								<ProcessList 
-									processes={offboardingProcesses}
-									filters={processFilters}
-									onClearFilters={clearProcessFilters}
-									onProcessSelect={(process) => {
-										selectedProcess = process;
-										offboardingTasks = getTasksForProcess(process.id);
-										offboardingView = 'tasks';
-									}}
-									loading={$loading}
-								/>
-							{/if}
-						</div>
-					{:else}
-						<!-- Other Applications - Show Generic View -->
-						<div class="space-y-8">
-						<!-- Application Dashboard Header -->
-						<div class="flex justify-between items-start">
-							<div>
-								<div class="flex items-center gap-3 mb-2">
-									<h2 class="text-xl font-semibold text-gray-900">{selectedApp.name}</h2>
-									<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {
-										selectedApp.status === 'active' ? 'bg-green-100 text-green-800' :
-										selectedApp.status === 'maintenance' ? 'bg-yellow-100 text-yellow-800' :
-										selectedApp.status === 'deprecated' ? 'bg-red-100 text-red-800' :
-										'bg-gray-100 text-gray-800'
-									}">
-										{selectedApp.status}
-									</span>
-									<span class="text-sm text-gray-400">v{selectedApp.version}</span>
-								</div>
-								<p class="text-sm text-gray-500 mt-1">
-									{selectedApp.description || `${selectedApp.type === 'onboarding' ? 'Onboarding' : 'Offboarding'} Management Application`}
-								</p>
-								<div class="flex items-center gap-4 mt-2 text-xs text-gray-400">
-									<span>Max Users: {selectedApp.maxConcurrentUsers}</span>
-									<span>Features: {selectedApp.features.length}</span>
-									{#if selectedApp.lastAccessed}
-										<span>Last Accessed: {new Date(selectedApp.lastAccessed).toLocaleDateString()}</span>
-									{/if}
-								</div>
-							</div>
-							<Button variant="outline" href="/invitations/new">
-								<UserPlus class="w-4 h-4 mr-2" />
-								New Invitation
-							</Button>
-						</div>
-
-						<!-- Application Metrics -->
-						<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-							<div class="bg-white p-6 rounded-lg shadow-sm border">
-								<p class="text-sm font-medium text-gray-600">Active Invitations</p>
-								<p class="text-2xl font-bold text-gray-900 mt-1">
-									{$invitations.filter(inv => inv.applicationId === selectedApp.id && inv.status === 'sent').length}
-								</p>
-							</div>
-							<div class="bg-white p-6 rounded-lg shadow-sm border">
-								<p class="text-sm font-medium text-gray-600">Pending Invitations</p>
-								<p class="text-2xl font-bold text-gray-900 mt-1">
-									{$invitations.filter(inv => inv.applicationId === selectedApp.id && inv.status === 'pending').length}
-								</p>
-							</div>
-							<div class="bg-white p-6 rounded-lg shadow-sm border">
-								<p class="text-sm font-medium text-gray-600">People Assigned</p>
-								<p class="text-2xl font-bold text-gray-900 mt-1">
-									{$employees.filter(emp => emp.status === 'active').length}
-								</p>
-							</div>
-							<div class="bg-white p-6 rounded-lg shadow-sm border">
-								<p class="text-sm font-medium text-gray-600">Completed This Month</p>
-								<p class="text-2xl font-bold text-gray-900 mt-1">
-									{$invitations.filter(inv => inv.applicationId === selectedApp.id && inv.status === 'accepted').length}
-								</p>
-							</div>
-						</div>
-
-						<!-- Application Features & Configuration -->
-						<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-							<!-- Features -->
-							<div class="bg-white rounded-lg shadow-sm border">
-								<div class="px-6 py-4 border-b">
-									<h3 class="text-lg font-medium text-gray-900">Application Features</h3>
-								</div>
-								<div class="p-6">
-									{#if selectedApp.features.length > 0}
-										<div class="grid grid-cols-1 gap-3">
-											{#each selectedApp.features as feature}
-												<div class="flex items-center gap-3">
-													<div class="w-2 h-2 bg-green-500 rounded-full"></div>
-													<span class="text-sm text-gray-700 capitalize">
-														{feature.replace(/-/g, ' ').replace(/_/g, ' ')}
-													</span>
-												</div>
-											{/each}
-										</div>
-									{:else}
-										<p class="text-sm text-gray-500">No features configured</p>
-									{/if}
-								</div>
-							</div>
-
-							<!-- Configuration -->
-							<div class="bg-white rounded-lg shadow-sm border">
-								<div class="px-6 py-4 border-b">
-									<h3 class="text-lg font-medium text-gray-900">Configuration</h3>
-								</div>
-								<div class="p-6">
-									{#if Object.keys(selectedApp.configuration).length > 0}
-										<div class="space-y-3">
-											{#each Object.entries(selectedApp.configuration) as [key, value]}
-												<div class="flex justify-between items-start">
-													<span class="text-sm font-medium text-gray-600 capitalize">
-														{key.replace(/_/g, ' ')}:
-													</span>
-													<span class="text-sm text-gray-900 text-right max-w-48 truncate">
-														{typeof value === 'object' ? JSON.stringify(value) : String(value)}
-													</span>
-												</div>
-											{/each}
-										</div>
-									{:else}
-										<p class="text-sm text-gray-500">Using default configuration</p>
-									{/if}
-								</div>
-							</div>
-						</div>
-
-						<!-- Application-specific Invitations -->
-						<div class="bg-white rounded-lg shadow-sm border">
-							<div class="px-6 py-4 border-b">
-								<h3 class="text-lg font-medium text-gray-900">Recent {selectedApp.name} Invitations</h3>
-							</div>
-							<div class="divide-y">
-								{#each $invitations.filter(inv => inv.applicationId === selectedApp.id).slice(0, 5) as invitation}
-									<div class="px-6 py-4">
-										<div class="flex items-center justify-between">
-											<div>
-												<p class="text-sm font-medium text-gray-900">
-													{invitation.firstName} {invitation.lastName}
-												</p>
-												<p class="text-sm text-gray-500">{invitation.companyEmail}</p>
-											</div>
-											<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {
-												invitation.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-												invitation.status === 'sent' ? 'bg-blue-100 text-blue-800' :
-												invitation.status === 'accepted' ? 'bg-green-100 text-green-800' :
-												'bg-gray-100 text-gray-800'
-											}">
-												{invitation.status}
-											</span>
-										</div>
-									</div>
-								{/each}
-								{#if $invitations.filter(inv => inv.applicationId === selectedApp.id).length === 0}
-									<div class="px-6 py-8 text-center text-gray-500">
-										No invitations for this application yet
-									</div>
-								{/if}
-							</div>
-						</div>
-					</div>
-					{/if}
-				{/if}
 			{:else if activeTab === 'account'}
 				<!-- Account Tab Content -->
 				<div class="space-y-8" data-testid="view-account">
@@ -1424,10 +1130,332 @@ $: futureEmployees = $people.filter(p => p.employmentStatus === 'future').length
 						</div>
 					</div>
 				</div>
+			{:else}
+				<!-- Application Tab Content -->
+				{#if selectedApp}
+					{#if selectedApp.type === 'offboarding'}
+						<!-- Task-Oriented Offboarding Application -->
+						<div class="space-y-6">
+							<!-- Application Header -->
+							<div class="flex justify-between items-start">
+								<div>
+									<div class="flex items-center gap-3 mb-2">
+										<h2 class="text-xl font-semibold text-gray-900">{selectedApp.name}</h2>
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {
+											selectedApp.status === 'active' ? 'bg-green-100 text-green-800' :
+											selectedApp.status === 'maintenance' ? 'bg-yellow-100 text-yellow-800' :
+											selectedApp.status === 'deprecated' ? 'bg-red-100 text-red-800' :
+											'bg-gray-100 text-gray-800'
+										}">
+											{selectedApp.status}
+										</span>
+										<span class="text-sm text-gray-400">v{selectedApp.version}</span>
+									</div>
+									<p class="text-sm text-gray-500 mt-1">
+										Task-oriented employee offboarding and departure management
+									</p>
+									<div class="flex items-center gap-4 mt-2 text-xs text-gray-400">
+										<span>Process Templates</span>
+										<span>Task Management</span>
+										<span>Department-Specific</span>
+									</div>
+								</div>
+								
+								<!-- Navigation Tabs -->
+								<div class="flex items-center gap-2">
+									<Button 
+										data-testid="offboarding-view-overview"
+										data-active={offboardingView === 'overview'}
+										variant={offboardingView === 'overview' ? 'default' : 'outline'}
+										size="sm"
+										on:click={() => offboardingView = 'overview'}
+									>
+										Overview
+									</Button>
+									<Button 
+										data-testid="offboarding-view-templates"
+										data-active={offboardingView === 'templates'}
+										variant={offboardingView === 'templates' ? 'default' : 'outline'}
+										size="sm"
+										on:click={() => offboardingView = 'templates'}
+									>
+										Templates
+									</Button>
+									<Button 
+										data-testid="offboarding-view-processes"
+										data-active={offboardingView === 'processes'}
+										variant={offboardingView === 'processes' ? 'default' : 'outline'}
+										size="sm"
+										on:click={() => offboardingView = 'processes'}
+									>
+										Processes
+									</Button>
+									{#if selectedProcess}
+										<Button 
+											data-testid="offboarding-view-tasks"
+											data-active={offboardingView === 'tasks'}
+											variant={offboardingView === 'tasks' ? 'default' : 'outline'}
+											size="sm"
+											on:click={() => offboardingView = 'tasks'}
+										>
+											Tasks
+										</Button>
+									{/if}
+								</div>
+							</div>
+
+							<!-- View Content -->
+							{#if offboardingView === 'overview'}
+								<div data-testid="view-overview">
+								<OffboardingDashboard 
+									processes={offboardingProcesses}
+									employees={$employees}
+									onFilterByStatus={(status) => {
+										applyProcessFilter('status', status);
+									}}
+									onFilterByTimeframe={(timeframe) => {
+										applyProcessFilter('timeframe', timeframe);
+									}}
+									onViewProcess={(process) => {
+										selectedProcess = process;
+										offboardingTasks = getTasksForProcess(process.id);
+										offboardingView = 'tasks';
+									}}
+									onCreateOffboarding={() => {
+										offboardingView = 'templates';
+									}}
+									loading={$loading}
+								/>
+								</div>
+							{:else if offboardingView === 'templates'}
+								<div data-testid="view-templates">
+								<TemplateManager 
+									templates={offboardingTemplates}
+									onTemplateSelect={(template) => {
+										selectedTemplate = template;
+										// Show processes using this template
+										applyProcessFilter('template', template.id);
+									}}
+									onCreateTemplate={() => {
+										console.log('Create new template');
+									}}
+									onEditTemplate={(template) => {
+										console.log('Edit template:', template);
+									}}
+									loading={$loading}
+								/>
+								</div>
+							{:else if offboardingView === 'processes'}
+								<div data-testid="view-processes">
+								<ProcessManager 
+									processes={offboardingProcesses}
+									onProcessSelect={(process) => {
+										selectedProcess = process;
+										offboardingTasks = getTasksForProcess(process.id);
+										offboardingView = 'tasks';
+									}}
+									onCreateProcess={() => {
+										offboardingView = 'templates';
+									}}
+									onUpdateProcessStatus={(processId, status) => {
+										console.log('Update process status:', processId, status);
+									}}
+									loading={$loading}
+								/>
+								</div>
+							{:else if offboardingView === 'tasks' && selectedProcess}
+								<div data-testid="view-tasks">
+								<TaskManager 
+									process={selectedProcess}
+									tasks={offboardingTasks}
+									onTaskUpdate={(taskId, updates) => {
+										console.log('Update task:', taskId, updates);
+									}}
+									onTaskComplete={(taskId) => {
+										console.log('Complete task:', taskId);
+									}}
+									onTaskStart={(taskId) => {
+										console.log('Start task:', taskId);
+									}}
+									onAddNote={(taskId, note) => {
+										console.log('Add note to task:', taskId, note);
+									}}
+									onUploadDocument={(taskId, file) => {
+										console.log('Upload document for task:', taskId, file);
+									}}
+									loading={$loading}
+								/>
+								</div>
+							{/if}
+							
+							<!-- Process List - Always shown when filters are applied -->
+							{#if showProcessList}
+								<ProcessList 
+									processes={offboardingProcesses}
+									filters={processFilters}
+									onClearFilters={clearProcessFilters}
+									onProcessSelect={(process) => {
+										selectedProcess = process;
+										offboardingTasks = getTasksForProcess(process.id);
+										offboardingView = 'tasks';
+									}}
+									loading={$loading}
+								/>
+							{/if}
+						</div>
+					{:else}
+						<!-- Other Applications - Show Generic View -->
+						<div class="space-y-8">
+						<!-- Application Dashboard Header -->
+						<div class="flex justify-between items-start">
+							<div>
+								<div class="flex items-center gap-3 mb-2">
+									<h2 class="text-xl font-semibold text-gray-900">{selectedApp.name}</h2>
+									<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {
+										selectedApp.status === 'active' ? 'bg-green-100 text-green-800' :
+										selectedApp.status === 'maintenance' ? 'bg-yellow-100 text-yellow-800' :
+										selectedApp.status === 'deprecated' ? 'bg-red-100 text-red-800' :
+										'bg-gray-100 text-gray-800'
+									}">
+										{selectedApp.status}
+									</span>
+									<span class="text-sm text-gray-400">v{selectedApp.version}</span>
+								</div>
+								<p class="text-sm text-gray-500 mt-1">
+									{selectedApp.description || `${selectedApp.type === 'onboarding' ? 'Onboarding' : 'Offboarding'} Management Application`}
+								</p>
+								<div class="flex items-center gap-4 mt-2 text-xs text-gray-400">
+									<span>Max Users: {selectedApp.maxConcurrentUsers}</span>
+									<span>Features: {selectedApp.features.length}</span>
+									{#if selectedApp.lastAccessed}
+										<span>Last Accessed: {new Date(selectedApp.lastAccessed).toLocaleDateString()}</span>
+									{/if}
+								</div>
+							</div>
+							<Button variant="outline" href="/invitations/new">
+								<UserPlus class="w-4 h-4 mr-2" />
+								New Invitation
+							</Button>
+						</div>
+
+						<!-- Application Metrics -->
+						<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+							<div class="bg-white p-6 rounded-lg shadow-sm border">
+								<p class="text-sm font-medium text-gray-600">Active Invitations</p>
+								<p class="text-2xl font-bold text-gray-900 mt-1">
+									{$invitations.filter(inv => inv.applicationId === selectedApp.id && inv.status === 'sent').length}
+								</p>
+							</div>
+							<div class="bg-white p-6 rounded-lg shadow-sm border">
+								<p class="text-sm font-medium text-gray-600">Pending Invitations</p>
+								<p class="text-2xl font-bold text-gray-900 mt-1">
+									{$invitations.filter(inv => inv.applicationId === selectedApp.id && inv.status === 'pending').length}
+								</p>
+							</div>
+							<div class="bg-white p-6 rounded-lg shadow-sm border">
+								<p class="text-sm font-medium text-gray-600">People Assigned</p>
+								<p class="text-2xl font-bold text-gray-900 mt-1">
+									{$employees.filter(emp => emp.status === 'active').length}
+								</p>
+							</div>
+							<div class="bg-white p-6 rounded-lg shadow-sm border">
+								<p class="text-sm font-medium text-gray-600">Completed This Month</p>
+								<p class="text-2xl font-bold text-gray-900 mt-1">
+									{$invitations.filter(inv => inv.applicationId === selectedApp.id && inv.status === 'accepted').length}
+								</p>
+							</div>
+						</div>
+
+						<!-- Application Features & Configuration -->
+						<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+							<!-- Features -->
+							<div class="bg-white rounded-lg shadow-sm border">
+								<div class="px-6 py-4 border-b">
+									<h3 class="text-lg font-medium text-gray-900">Application Features</h3>
+								</div>
+								<div class="p-6">
+									{#if selectedApp.features.length > 0}
+										<div class="grid grid-cols-1 gap-3">
+											{#each selectedApp.features as feature}
+												<div class="flex items-center gap-3">
+													<div class="w-2 h-2 bg-green-500 rounded-full"></div>
+													<span class="text-sm text-gray-700 capitalize">
+														{feature.replace(/-/g, ' ').replace(/_/g, ' ')}
+													</span>
+												</div>
+											{/each}
+										</div>
+									{:else}
+										<p class="text-sm text-gray-500">No features configured</p>
+									{/if}
+								</div>
+							</div>
+
+							<!-- Configuration -->
+							<div class="bg-white rounded-lg shadow-sm border">
+								<div class="px-6 py-4 border-b">
+									<h3 class="text-lg font-medium text-gray-900">Configuration</h3>
+								</div>
+								<div class="p-6">
+									{#if Object.keys(selectedApp.configuration).length > 0}
+										<div class="space-y-3">
+											{#each Object.entries(selectedApp.configuration) as [key, value]}
+												<div class="flex justify-between items-start">
+													<span class="text-sm font-medium text-gray-600 capitalize">
+														{key.replace(/_/g, ' ')}:
+													</span>
+													<span class="text-sm text-gray-900 text-right max-w-48 truncate">
+														{typeof value === 'object' ? JSON.stringify(value) : String(value)}
+													</span>
+												</div>
+											{/each}
+										</div>
+									{:else}
+										<p class="text-sm text-gray-500">Using default configuration</p>
+									{/if}
+								</div>
+							</div>
+						</div>
+
+						<!-- Application-specific Invitations -->
+						<div class="bg-white rounded-lg shadow-sm border">
+							<div class="px-6 py-4 border-b">
+								<h3 class="text-lg font-medium text-gray-900">Recent {selectedApp.name} Invitations</h3>
+							</div>
+							<div class="divide-y">
+								{#each $invitations.filter(inv => inv.applicationId === selectedApp.id).slice(0, 5) as invitation}
+									<div class="px-6 py-4">
+										<div class="flex items-center justify-between">
+											<div>
+												<p class="text-sm font-medium text-gray-900">
+													{invitation.firstName} {invitation.lastName}
+												</p>
+												<p class="text-sm text-gray-500">{invitation.companyEmail}</p>
+											</div>
+											<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {
+												invitation.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+												invitation.status === 'sent' ? 'bg-blue-100 text-blue-800' :
+												invitation.status === 'accepted' ? 'bg-green-100 text-green-800' :
+												'bg-gray-100 text-gray-800'
+											}">
+												{invitation.status}
+											</span>
+										</div>
+									</div>
+								{/each}
+								{#if $invitations.filter(inv => inv.applicationId === selectedApp.id).length === 0}
+									<div class="px-6 py-8 text-center text-gray-500">
+										No invitations for this application yet
+									</div>
+								{/if}
+							</div>
+						</div>
+					</div>
+					{/if}
+				{/if}
 			{/if}
 		{/if}
 	</main>
 
 <!-- Floating Status Button -->
 <FloatingStatusButton />
-

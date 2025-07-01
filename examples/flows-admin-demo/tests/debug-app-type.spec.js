@@ -1,63 +1,54 @@
 import { test, expect } from '@playwright/test';
 
-test('Debug application type detection', async ({ page }) => {
-  // Navigate to the app
-  await page.goto('/');
-  await page.waitForLoadState('networkidle');
-  
-  // Wait for app to load
-  await page.waitForSelector('[data-testid="app-loaded"]', { state: 'visible' });
-  
-  // Wait for any loading to complete
-  await page.waitForTimeout(3000);
-  
-  // Get application data
-  const appData = await page.evaluate(() => {
-    // Access the Svelte stores directly
-    const storesElement = document.querySelector('[data-testid="app-loaded"]');
-    if (!storesElement || !storesElement.__svelte__) {
-      return { error: 'Cannot access Svelte stores' };
+test.describe('Debug Application Type', () => {
+  test('should log application details when clicking tabs', async ({ page }) => {
+    // Enable console logging
+    const consoleMessages = [];
+    page.on('console', (msg) => {
+      if (msg.text().includes('🚀 Application tab clicked')) {
+        consoleMessages.push(msg.text());
+      }
+    });
+    
+    await page.goto('/');
+    await page.waitForSelector('[data-testid="app-loaded"]');
+    await page.waitForTimeout(3000);
+    
+    // Get application tabs
+    const appTabs = await page.locator('[data-testid^="tab-"]:not([data-testid="tab-people"]):not([data-testid="tab-processes"]):not([data-testid="tab-account"])').all();
+    
+    if (appTabs.length === 0) {
+      console.log('❌ No application tabs found');
+      return;
     }
     
-    // Try to get the applications data
-    const component = storesElement.__svelte__;
+    console.log(`Found ${appTabs.length} application tabs`);
     
-    // Look for the applications store in component context
-    return {
-      activeTab: window.activeTab || 'unknown',
-      applications: window.$applications || [],
-      debugInfo: 'Check console for more details'
-    };
-  });
-  
-  console.log('Application data:', appData);
-  
-  // Click the offboarding tab
-  await page.click('[data-testid="tab-knowledge-offboarding"]');
-  await page.waitForTimeout(1000);
-  
-  // Check what's rendered
-  const renderedContent = await page.evaluate(() => {
-    const mainContent = document.querySelector('main');
-    const hasViewOverview = document.querySelector('[data-testid="view-overview"]') !== null;
-    const allDataTestIds = Array.from(document.querySelectorAll('[data-testid]')).map(el => el.getAttribute('data-testid'));
+    for (const tab of appTabs) {
+      const tabText = await tab.textContent();
+      const testId = await tab.getAttribute('data-testid');
+      
+      console.log(`\nClicking tab: "${tabText.trim()}" (${testId})`);
+      await tab.click();
+      await page.waitForTimeout(1000);
+    }
     
-    return {
-      hasViewOverview,
-      mainContentLength: mainContent?.innerHTML?.length || 0,
-      dataTestIds: allDataTestIds.filter(id => id && (id.includes('view') || id.includes('offboarding')))
-    };
+    // Wait a bit for all console messages
+    await page.waitForTimeout(1000);
+    
+    console.log('\n--- Console Messages ---');
+    consoleMessages.forEach(msg => {
+      console.log(msg);
+    });
+    
+    // Check what activeTab value is actually set
+    const currentActiveTab = await page.evaluate(() => {
+      // Try to access the current activeTab if exposed somehow
+      return document.querySelector('[data-active="true"]')?.getAttribute('data-testid');
+    });
+    
+    console.log(`\nCurrent active tab: ${currentActiveTab}`);
+    
+    console.log('\n✅ Debug completed');
   });
-  
-  console.log('Rendered content after clicking offboarding:', renderedContent);
-  
-  // Check console logs
-  const consoleLogs = [];
-  page.on('console', msg => consoleLogs.push({ type: msg.type(), text: msg.text() }));
-  
-  // Reload and check console
-  await page.reload();
-  await page.waitForTimeout(2000);
-  
-  console.log('Console logs:', consoleLogs.filter(log => log.text.includes('app') || log.text.includes('offboarding')));
 });

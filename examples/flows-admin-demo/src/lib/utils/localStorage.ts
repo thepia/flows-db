@@ -72,14 +72,12 @@ export class LocalStorageManager {
    * Validate settings structure
    */
   private static isValidSettings(obj: any): obj is DemoSettings {
+    // More lenient validation - only check critical fields
     return (
       obj &&
       typeof obj === 'object' &&
-      typeof obj.selectedBranding === 'string' &&
-      typeof obj.selectedClient === 'string' &&
-      typeof obj.allowRealClients === 'boolean' &&
-      Array.isArray(obj.availableBrandings) &&
-      typeof obj.lastUpdated === 'string'
+      // At minimum, we need selectedClient to be a string
+      typeof obj.selectedClient === 'string'
     );
   }
 

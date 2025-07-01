@@ -316,7 +316,7 @@ async function loadClientSpecificData(clientId: string) {
           clientId: app.client_id,
           name: app.app_name,
           code: app.app_code,
-          type: app.app_code.includes('onboarding') ? 'onboarding' : 'offboarding',
+          type: app.app_code.includes('offboarding') ? 'offboarding' : 'onboarding',
           status: app.status,
           version: app.app_version || '1.0.0',
           description: app.app_description,
@@ -327,6 +327,7 @@ async function loadClientSpecificData(clientId: string) {
           lastAccessed: app.last_accessed,
           createdAt: app.created_at,
         }));
+        console.log('📱 Applications loaded from database:', transformedApps);
         applications.set(transformedApps);
       } else {
         // Fallback to mock applications if none found in database
@@ -364,6 +365,7 @@ async function loadClientSpecificData(clientId: string) {
             createdAt: new Date().toISOString(),
           }
         ];
+        console.log('📱 Applications using mock data:', mockApps);
         applications.set(mockApps);
       }
 
@@ -603,72 +605,83 @@ export async function loadDemoData() {
   try {
     // Get current client from localStorage (single source of truth)
     const currentClientId = getCurrentClientId();
-    console.log(`[loadDemoData] Loading data for current client: ${currentClientId}`);
+    console.log(`[loadDemoData] Loading data for client: ${currentClientId}`);
 
-    // Try to load the current client
+    // If no client ID, we have a problem
+    if (!currentClientId) {
+      console.error('[loadDemoData] No client ID available!');
+      error.set('No client selected. Please refresh the page.');
+      return;
+    }
+
+    // Load the selected client
     const { data: clientData, error: clientError } = await supabase
       .from('clients')
       .select('*')
       .eq('client_code', currentClientId)
       .single();
 
-    if (!clientError && clientData) {
-      console.log(`[loadDemoData] Found client: ${clientData.client_code}`);
-      await loadClientData(clientData.id);
-      return;
-    }
-
-    // If current client doesn't exist, try fallback priorities
-    console.warn(`[loadDemoData] Current client ${currentClientId} not found, trying fallbacks`);
-    const DEMO_PRIORITIES = [
-      'hygge-hvidlog',
-      'meridian-brands', 
-      'nets-demo'
-    ];
-
-    for (const clientCode of DEMO_PRIORITIES) {
-      const { data: clientData, error: clientError } = await supabase
-        .from('clients')
-        .select('*')
-        .eq('client_code', clientCode)
-        .single();
-
-      if (!clientError && clientData) {
-        console.log(`Loading demo data for priority client: ${clientCode} (${clientData.client_name})`);
-        await loadClientData(clientData.id);
-        return;
+    if (clientError) {
+      console.error(`[loadDemoData] Error loading client ${currentClientId}:`, clientError);
+      
+      // If it's a PGRST116 error (no rows), try the default client
+      if (clientError.code === 'PGRST116') {
+        console.log(`[loadDemoData] Client ${currentClientId} not found, trying default: hygge-hvidlog`);
+        
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('clients')
+          .select('*')
+          .eq('client_code', 'hygge-hvidlog')
+          .single();
+          
+        if (!fallbackError && fallbackData) {
+          console.log('[loadDemoData] Using default client: hygge-hvidlog');
+          await loadClientData(fallbackData.id);
+          return;
+        }
       }
-    }
-
-    // Fallback: Try to load any demo client
-    const { data: demoClients, error: demoError } = await supabase
-      .from('clients')
-      .select('*')
-      .ilike('client_code', '%demo%')
-      .limit(1);
-
-    if (!demoError && demoClients && demoClients.length > 0) {
-      console.log(`Loading fallback demo client: ${demoClients[0].client_code}`);
-      await loadClientData(demoClients[0].id);
+      
+      error.set(`Unable to load client data. Please check your database connection.`);
+      
+      // Clear any stale data
+      client.set(null);
+      applications.set([]);
+      people.set([]);
+      enrollments.set([]);
+      documents.set([]);
+      tasks.set([]);
+      invitations.set([]);
+      totalPeopleCount.set(0);
+      
+      await reportSupabaseError('clients', 'select', clientError, {
+        client_code: currentClientId,
+        operation: 'loadDemoData'
+      });
       return;
     }
 
-    // Ultimate fallback: Load the first available client
-    const { data: anyClient, error: anyError } = await supabase
-      .from('clients')
-      .select('*')
-      .limit(1);
-
-    if (anyError || !anyClient || anyClient.length === 0) {
-      throw new Error('No clients found in database');
+    if (clientData) {
+      console.log(`[loadDemoData] Successfully loaded client: ${clientData.client_code} (${clientData.legal_name})`);
+      await loadClientData(clientData.id);
+    } else {
+      // This shouldn't happen with .single() but handle it anyway
+      error.set(`Client "${currentClientId}" returned no data.`);
+      console.error(`[loadDemoData] No data returned for client: ${currentClientId}`);
     }
-
-    console.log(`Loading ultimate fallback client: ${anyClient[0].client_code}`);
-    await loadClientData(anyClient[0].id);
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Failed to load demo data';
     error.set(errorMessage);
     console.error('Error loading demo data:', err);
+
+    // Clear any stale data on error
+    client.set(null);
+    applications.set([]);
+    people.set([]);
+    enrollments.set([]);
+    documents.set([]);
+    tasks.set([]);
+    invitations.set([]);
+    totalPeopleCount.set(0);
 
     await reportSupabaseError('general', 'select', err, {
       operation: 'loadDemoData',

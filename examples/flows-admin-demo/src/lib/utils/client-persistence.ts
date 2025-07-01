@@ -17,19 +17,38 @@ export function getCurrentClientId(): string {
     return DEFAULT_CLIENT_ID;
   }
   
-  const settings = LocalStorageManager.loadSettings();
-  let clientId = settings?.selectedClient;
-  
-  if (!clientId) {
-    clientId = DEFAULT_CLIENT_ID;
-    // Update settings with default client
-    const updatedSettings = LocalStorageManager.mergeWithDefaults({
-      selectedClient: clientId
-    });
-    LocalStorageManager.saveSettings(updatedSettings);
+  try {
+    // Try to get from localStorage directly first
+    const settingsStr = localStorage.getItem('flows-admin-demo-settings');
+    if (settingsStr) {
+      try {
+        const settings = JSON.parse(settingsStr);
+        if (settings.selectedClient && typeof settings.selectedClient === 'string') {
+          return settings.selectedClient;
+        }
+      } catch (e) {
+        console.warn('Failed to parse settings, using default client');
+      }
+    }
+    
+    // If no valid client found, use default
+    console.log(`No client found in localStorage, using default: ${DEFAULT_CLIENT_ID}`);
+    
+    // Save the default for next time
+    try {
+      const updatedSettings = LocalStorageManager.mergeWithDefaults({
+        selectedClient: DEFAULT_CLIENT_ID
+      });
+      LocalStorageManager.saveSettings(updatedSettings);
+    } catch (saveError) {
+      console.error('Failed to save default client:', saveError);
+    }
+    
+    return DEFAULT_CLIENT_ID;
+  } catch (error) {
+    console.error('Error accessing localStorage:', error);
+    return DEFAULT_CLIENT_ID;
   }
-  
-  return clientId;
 }
 
 /**
