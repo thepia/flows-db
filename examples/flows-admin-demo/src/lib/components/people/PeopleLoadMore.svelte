@@ -1,12 +1,23 @@
 <script lang="ts">
+import { createEventDispatcher } from 'svelte';
 import { Button } from '$lib/components/ui/button';
-import { Users } from 'lucide-svelte';
+import { Users, Loader2 } from 'lucide-svelte';
 
 export let currentCount: number;
 export let totalCount: number;
 export let hasActiveFilters: boolean = false;
+export let hasNextPage: boolean = false;
+export let loading: boolean = false;
 
-$: shouldShowLoadMore = !hasActiveFilters && totalCount > currentCount;
+const dispatch = createEventDispatcher<{
+  loadMore: void;
+}>();
+
+$: shouldShowLoadMore = totalCount > currentCount && hasNextPage;
+
+function handleLoadMore() {
+  dispatch('loadMore');
+}
 </script>
 
 {#if shouldShowLoadMore}
@@ -16,13 +27,24 @@ $: shouldShowLoadMore = !hasActiveFilters && totalCount > currentCount;
 			<p class="text-sm text-gray-600 mb-4">
 				Showing {currentCount} of {totalCount} people
 			</p>
-			<Button variant="outline" disabled>
-				<Users class="w-4 h-4 mr-2" />
-				Load More People (Coming Soon)
+			<Button 
+				variant="outline" 
+				disabled={loading}
+				on:click={handleLoadMore}
+			>
+				{#if loading}
+					<Loader2 class="w-4 h-4 mr-2 animate-spin" />
+					Loading More...
+				{:else}
+					<Users class="w-4 h-4 mr-2" />
+					Load More People
+				{/if}
 			</Button>
-			<p class="text-xs text-gray-500 mt-2">
-				Full pagination will be implemented in the next update
-			</p>
+			{#if hasActiveFilters}
+				<p class="text-xs text-gray-500 mt-2">
+					Use pagination controls to navigate through filtered results
+				</p>
+			{/if}
 		</div>
 	</div>
 {/if}

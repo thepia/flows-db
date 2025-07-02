@@ -79,19 +79,55 @@ export async function loadPeoplePage(
   peoplePagination.update(p => ({ ...p, isLoading: true }));
 
   try {
-    // Step 1: Get total count (only on first load)
+    // Helper function to apply filters to any query
+    const applyFilters = (baseQuery: any) => {
+      let filteredQuery = baseQuery;
+      
+      // Apply search filter
+      if (options.search) {
+        filteredQuery = filteredQuery.or(`first_name.ilike.%${options.search}%,last_name.ilike.%${options.search}%,company_email.ilike.%${options.search}%,department.ilike.%${options.search}%,position.ilike.%${options.search}%`);
+      }
+
+      // Apply additional filters
+      if (options.filters) {
+        Object.entries(options.filters).forEach(([key, value]) => {
+          if (value !== null && value !== undefined) {
+            if (key === '_associate_filter' && value === true) {
+              // Special handling for associate filter - show people with non-null associate_status
+              filteredQuery = filteredQuery.not('associate_status', 'is', null);
+            } else if (Array.isArray(value)) {
+              // Handle array filters (e.g., multiple employment statuses)
+              filteredQuery = filteredQuery.in(key, value);
+            } else {
+              // Handle single value filters
+              filteredQuery = filteredQuery.eq(key, value);
+            }
+          }
+        });
+      }
+      
+      return filteredQuery;
+    };
+
+    // Step 1: Get total count with filters applied (recalculate when filters/search change)
     let totalCount = pagination.totalCount;
-    if (page === 0 || totalCount === 0) {
-      const { count, error: countError } = await supabase
+    const hasFiltersOrSearch = options.search || (options.filters && Object.keys(options.filters).length > 0);
+    
+    if (page === 0 || totalCount === 0 || hasFiltersOrSearch) {
+      let countQuery = supabase
         .from('people')
         .select('*', { count: 'exact', head: true })
         .eq('client_id', clientId);
+      
+      // Apply the same filters to count query
+      countQuery = applyFilters(countQuery);
 
+      const { count, error: countError } = await countQuery;
       if (countError) throw countError;
       totalCount = count || 0;
     }
 
-    // Step 2: Build query with filters
+    // Step 2: Build data query with filters
     let query = supabase
       .from('people')
       .select('*')
@@ -99,19 +135,8 @@ export async function loadPeoplePage(
       .order('created_at', { ascending: false })
       .range(offset, offset + pageSize - 1);
 
-    // Apply search filter
-    if (options.search) {
-      query = query.or(`first_name.ilike.%${options.search}%,last_name.ilike.%${options.search}%,person_code.ilike.%${options.search}%`);
-    }
-
-    // Apply additional filters
-    if (options.filters) {
-      Object.entries(options.filters).forEach(([key, value]) => {
-        if (value !== null && value !== undefined) {
-          query = query.eq(key, value);
-        }
-      });
-    }
+    // Apply the same filters to data query
+    query = applyFilters(query);
 
     // Step 3: Load people for this page
     const { data: peopleData, error: peopleError } = await query;
@@ -288,9 +313,9 @@ export async function goToPeoplePage(clientId: string, page: number) {
 }
 
 /**
- * Search people with pagination
+ * Search people with pagination and filters
  */
-export async function searchPeople(clientId: string, searchTerm: string) {
+export async function searchPeople(clientId: string, searchTerm: string, filters?: Record<string, any>) {
   // Reset to first page for new search
   peoplePagination.update(p => ({ 
     ...p, 
@@ -302,8 +327,72 @@ export async function searchPeople(clientId: string, searchTerm: string) {
   // Clear existing data
   paginatedPeople.set(new Map());
   
-  // Load first page with search
-  return loadPeoplePage(clientId, 0, { search: searchTerm });
+  // Load first page with search and filters
+  return loadPeoplePage(clientId, 0, { search: searchTerm, filters });
+}
+
+/**
+ * Get statistics for filtered people dataset
+ */
+export async function getPeopleStatistics(clientId: string, options: {
+  search?: string;
+  filters?: Record<string, any>;
+} = {}) {
+  try {
+    // Helper function to apply filters (same as in loadPeoplePage)
+    const applyFilters = (baseQuery: any) => {
+      let filteredQuery = baseQuery;
+      
+      if (options.search) {
+        filteredQuery = filteredQuery.or(`first_name.ilike.%${options.search}%,last_name.ilike.%${options.search}%,company_email.ilike.%${options.search}%,department.ilike.%${options.search}%,position.ilike.%${options.search}%`);
+      }
+
+      if (options.filters) {
+        Object.entries(options.filters).forEach(([key, value]) => {
+          if (value !== null && value !== undefined) {
+            if (key === '_associate_filter' && value === true) {
+              filteredQuery = filteredQuery.not('associate_status', 'is', null);
+            } else if (Array.isArray(value)) {
+              filteredQuery = filteredQuery.in(key, value);
+            } else {
+              filteredQuery = filteredQuery.eq(key, value);
+            }
+          }
+        });
+      }
+      
+      return filteredQuery;
+    };
+
+    // Get statistics using database aggregation
+    const baseQuery = supabase
+      .from('people')
+      .select('employment_status, associate_status')
+      .eq('client_id', clientId);
+    
+    const filteredQuery = applyFilters(baseQuery);
+    const { data: peopleData, error } = await filteredQuery;
+    
+    if (error) throw error;
+    
+    // Calculate statistics from filtered results
+    const stats = {
+      totalPeople: peopleData?.length || 0,
+      activeEmployees: peopleData?.filter(p => p.employment_status === 'active').length || 0,
+      associates: peopleData?.filter(p => p.associate_status).length || 0,
+      futureEmployees: peopleData?.filter(p => p.employment_status === 'future').length || 0,
+    };
+    
+    return stats;
+  } catch (error) {
+    console.error('Error getting people statistics:', error);
+    return {
+      totalPeople: 0,
+      activeEmployees: 0,
+      associates: 0,
+      futureEmployees: 0,
+    };
+  }
 }
 
 /**
@@ -341,7 +430,6 @@ export function resetProcessesPagination() {
 function transformPerson(data: any): Person {
   return {
     id: data.id,
-    personCode: data.person_code,
     firstName: data.first_name,
     lastName: data.last_name,
     email: data.company_email,
@@ -350,14 +438,9 @@ function transformPerson(data: any): Person {
     location: data.location,
     startDate: data.start_date,
     employmentStatus: data.employment_status,
-    employmentType: data.employment_type,
-    workLocation: data.work_location,
-    manager: data.manager,
-    securityClearance: data.security_clearance,
-    skills: data.skills || [],
-    languages: data.languages || [],
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    associateStatus: data.associate_status,
+    phone: data.phone || '',
+    manager: data.manager || '',
   };
 }
 
