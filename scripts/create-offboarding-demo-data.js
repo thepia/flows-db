@@ -14,11 +14,14 @@ import chalk from 'chalk';
 // Load environment variables
 dotenv.config();
 
-// Initialize Supabase client
+// Initialize Supabase client with API schema
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY,
   {
+    db: {
+      schema: 'api'
+    },
     auth: {
       autoRefreshToken: false,
       persistSession: false

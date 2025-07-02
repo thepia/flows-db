@@ -50,7 +50,9 @@
       "Bash(sed:*)",
       "Bash(git checkout:*)",
       "Bash(npm run lint)",
-      "Bash(awk:*)"
+      "Bash(awk:*)",
+      "Bash(pnpm demo:verify:quick:*)",
+      "Bash(pnpm demo:verify:*)"
     ],
     "deny": []
   }

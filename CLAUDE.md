@@ -5,6 +5,7 @@
 - You cant check in secrets and tokens
 - We use vite-plugin-restart. You can trigger a restart by changing schemas, scripts or the vite configuration.
 - Don't try to start the demo dev server, ask me to do it. I will keep it running. You do not yet have the ability to run resident processes
+- When asked to pick up on the strategic planning, make sure to pick up around Strategic roadmap docs from earlier (NEXT_IMPROVEMENTS_ROADMAP.md, CLAUDE_CODE_GUIDANCE.md) etc
 
 ## Flows Repositories
 
@@ -23,7 +24,7 @@ The Thepia Flows product consists of interconnected repositories:
 - **`thepia.com`**`: Main website and API server with authentication backend
 - **`flows-auth`**: Frontend sign-in UI library (Svelte) with WebAuthn support. Examples `flows-app-demo` and `tasks-app-demo` in `examples/` directory.
 - **`flows-db`**: Database schema and functionality with admin demo application(flows-admin-demo)  
-- **`flows.thepia.net`**: Public demo website (upcoming) with production database integration
+- **`flows.thepia.net`**: Public demo website for Thepia Flows with live database integration and passkey authentication
 
 #### Critical Development Standards
 
@@ -64,6 +65,14 @@ pnpm lint          # Biome linting (must pass)
 #### Architecture Documentation
 
 - **Notifications System**: See [thepia.com/docs/flows/notifications-architecture.md](https://github.com/thepia/thepia.com/blob/main/docs/flows/notifications-architecture.md) for comprehensive notification system architecture recommendations for Flows platform applications
+
+#### Strategic Implementation Guidance
+
+- **Next Improvements**: See `docs/NEXT_IMPROVEMENTS_ROADMAP.md` for business-prioritized implementation guidance
+- **Claude Code AI Guidance**: See `docs/CLAUDE_CODE_GUIDANCE.md` for intelligent suggestion framework based on business value
+- **Strategic Documentation**: See `docs/STRATEGIC_DOCUMENTATION_RECOMMENDATIONS.md` for thepia.com strategic documentation needs
+
+**AI Assistant Context**: When suggesting next implementations, prioritize business-enabling improvements (API docs, production deployment, security audit) over feature additions. Reference the roadmap documents for context-aware suggestions that align with business priorities.
 
 
 ## Root Cause of My schema Mistakes

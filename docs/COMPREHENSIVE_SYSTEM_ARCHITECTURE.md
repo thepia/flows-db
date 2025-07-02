@@ -20,9 +20,9 @@ The Flows Admin Demo is evolving from a basic demonstration tool into a comprehe
 #### **Data Layer**
 - **Supabase PostgreSQL** backend with dedicated API schema
 - **Row Level Security (RLS)** for tenant isolation
-- **JWT-based Authentication** for secure invitation system
+- **Unified Invitation System** with JWT-based security and encrypted PII
 - **Real-time Subscriptions** for live data updates
-- **Comprehensive Database Schema** covering HR lifecycle
+- **Comprehensive Database Schema** covering HR lifecycle and demo requests
 
 #### **Demo Management System**
 - **Multi-client Demo Support** with easy switching
@@ -106,7 +106,7 @@ api.clients                 -- Client tenant management
 api.client_applications     -- Application configurations
 api.employees              -- Employee master data
 api.employee_enrollments   -- Onboarding/offboarding tracking
-api.invitations           -- JWT-based invitation system
+api.invitations           -- Unified invitation system (includes demo requests)
 api.documents             -- Document management
 api.tasks                 -- Task assignment and tracking
 

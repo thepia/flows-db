@@ -54,6 +54,9 @@
     "demo:admin:build": "pnpm --filter flows-admin-demo build",
     "demo:admin:install": "pnpm --filter flows-admin-demo install",
     "demo:build": "pnpm --filter flows-admin-demo build",
+    "demo:verify": "vitest run tests/demo-complete-verification.spec.js",
+    "demo:verify:watch": "vitest tests/demo-complete-verification.spec.js",
+    "demo:verify:quick": "node scripts/verify-demo-complete.js",
     "demo:screenshots": "playwright test tests/e2e/promotional-screenshots.spec.ts --headed",
     "demo:screenshots:ci": "playwright test tests/e2e/promotional-screenshots.spec.ts",
     "demo:screenshots:all": "playwright test tests/e2e/promotional-screenshots.spec.ts --project=promotional-screenshots --project=tablet-screenshots",
@@ -94,6 +97,7 @@
     "jose": "^5.2.0",
     "node-cron": "^3.0.3",
     "ora": "^7.0.1",
+    "sharp": "^0.34.2",
     "uuid": "^9.0.1",
     "winston": "^3.11.0",
     "yargs": "^17.7.2"
