@@ -2,8 +2,8 @@
 
 /**
  * Apply Complete Employee to People Migration Fix
- * 
- * This script applies the complete migration fix that renames employee_id 
+ *
+ * This script applies the complete migration fix that renames employee_id
  * to person_id in documents and tasks tables, updates constraints, and
  * fixes all related functions, views, and policies.
  */
@@ -14,17 +14,17 @@ const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
 // Initialize Supabase client
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 async function applyMigrationFix() {
   console.log('🔧 Applying Complete Employee to People Migration Fix...\n');
 
   try {
     // Read the migration SQL file
-    const migrationPath = path.join(__dirname, '../schemas/15_complete_employee_to_people_migration_fix.sql');
+    const migrationPath = path.join(
+      __dirname,
+      '../schemas/15_complete_employee_to_people_migration_fix.sql'
+    );
     const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
 
     console.log('📄 Migration SQL loaded, applying changes...');
@@ -32,35 +32,39 @@ async function applyMigrationFix() {
     // Split SQL by statements (basic splitting on semicolon + newline)
     const statements = migrationSQL
       .split(';\n')
-      .map(stmt => stmt.trim())
-      .filter(stmt => stmt.length > 0 && !stmt.startsWith('--'));
+      .map((stmt) => stmt.trim())
+      .filter((stmt) => stmt.length > 0 && !stmt.startsWith('--'));
 
     console.log(`📝 Found ${statements.length} SQL statements to execute\n`);
 
     // Execute each statement
     for (let i = 0; i < statements.length; i++) {
       const statement = statements[i];
-      
+
       // Skip comment blocks and empty statements
       if (statement.startsWith('/*') || statement.length < 10) {
         continue;
       }
 
       console.log(`⚡ Executing statement ${i + 1}/${statements.length}...`);
-      
+
       try {
         // Use the Supabase client to execute raw SQL
         const { error } = await supabase.rpc('exec_sql', { sql: statement });
-        
+
         if (error) {
           // If exec_sql is not available, try using the REST API directly
-          console.log(`⚠️  Direct SQL not available, trying alternative approach for statement ${i + 1}`);
-          
+          console.log(
+            `⚠️  Direct SQL not available, trying alternative approach for statement ${i + 1}`
+          );
+
           // For critical DDL statements, we need to handle them differently
-          if (statement.includes('ALTER TABLE') || 
-              statement.includes('CREATE POLICY') || 
-              statement.includes('CREATE TRIGGER') ||
-              statement.includes('CREATE OR REPLACE FUNCTION')) {
+          if (
+            statement.includes('ALTER TABLE') ||
+            statement.includes('CREATE POLICY') ||
+            statement.includes('CREATE TRIGGER') ||
+            statement.includes('CREATE OR REPLACE FUNCTION')
+          ) {
             console.log(`❌ Could not execute DDL statement: ${statement.substring(0, 100)}...`);
             console.log(`   Error: ${error.message}`);
             console.log('   This statement needs to be run manually in the Supabase SQL editor.');
@@ -79,7 +83,6 @@ async function applyMigrationFix() {
     console.log('1. Verify the changes by running the validation queries in the migration file');
     console.log('2. Test that documents and tasks tables now use person_id');
     console.log('3. Restart your application to pick up the schema changes');
-    
   } catch (error) {
     console.error('💥 Failed to apply migration fix:', error.message);
     process.exit(1);
@@ -103,7 +106,7 @@ async function validateMigration() {
     } else {
       const columns = docsData && docsData.length > 0 ? Object.keys(docsData[0]) : [];
       console.log(`✅ Documents table columns: ${columns.join(', ')}`);
-      
+
       if (columns.includes('person_id')) {
         console.log('✅ Documents table has person_id column');
       } else if (columns.includes('employee_id')) {
@@ -123,7 +126,7 @@ async function validateMigration() {
     } else {
       const columns = tasksData && tasksData.length > 0 ? Object.keys(tasksData[0]) : [];
       console.log(`✅ Tasks table columns: ${columns.join(', ')}`);
-      
+
       if (columns.includes('person_id')) {
         console.log('✅ Tasks table has person_id column');
       } else if (columns.includes('employee_id')) {
@@ -141,9 +144,10 @@ async function validateMigration() {
     if (peopleError) {
       console.log(`❌ People table error: ${peopleError.message}`);
     } else {
-      console.log(`✅ People table accessible, found ${peopleData ? peopleData.length : 0} records`);
+      console.log(
+        `✅ People table accessible, found ${peopleData ? peopleData.length : 0} records`
+      );
     }
-
   } catch (error) {
     console.error('💥 Validation failed:', error.message);
   }
@@ -159,7 +163,7 @@ async function main() {
   console.log('   • Ensure proper table relationships\n');
 
   const args = process.argv.slice(2);
-  
+
   if (args.includes('--validate-only')) {
     await validateMigration();
   } else {

@@ -16,16 +16,23 @@ export class NavigationHelper {
   async navigateToOffboarding() {
     // Wait for applications to load completely first
     await this.waitForApplicationsToLoad();
-    
+
     // Find the offboarding tab - it could have different codes depending on database
     // We look for any tab that contains "offboarding" in its text (case-insensitive)
-    const offboardingTab = await this.page.locator('[data-testid^="tab-"]:has-text("offboarding")').first();
-    
+    const offboardingTab = await this.page
+      .locator('[data-testid^="tab-"]:has-text("offboarding")')
+      .first();
+
     // If not found by text, try to find by the test id pattern
     let tabToClick = offboardingTab;
     if (!(await offboardingTab.isVisible())) {
       // Try common variations
-      const possibleTabIds = ['tab-offboarding', 'tab-knowledge-offboarding', 'tab-knowledge-transfer-offboarding', 'tab-employee-offboarding'];
+      const possibleTabIds = [
+        'tab-offboarding',
+        'tab-knowledge-offboarding',
+        'tab-knowledge-transfer-offboarding',
+        'tab-employee-offboarding',
+      ];
       for (const tabId of possibleTabIds) {
         const tab = this.page.locator(`[data-testid="${tabId}"]`);
         if (await tab.isVisible()) {
@@ -34,13 +41,13 @@ export class NavigationHelper {
         }
       }
     }
-    
+
     // Click the found tab
     await tabToClick.click();
-    
+
     // Wait for the tab to be active before checking for the view
     await this.page.waitForTimeout(500); // Small delay to ensure state update
-    
+
     await this.page.waitForSelector('[data-testid="view-overview"]', { state: 'visible' });
     await this.verifyOffboardingTabActive();
   }
@@ -69,8 +76,10 @@ export class NavigationHelper {
    */
   async verifyOffboardingTabActive() {
     // Find the active offboarding tab using a more flexible approach
-    const activeTab = await this.page.locator('[data-testid^="tab-"][data-active="true"]:has-text("offboarding")').first();
-    
+    const activeTab = await this.page
+      .locator('[data-testid^="tab-"][data-active="true"]:has-text("offboarding")')
+      .first();
+
     // Verify it exists and is active
     await expect(activeTab).toBeVisible();
     await expect(activeTab).toHaveAttribute('data-active', 'true');
@@ -83,10 +92,10 @@ export class NavigationHelper {
   async verifyOffboardingViewActive(view) {
     const viewButton = this.page.locator(`[data-testid="offboarding-view-${view}"]`);
     const viewContent = this.page.locator(`[data-testid="view-${view}"]`);
-    
+
     // Check button is active
     await expect(viewButton).toHaveAttribute('data-active', 'true');
-    
+
     // Check view content is visible
     await expect(viewContent).toBeVisible();
   }
@@ -105,12 +114,12 @@ export class NavigationHelper {
   async getAvailableTabs() {
     const tabs = await this.page.locator('[data-testid^="tab-"]').all();
     const tabIds = [];
-    
+
     for (const tab of tabs) {
       const testId = await tab.getAttribute('data-testid');
       tabIds.push(testId.replace('tab-', ''));
     }
-    
+
     return tabIds;
   }
 
@@ -120,12 +129,12 @@ export class NavigationHelper {
   async getAvailableOffboardingViews() {
     const views = await this.page.locator('[data-testid^="offboarding-view-"]').all();
     const viewIds = [];
-    
+
     for (const view of views) {
       const testId = await view.getAttribute('data-testid');
       viewIds.push(testId.replace('offboarding-view-', ''));
     }
-    
+
     return viewIds;
   }
 
@@ -135,7 +144,7 @@ export class NavigationHelper {
   async waitForApplicationsToLoad() {
     // First wait for page to load
     await this.page.waitForLoadState('networkidle');
-    
+
     // Wait for at least one application tab to be visible (not just People tab)
     await this.page.waitForFunction(
       () => {
@@ -145,7 +154,7 @@ export class NavigationHelper {
       },
       { timeout: 15000 }
     );
-    
+
     // Give a small buffer for the applications to fully render
     await this.page.waitForTimeout(1000);
   }
@@ -182,13 +191,13 @@ export class OffboardingHelper {
    */
   async createOffboardingProcess(templateId = 'template-001') {
     await this.nav.navigateToOffboardingView('templates');
-    
+
     // Select template
     await this.page.click(`[data-testid="template-${templateId}"]`);
-    
+
     // Fill out process details (mock for now)
     await this.page.click('[data-testid="create-process-button"]');
-    
+
     // Wait for process creation
     await this.page.waitForSelector('[data-testid="process-created"]', { state: 'visible' });
   }
@@ -211,10 +220,10 @@ export class OffboardingHelper {
   async updateTaskStatus(taskId, status) {
     const task = this.page.locator(`[data-testid="task-${taskId}"]`);
     const statusColumn = this.page.locator(`[data-testid="task-column-${status}"]`);
-    
+
     // Drag and drop task to new status column
     await task.dragTo(statusColumn);
-    
+
     // Wait for update confirmation
     await this.page.waitForSelector(`[data-testid="task-${taskId}"][data-status="${status}"]`);
   }
@@ -227,7 +236,7 @@ export class OffboardingHelper {
       'metric-card-active',
       'metric-card-ending-soon',
       'metric-card-completed',
-      'metric-card-attention'
+      'metric-card-attention',
     ];
 
     for (const metric of requiredMetrics) {

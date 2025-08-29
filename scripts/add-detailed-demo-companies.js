@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import dotenv from 'dotenv';
 import chalk from 'chalk';
+import dotenv from 'dotenv';
 
 // Load environment variables
 dotenv.config();
@@ -16,9 +16,9 @@ if (!supabaseUrl || !supabaseServiceKey) {
 }
 
 const headers = {
-  'apikey': supabaseServiceKey,
-  'Authorization': `Bearer ${supabaseServiceKey}`,
-  'Content-Type': 'application/json'
+  apikey: supabaseServiceKey,
+  Authorization: `Bearer ${supabaseServiceKey}`,
+  'Content-Type': 'application/json',
 };
 
 async function addDetailedDemoCompanies() {
@@ -35,49 +35,58 @@ async function addDetailedDemoCompanies() {
         status: 'active',
         region: 'EU',
         max_users: 1200,
-        max_storage_gb: 100
+        max_storage_gb: 100,
       },
       {
         legal_name: 'Meridian Brands International',
-        client_code: 'meridian-brands', 
+        client_code: 'meridian-brands',
         domain: 'meridian-brands.thepia.net',
         tier: 'enterprise',
         status: 'active',
         region: 'APAC',
         max_users: 15500,
-        max_storage_gb: 100
-      }
+        max_storage_gb: 100,
+      },
     ];
 
     console.log(chalk.yellow('📝 Creating demo companies...'));
-    
+
     // Insert companies using upsert
     for (const company of demoCompanies) {
       const response = await fetch(`${supabaseUrl}/rest/v1/clients`, {
         method: 'POST',
         headers: {
           ...headers,
-          'Prefer': 'resolution=merge-duplicates'
+          Prefer: 'resolution=merge-duplicates',
         },
-        body: JSON.stringify(company)
+        body: JSON.stringify(company),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(chalk.red(`❌ Error creating ${company.legal_name}: HTTP ${response.status} - ${errorText}`));
+        console.error(
+          chalk.red(
+            `❌ Error creating ${company.legal_name}: HTTP ${response.status} - ${errorText}`
+          )
+        );
       } else {
         console.log(chalk.green(`✅ Created/updated ${company.legal_name}`));
       }
     }
 
     // Get the created companies to get their IDs
-    const companiesResponse = await fetch(`${supabaseUrl}/rest/v1/clients?select=id,legal_name,client_code&client_code=in.(hygge-hvidlog,meridian-brands)`, {
-      headers
-    });
+    const companiesResponse = await fetch(
+      `${supabaseUrl}/rest/v1/clients?select=id,legal_name,client_code&client_code=in.(hygge-hvidlog,meridian-brands)`,
+      {
+        headers,
+      }
+    );
 
     if (!companiesResponse.ok) {
       const errorText = await companiesResponse.text();
-      console.error(chalk.red(`❌ Error fetching companies: HTTP ${companiesResponse.status} - ${errorText}`));
+      console.error(
+        chalk.red(`❌ Error fetching companies: HTTP ${companiesResponse.status} - ${errorText}`)
+      );
       return;
     }
 
@@ -91,8 +100,8 @@ async function addDetailedDemoCompanies() {
     console.log(chalk.yellow('\n📱 Creating demo applications...'));
 
     // Define applications for each company
-    const hyggeCompany = companies.find(c => c.client_code === 'hygge-hvidlog');
-    const meridianCompany = companies.find(c => c.client_code === 'meridian-brands');
+    const hyggeCompany = companies.find((c) => c.client_code === 'hygge-hvidlog');
+    const meridianCompany = companies.find((c) => c.client_code === 'meridian-brands');
 
     const applications = [];
 
@@ -103,7 +112,8 @@ async function addDetailedDemoCompanies() {
           app_code: 'employee-onboarding',
           app_name: 'Employee Onboarding',
           app_version: '2.1.0',
-          app_description: 'Comprehensive onboarding for sustainable food technology company with multilingual support',
+          app_description:
+            'Comprehensive onboarding for sustainable food technology company with multilingual support',
           status: 'active',
           configuration: {
             theme: 'hygge',
@@ -111,28 +121,28 @@ async function addDetailedDemoCompanies() {
             branding: {
               primary_color: '#2F5233',
               secondary_color: '#8FBC8F',
-              accent_color: '#DAA520'
+              accent_color: '#DAA520',
             },
             features: {
               multilingual: true,
               sustainability_training: true,
-              remote_onboarding: true
-            }
+              remote_onboarding: true,
+            },
           },
           features: [
             'document-capture',
-            'task-management', 
+            'task-management',
             'video-onboarding',
             'multilingual-support',
             'sustainability-training',
-            'remote-work-setup'
+            'remote-work-setup',
           ],
-          max_concurrent_users: 200
+          max_concurrent_users: 200,
         },
         {
           client_id: hyggeCompany.id,
           app_code: 'knowledge-offboarding',
-          app_name: 'Knowledge Transfer & Offboarding', 
+          app_name: 'Knowledge Transfer & Offboarding',
           app_version: '1.8.0',
           app_description: 'Knowledge preservation and sustainable transition processes',
           status: 'active',
@@ -140,15 +150,15 @@ async function addDetailedDemoCompanies() {
             theme: 'hygge',
             locale: 'da-DK',
             knowledge_retention: true,
-            sustainability_focus: true
+            sustainability_focus: true,
           },
           features: [
             'knowledge-transfer',
             'documentation',
             'mentorship-matching',
-            'sustainable-transition'
+            'sustainable-transition',
           ],
-          max_concurrent_users: 150
+          max_concurrent_users: 150,
         }
       );
     }
@@ -168,13 +178,13 @@ async function addDetailedDemoCompanies() {
             branding: {
               primary_color: '#1E3A8A',
               secondary_color: '#3B82F6',
-              accent_color: '#F59E0B'
+              accent_color: '#F59E0B',
             },
             features: {
               rapid_deployment: true,
               multi_region: true,
-              mobile_first: true
-            }
+              mobile_first: true,
+            },
           },
           features: [
             'mobile-onboarding',
@@ -182,31 +192,32 @@ async function addDetailedDemoCompanies() {
             'multi-region',
             'digital-signatures',
             'automated-workflows',
-            'performance-tracking'
+            'performance-tracking',
           ],
-          max_concurrent_users: 500
+          max_concurrent_users: 500,
         },
         {
           client_id: meridianCompany.id,
           app_code: 'offboarding-management',
           app_name: 'Offboarding',
           app_version: '2.7.0',
-          app_description: 'High-volume offboarding and transition management for fast-paced environment',
+          app_description:
+            'High-volume offboarding and transition management for fast-paced environment',
           status: 'active',
           configuration: {
             theme: 'corporate',
             locale: 'en-SG',
             high_volume: true,
-            automated_workflows: true
+            automated_workflows: true,
           },
           features: [
             'bulk-operations',
             'automated-handover',
             'knowledge-capture',
             'exit-analytics',
-            'compliance-tracking'
+            'compliance-tracking',
           ],
-          max_concurrent_users: 300
+          max_concurrent_users: 300,
         }
       );
     }
@@ -217,47 +228,63 @@ async function addDetailedDemoCompanies() {
         method: 'POST',
         headers: {
           ...headers,
-          'Prefer': 'resolution=merge-duplicates'
+          Prefer: 'resolution=merge-duplicates',
         },
-        body: JSON.stringify(app)
+        body: JSON.stringify(app),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(chalk.red(`❌ Error creating application ${app.app_name}: HTTP ${response.status} - ${errorText}`));
+        console.error(
+          chalk.red(
+            `❌ Error creating application ${app.app_name}: HTTP ${response.status} - ${errorText}`
+          )
+        );
       } else {
         console.log(chalk.green(`✅ Created/updated application ${app.app_name}`));
       }
     }
 
     // Update last_accessed for applications to simulate usage
-    const companyIds = companies.map(c => c.id);
+    const companyIds = companies.map((c) => c.id);
     const updateData = {
       last_accessed: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     };
 
-    const updateResponse = await fetch(`${supabaseUrl}/rest/v1/client_applications?client_id=in.(${companyIds.join(',')})`, {
-      method: 'PATCH',
-      headers,
-      body: JSON.stringify(updateData)
-    });
+    const updateResponse = await fetch(
+      `${supabaseUrl}/rest/v1/client_applications?client_id=in.(${companyIds.join(',')})`,
+      {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify(updateData),
+      }
+    );
 
     if (!updateResponse.ok) {
       const errorText = await updateResponse.text();
-      console.error(chalk.red(`❌ Error updating last_accessed: HTTP ${updateResponse.status} - ${errorText}`));
+      console.error(
+        chalk.red(`❌ Error updating last_accessed: HTTP ${updateResponse.status} - ${errorText}`)
+      );
     }
 
     // Final verification
     console.log(chalk.blue('\n🔍 Verifying demo companies...'));
-    
-    const finalCompaniesResponse = await fetch(`${supabaseUrl}/rest/v1/clients?select=id,legal_name,client_code,tier,status,region,created_at&client_code=in.(hygge-hvidlog,meridian-brands)&order=legal_name`, {
-      headers
-    });
+
+    const finalCompaniesResponse = await fetch(
+      `${supabaseUrl}/rest/v1/clients?select=id,legal_name,client_code,tier,status,region,created_at&client_code=in.(hygge-hvidlog,meridian-brands)&order=legal_name`,
+      {
+        headers,
+      }
+    );
 
     if (!finalCompaniesResponse.ok) {
       const errorText = await finalCompaniesResponse.text();
-      console.error(chalk.red(`❌ Error fetching final companies: HTTP ${finalCompaniesResponse.status} - ${errorText}`));
+      console.error(
+        chalk.red(
+          `❌ Error fetching final companies: HTTP ${finalCompaniesResponse.status} - ${errorText}`
+        )
+      );
       return;
     }
 
@@ -269,39 +296,52 @@ async function addDetailedDemoCompanies() {
     }
 
     console.log(chalk.green('\n✅ Detailed demo companies created successfully:'));
-    finalCompanies.forEach(company => {
+    finalCompanies.forEach((company) => {
       console.log(chalk.cyan(`   • ${company.legal_name} (${company.client_code})`));
-      console.log(chalk.gray(`     Tier: ${company.tier} | Status: ${company.status} | Region: ${company.region}`));
+      console.log(
+        chalk.gray(
+          `     Tier: ${company.tier} | Status: ${company.status} | Region: ${company.region}`
+        )
+      );
     });
 
     // Check applications for these companies
-    const finalCompanyIds = finalCompanies.map(c => c.id).filter(id => id);
-    
+    const finalCompanyIds = finalCompanies.map((c) => c.id).filter((id) => id);
+
     if (finalCompanyIds.length === 0) {
       console.log(chalk.yellow('⚠️  No company IDs found for application lookup'));
       return;
     }
-    
-    const finalApplicationsResponse = await fetch(`${supabaseUrl}/rest/v1/client_applications?select=app_name,app_code,app_version,status,client_id&client_id=in.(${finalCompanyIds.join(',')})`, {
-      headers
-    });
+
+    const finalApplicationsResponse = await fetch(
+      `${supabaseUrl}/rest/v1/client_applications?select=app_name,app_code,app_version,status,client_id&client_id=in.(${finalCompanyIds.join(',')})`,
+      {
+        headers,
+      }
+    );
 
     if (!finalApplicationsResponse.ok) {
       const errorText = await finalApplicationsResponse.text();
-      console.error(chalk.red(`❌ Error fetching final applications: HTTP ${finalApplicationsResponse.status} - ${errorText}`));
+      console.error(
+        chalk.red(
+          `❌ Error fetching final applications: HTTP ${finalApplicationsResponse.status} - ${errorText}`
+        )
+      );
       return;
     }
 
     const finalApplications = await finalApplicationsResponse.json();
 
     if (finalApplications && finalApplications.length > 0) {
-      console.log(chalk.green(`\n📱 Created ${finalApplications.length} applications across demo companies:`));
-      
+      console.log(
+        chalk.green(`\n📱 Created ${finalApplications.length} applications across demo companies:`)
+      );
+
       for (const company of finalCompanies) {
-        const companyApps = finalApplications.filter(app => app.client_id === company.id);
+        const companyApps = finalApplications.filter((app) => app.client_id === company.id);
         if (companyApps.length > 0) {
           console.log(chalk.cyan(`\n   ${company.legal_name}:`));
-          companyApps.forEach(app => {
+          companyApps.forEach((app) => {
             console.log(chalk.gray(`     • ${app.app_name} (${app.app_code}) v${app.app_version}`));
           });
         }
@@ -309,7 +349,6 @@ async function addDetailedDemoCompanies() {
     }
 
     console.log(chalk.green('\n🎉 Detailed demo companies setup completed!'));
-
   } catch (error) {
     console.error(chalk.red('❌ Unexpected error:'), error);
     process.exit(1);

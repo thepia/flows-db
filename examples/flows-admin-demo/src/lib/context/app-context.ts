@@ -17,10 +17,10 @@ interface AppEnvironment {
 
 class ApplicationContext {
   private _environment = writable<AppEnvironment>(this.detectEnvironment());
-  
+
   // Expose as readable store
   public readonly environment = { subscribe: this._environment.subscribe };
-  
+
   private detectEnvironment(): AppEnvironment {
     if (!browser) {
       return this.createEnvironment('production');
@@ -29,7 +29,7 @@ class ApplicationContext {
     const hostname = window.location.hostname;
     const isDev = hostname === 'localhost' || hostname === '127.0.0.1';
     const isDemo = hostname.includes('demo') || window.location.search.includes('demo=true');
-    
+
     if (isDev) {
       return this.createEnvironment('development');
     } else if (isDemo) {
@@ -46,9 +46,9 @@ class ApplicationContext {
         demoDataGeneration: mode === 'demo' || mode === 'development',
         errorReporting: true, // Always enabled, different endpoints
         clientSwitching: mode === 'demo' || mode === 'development',
-        devTools: mode === 'development'
+        devTools: mode === 'development',
       },
-      endpoints: {}
+      endpoints: {},
     };
 
     switch (mode) {
@@ -57,19 +57,19 @@ class ApplicationContext {
           ...baseConfig,
           endpoints: {
             errorReporting: `${window.location.origin}/dev/error-reports`,
-            analytics: undefined // No analytics in dev
-          }
+            analytics: undefined, // No analytics in dev
+          },
         };
-      
+
       case 'demo':
         return {
           ...baseConfig,
           endpoints: {
             errorReporting: 'https://demo-errors.thepia.net/reports',
-            analytics: 'https://analytics.thepia.net/demo'
-          }
+            analytics: 'https://analytics.thepia.net/demo',
+          },
         };
-      
+
       case 'production':
         return {
           ...baseConfig,
@@ -77,12 +77,12 @@ class ApplicationContext {
             ...baseConfig.features,
             demoDataGeneration: false,
             clientSwitching: false,
-            devTools: false
+            devTools: false,
           },
           endpoints: {
             errorReporting: 'https://errors.thepia.net/reports',
-            analytics: 'https://analytics.thepia.net/flows'
-          }
+            analytics: 'https://analytics.thepia.net/flows',
+          },
         };
     }
   }
@@ -90,19 +90,19 @@ class ApplicationContext {
   // Methods for common environment checks
   public isDevelopment(): boolean {
     let currentMode: AppEnvironment['mode'] = 'production';
-    this._environment.subscribe(env => currentMode = env.mode)();
+    this._environment.subscribe((env) => (currentMode = env.mode))();
     return currentMode === 'development';
   }
 
   public isDemo(): boolean {
     let currentMode: AppEnvironment['mode'] = 'production';
-    this._environment.subscribe(env => currentMode = env.mode)();
+    this._environment.subscribe((env) => (currentMode = env.mode))();
     return currentMode === 'demo';
   }
 
   public isProduction(): boolean {
     let currentMode: AppEnvironment['mode'] = 'production';
-    this._environment.subscribe(env => currentMode = env.mode)();
+    this._environment.subscribe((env) => (currentMode = env.mode))();
     return currentMode === 'production';
   }
 

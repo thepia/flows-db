@@ -16,7 +16,7 @@ export function getCurrentClientId(): string {
   if (typeof window === 'undefined') {
     return DEFAULT_CLIENT_ID;
   }
-  
+
   try {
     // Try to get from localStorage directly first
     const settingsStr = localStorage.getItem('flows-admin-demo-settings');
@@ -30,20 +30,20 @@ export function getCurrentClientId(): string {
         console.warn('Failed to parse settings, using default client');
       }
     }
-    
+
     // If no valid client found, use default
     console.log(`No client found in localStorage, using default: ${DEFAULT_CLIENT_ID}`);
-    
+
     // Save the default for next time
     try {
       const updatedSettings = LocalStorageManager.mergeWithDefaults({
-        selectedClient: DEFAULT_CLIENT_ID
+        selectedClient: DEFAULT_CLIENT_ID,
       });
       LocalStorageManager.saveSettings(updatedSettings);
     } catch (saveError) {
       console.error('Failed to save default client:', saveError);
     }
-    
+
     return DEFAULT_CLIENT_ID;
   } catch (error) {
     console.error('Error accessing localStorage:', error);
@@ -57,12 +57,13 @@ export function getCurrentClientId(): string {
  */
 export function setCurrentClientId(clientId: string): void {
   if (typeof window === 'undefined') return;
-  
-  const currentSettings = LocalStorageManager.loadSettings() || LocalStorageManager.getDefaultSettings();
+
+  const currentSettings =
+    LocalStorageManager.loadSettings() || LocalStorageManager.getDefaultSettings();
   const updatedSettings = {
     ...currentSettings,
     selectedClient: clientId,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   };
   LocalStorageManager.saveSettings(updatedSettings);
 }

@@ -1,12 +1,12 @@
 /**
  * Regression Test for Error Reporting Functionality
- * 
+ *
  * This test ensures that the error reporting system works correctly
  * and catches any regressions in the import paths or functionality.
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { browser } from '$app/environment';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 describe('Error Reporting System', () => {
   let errorReportingConfig;
@@ -19,11 +19,11 @@ describe('Error Reporting System', () => {
         protocol: 'http:',
         hostname: 'localhost',
         port: '5173',
-        href: 'http://localhost:5173/test'
+        href: 'http://localhost:5173/test',
       },
       navigator: {
-        userAgent: 'Test Browser'
-      }
+        userAgent: 'Test Browser',
+      },
     };
   });
 
@@ -74,7 +74,7 @@ describe('Error Reporting System', () => {
     it('should detect local development environment', async () => {
       const { getAdminErrorReportingConfig } = await import('$lib/config/errorReporting.js');
       const config = await getAdminErrorReportingConfig();
-      
+
       expect(config).toBeDefined();
       expect(config.environment).toBe('development');
       expect(config.endpoint).toContain('/dev/error-reports');
@@ -83,7 +83,7 @@ describe('Error Reporting System', () => {
 
     it('should check server health correctly', async () => {
       const { getAdminErrorReportingConfig } = await import('$lib/config/errorReporting.js');
-      
+
       // Mock fetch for health check
       global.fetch = async (url) => {
         if (url.includes('/dev/error-reports')) {
@@ -94,7 +94,7 @@ describe('Error Reporting System', () => {
 
       const config = await getAdminErrorReportingConfig();
       expect(config.enabled).toBe(true);
-      
+
       delete global.fetch;
     });
   });
@@ -105,32 +105,36 @@ describe('Error Reporting System', () => {
       const config = {
         enabled: true,
         endpoint: 'http://localhost:5173/dev/error-reports',
-        debug: true
+        debug: true,
       };
 
       expect(() => initializeAdminErrorReporter(config)).not.toThrow();
     });
 
     it('should report admin errors', async () => {
-      const { initializeAdminErrorReporter, reportAdminError, getAdminErrorReportQueueSize } = 
+      const { initializeAdminErrorReporter, reportAdminError, getAdminErrorReportQueueSize } =
         await import('$lib/utils/errorReporter');
-      
+
       initializeAdminErrorReporter({
         enabled: true,
         endpoint: null, // Queue errors instead of sending
-        debug: false
+        debug: false,
       });
 
       reportAdminError('test-operation', new Error('Test error'), { test: true });
-      
+
       const queueSize = getAdminErrorReportQueueSize();
       expect(queueSize).toBeGreaterThan(0);
     });
 
     it('should flush error reports', async () => {
-      const { initializeAdminErrorReporter, reportAdminError, flushAdminErrorReports, getAdminErrorReportQueueSize } = 
-        await import('$lib/utils/errorReporter');
-      
+      const {
+        initializeAdminErrorReporter,
+        reportAdminError,
+        flushAdminErrorReports,
+        getAdminErrorReportQueueSize,
+      } = await import('$lib/utils/errorReporter');
+
       // Mock fetch
       let fetchCalled = false;
       global.fetch = async () => {
@@ -141,17 +145,17 @@ describe('Error Reporting System', () => {
       initializeAdminErrorReporter({
         enabled: true,
         endpoint: 'http://localhost:5173/dev/error-reports',
-        debug: false
+        debug: false,
       });
 
       reportAdminError('test-operation', new Error('Test error'), { test: true });
       flushAdminErrorReports();
 
       // Wait a bit for async operations
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       expect(fetchCalled).toBe(true);
-      
+
       delete global.fetch;
     });
   });

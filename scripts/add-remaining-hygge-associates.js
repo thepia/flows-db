@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
 /**
- * Add Remaining Associates to Hygge & Hvidløg 
+ * Add Remaining Associates to Hygge & Hvidløg
  * (The ones that failed due to constraint issues)
  */
 
-import dotenv from 'dotenv';
 import chalk from 'chalk';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -14,17 +14,20 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const headers = {
-  'apikey': supabaseServiceKey,
-  'Authorization': `Bearer ${supabaseServiceKey}`,
-  'Content-Type': 'application/json'
+  apikey: supabaseServiceKey,
+  Authorization: `Bearer ${supabaseServiceKey}`,
+  'Content-Type': 'application/json',
 };
 
 async function addRemainingAssociates() {
   try {
     // Get Hygge & Hvidløg client ID
-    const clientResponse = await fetch(`${supabaseUrl}/rest/v1/clients?select=id&client_code=eq.hygge-hvidlog`, {
-      headers
-    });
+    const clientResponse = await fetch(
+      `${supabaseUrl}/rest/v1/clients?select=id&client_code=eq.hygge-hvidlog`,
+      {
+        headers,
+      }
+    );
     const clients = await clientResponse.json();
     const clientId = clients[0].id;
 
@@ -46,7 +49,7 @@ async function addRemainingAssociates() {
         employment_type: null,
         work_location: 'hybrid',
         skills: ['Brand Strategy', 'Digital Marketing', 'Sustainable Branding', 'Nordic Markets'],
-        languages: ['Danish', 'English', 'Swedish']
+        languages: ['Danish', 'English', 'Swedish'],
       },
       {
         client_id: clientId,
@@ -63,7 +66,7 @@ async function addRemainingAssociates() {
         employment_type: null,
         work_location: 'remote',
         skills: ['Supply Chain', 'Logistics', 'Procurement', 'Sustainable Sourcing'],
-        languages: ['Danish', 'English', 'Dutch']
+        languages: ['Danish', 'English', 'Dutch'],
       },
       // Contractors
       {
@@ -81,7 +84,7 @@ async function addRemainingAssociates() {
         employment_type: null,
         work_location: 'remote',
         skills: ['DevOps', 'Cloud Infrastructure', 'Kubernetes', 'CI/CD', 'Security'],
-        languages: ['Swedish', 'English', 'Finnish']
+        languages: ['Swedish', 'English', 'Finnish'],
       },
       {
         client_id: clientId,
@@ -98,8 +101,8 @@ async function addRemainingAssociates() {
         employment_type: null,
         work_location: 'office',
         skills: ['Food Safety', 'Quality Control', 'HACCP', 'EU Food Regulations'],
-        languages: ['Danish', 'English', 'German']
-      }
+        languages: ['Danish', 'English', 'German'],
+      },
     ];
 
     console.log(chalk.blue('🤝 Adding remaining 4 associates...'));
@@ -109,21 +112,26 @@ async function addRemainingAssociates() {
         method: 'POST',
         headers: {
           ...headers,
-          'Prefer': 'return=minimal'
+          Prefer: 'return=minimal',
         },
-        body: JSON.stringify(associate)
+        body: JSON.stringify(associate),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(chalk.red(`❌ Error adding ${associate.first_name} ${associate.last_name}: ${errorText}`));
+        console.error(
+          chalk.red(`❌ Error adding ${associate.first_name} ${associate.last_name}: ${errorText}`)
+        );
       } else {
-        console.log(chalk.green(`✅ Added ${associate.first_name} ${associate.last_name} (${associate.associate_status})`));
+        console.log(
+          chalk.green(
+            `✅ Added ${associate.first_name} ${associate.last_name} (${associate.associate_status})`
+          )
+        );
       }
     }
 
     console.log(chalk.green('\n🎉 Remaining associates added successfully!'));
-
   } catch (error) {
     console.error(chalk.red('❌ Error:'), error);
   }

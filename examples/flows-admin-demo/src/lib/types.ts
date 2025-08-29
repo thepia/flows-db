@@ -7,7 +7,14 @@ export interface Person {
   position: string;
   startDate: string;
   employmentStatus?: 'active' | 'former' | 'future';
-  associateStatus?: 'board_member' | 'consultant' | 'advisor' | 'contractor' | 'volunteer' | 'partner' | 'other';
+  associateStatus?:
+    | 'board_member'
+    | 'consultant'
+    | 'advisor'
+    | 'contractor'
+    | 'volunteer'
+    | 'partner'
+    | 'other';
   avatar?: string;
   phone?: string;
   manager?: string;

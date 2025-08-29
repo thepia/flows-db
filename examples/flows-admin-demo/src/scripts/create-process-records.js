@@ -3,8 +3,11 @@ import { supabase } from '../lib/supabase.ts';
 
 export async function createProcessRecords() {
   console.log('🔄 Creating process records...');
-  console.log('🔗 Supabase URL:', import.meta.env?.VITE_SUPABASE_URL || process.env.SUPABASE_URL || 'using fallback');
-  
+  console.log(
+    '🔗 Supabase URL:',
+    import.meta.env?.VITE_SUPABASE_URL || process.env.SUPABASE_URL || 'using fallback'
+  );
+
   try {
     // Get the current client (Hygge & Hvidløg)
     const { data: clients, error: clientError } = await supabase
@@ -12,12 +15,12 @@ export async function createProcessRecords() {
       .select('id, client_code')
       .eq('client_code', 'hygge-hvidlog')
       .single();
-      
+
     if (clientError) {
       console.error('❌ Error fetching client:', clientError);
       return;
     }
-    
+
     if (!clients) {
       console.error('❌ Hygge & Hvidløg client not found');
       return;
@@ -30,7 +33,7 @@ export async function createProcessRecords() {
       .from('people')
       .select('id, person_code, first_name, last_name, department, position')
       .eq('client_id', clients.id);
-      
+
     if (peopleError) {
       console.error('❌ Error fetching people:', peopleError);
       return;
@@ -46,18 +49,18 @@ export async function createProcessRecords() {
     // Create enrollment records for onboarding (70% of people)
     const enrollmentCount = Math.floor(people.length * 0.7);
     const enrollments = [];
-    
+
     for (let i = 0; i < enrollmentCount; i++) {
       const person = people[i];
       const completionPercentage = Math.floor(Math.random() * 80) + 10; // 10-90%
-      
+
       enrollments.push({
         person_id: person.id,
         onboarding_completed: completionPercentage >= 95,
         completion_percentage: completionPercentage,
         mentor: 'Demo Mentor',
         buddy_program: Math.random() > 0.5,
-        last_activity: new Date().toISOString()
+        last_activity: new Date().toISOString(),
       });
     }
 
@@ -81,8 +84,9 @@ export async function createProcessRecords() {
       .eq('client_id', clients.id)
       .eq('is_default', true)
       .single();
-      
-    if (templateFetchError && templateFetchError.code !== 'PGRST116') { // PGRST116 = no rows returned
+
+    if (templateFetchError && templateFetchError.code !== 'PGRST116') {
+      // PGRST116 = no rows returned
       console.error('❌ Error fetching template:', templateFetchError);
       return;
     }
@@ -102,7 +106,7 @@ export async function createProcessRecords() {
           requires_manager_approval: true,
           requires_hr_approval: true,
           auto_assign_tasks: true,
-          created_by: 'system-demo'
+          created_by: 'system-demo',
         })
         .select('id')
         .single();
@@ -134,9 +138,11 @@ export async function createProcessRecords() {
         process_name: `${person.first_name} ${person.last_name} Offboarding`,
         status: statuses[Math.floor(Math.random() * statuses.length)],
         priority: priorities[Math.floor(Math.random() * priorities.length)],
-        target_completion_date: new Date(Date.now() + (Math.floor(Math.random() * 30) + 15) * 24 * 60 * 60 * 1000).toISOString(),
+        target_completion_date: new Date(
+          Date.now() + (Math.floor(Math.random() * 30) + 15) * 24 * 60 * 60 * 1000
+        ).toISOString(),
         estimated_completion_percentage: Math.floor(Math.random() * 60) + 10,
-        created_by: 'demo-system'
+        created_by: 'demo-system',
       });
     }
 
@@ -158,9 +164,8 @@ export async function createProcessRecords() {
 
     return {
       enrollments: enrollments.length,
-      processes: processes.length
+      processes: processes.length,
     };
-
   } catch (error) {
     console.error('💥 Error creating process records:', error);
     throw error;

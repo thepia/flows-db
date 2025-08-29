@@ -1,11 +1,11 @@
 <script lang="ts">
 import { goto } from '$app/navigation';
 import { page } from '$app/stores';
+import { NotificationBell, NotificationPanel } from '$lib/components/notifications';
 import { Button } from '$lib/components/ui/button';
 import { client, loadingProgress } from '$lib/stores/data';
 import { ArrowLeft, ChevronLeft, Settings, User } from 'lucide-svelte';
 import LogoWrapper from '../branding/LogoWrapper.svelte';
-import { NotificationBell, NotificationPanel } from '$lib/components/notifications';
 
 // Props
 export const title: string = 'Flows Dashboard';

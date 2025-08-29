@@ -218,7 +218,7 @@ function generateEmployee(
   const status = statuses[Math.floor(Math.random() * statuses.length)];
 
   const employeeId = `${companyCode}-${String(index).padStart(4, '0')}`;
-  
+
   return {
     person_code: employeeId,
     company_email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${index}@${company.domain}`,
@@ -230,8 +230,8 @@ function generateEmployee(
     start_date: startDate.toISOString().split('T')[0],
     employment_status: status === 'previous' ? 'former' : status === 'future' ? 'future' : 'active',
     employment_type: 'full_time',
-    work_location: Math.random() > 0.5 ? 'office' : (Math.random() > 0.5 ? 'remote' : 'hybrid'),
-    security_clearance: Math.random() > 0.8 ? 'high' : (Math.random() > 0.5 ? 'medium' : 'low'),
+    work_location: Math.random() > 0.5 ? 'office' : Math.random() > 0.5 ? 'remote' : 'hybrid',
+    security_clearance: Math.random() > 0.8 ? 'high' : Math.random() > 0.5 ? 'medium' : 'low',
     manager:
       Math.random() > 0.7
         ? `${FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)]} ${LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)]}`
@@ -323,7 +323,13 @@ export async function generateDemoDataForCompany(
       const location =
         companyInfo.locations[Math.floor(Math.random() * companyInfo.locations.length)];
 
-      const employee = generateEmployee(config.companyId, department, position, location, employeeIndex++);
+      const employee = generateEmployee(
+        config.companyId,
+        department,
+        position,
+        location,
+        employeeIndex++
+      );
       employees.push({
         ...employee,
         client_id: clientData.id,

@@ -2,7 +2,7 @@
 
 /**
  * Deploy Complete Employee to People Migration Fix
- * 
+ *
  * This script applies the SQL migration using the database initialization pattern
  */
 
@@ -17,14 +17,19 @@ async function deployMigration() {
     // Get database connection details from environment
     const dbUrl = process.env.SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    
+
     if (!dbUrl || !serviceKey) {
-      throw new Error('Missing required environment variables: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
+      throw new Error(
+        'Missing required environment variables: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY'
+      );
     }
 
     // Path to our migration file
-    const migrationFile = path.join(__dirname, '../schemas/15_complete_employee_to_people_migration_fix.sql');
-    
+    const migrationFile = path.join(
+      __dirname,
+      '../schemas/15_complete_employee_to_people_migration_fix.sql'
+    );
+
     console.log('📄 Migration file:', migrationFile);
     console.log('🎯 Target database:', dbUrl);
     console.log('');
@@ -48,7 +53,6 @@ async function deployMigration() {
     console.log('');
     console.log('🔍 After running the migration, you can validate with:');
     console.log('   node scripts/apply-complete-people-migration-fix.cjs --validate-only');
-
   } catch (error) {
     console.error('💥 Deployment preparation failed:', error.message);
     process.exit(1);

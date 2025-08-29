@@ -2,23 +2,23 @@
 
 /**
  * Complete Demo Setup Script
- * 
+ *
  * One command to set up everything:
  * - Creates demo client if missing
- * - Creates all database schema if missing  
+ * - Creates all database schema if missing
  * - Populates rich demo data
  * - Handles cleanup and reset automatically
  */
 
-import { Command } from 'commander';
-import { createClient } from '@supabase/supabase-js';
-import chalk from 'chalk';
-import ora from 'ora';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createClient } from '@supabase/supabase-js';
+import chalk from 'chalk';
+import { Command } from 'commander';
 import { config } from 'dotenv';
+import ora from 'ora';
 
 // Load environment variables
 config();
@@ -33,15 +33,17 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseServiceKey) {
-  console.error(chalk.red('❌ Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables'));
+  console.error(
+    chalk.red('❌ Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables')
+  );
   process.exit(1);
 }
 
 // Supabase client with proper schema
 const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   db: {
-    schema: 'api'
-  }
+    schema: 'api',
+  },
 });
 
 /**
@@ -51,26 +53,28 @@ async function apiCall(endpoint, method = 'GET', data = null) {
   const options = {
     method,
     headers: {
-      'apikey': supabaseServiceKey,
-      'Authorization': `Bearer ${supabaseServiceKey}`,
-      'Content-Type': 'application/json'
-    }
+      apikey: supabaseServiceKey,
+      Authorization: `Bearer ${supabaseServiceKey}`,
+      'Content-Type': 'application/json',
+    },
   };
-  
+
   if (data && (method === 'POST' || method === 'PATCH')) {
     options.body = JSON.stringify(data);
     if (method === 'POST') {
       options.headers['Prefer'] = 'return=representation';
     }
   }
-  
+
   const response = await fetch(`${supabaseUrl}/rest/v1/${endpoint}`, options);
-  
+
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`API call failed: ${method} ${endpoint} - HTTP ${response.status}: ${errorText}`);
+    throw new Error(
+      `API call failed: ${method} ${endpoint} - HTTP ${response.status}: ${errorText}`
+    );
   }
-  
+
   return method === 'DELETE' ? null : await response.json();
 }
 
@@ -80,7 +84,7 @@ async function apiCall(endpoint, method = 'GET', data = null) {
 async function cleanupExistingData(spinner) {
   try {
     spinner.text = 'Cleaning up existing demo data...';
-    
+
     // Get the demo client first
     let demoClient = null;
     try {
@@ -94,43 +98,70 @@ async function cleanupExistingData(spinner) {
     } catch (error) {
       // Client doesn't exist, nothing to clean
     }
-    
+
     if (demoClient) {
       // Clean up offboarding data first (if tables exist)
       try {
-        const { cleanupOffboardingData } = await import('../../scripts/create-offboarding-demo-data.js');
+        const { cleanupOffboardingData } = await import(
+          '../../scripts/create-offboarding-demo-data.js'
+        );
         await cleanupOffboardingData(demoClient.id);
-      } catch (e) { /* ignore if tables don't exist */ }
-      
+      } catch (e) {
+        /* ignore if tables don't exist */
+      }
+
       // Delete in reverse dependency order using the client ID
       try {
-        await apiCall(`people_enrollments?person_id=in.(select id from people where client_id=${demoClient.id})`, 'DELETE');
-      } catch (e) { /* ignore */ }
-      
+        await apiCall(
+          `people_enrollments?person_id=in.(select id from people where client_id=${demoClient.id})`,
+          'DELETE'
+        );
+      } catch (e) {
+        /* ignore */
+      }
+
       try {
-        await apiCall(`documents?person_id=in.(select id from people where client_id=${demoClient.id})`, 'DELETE');
-      } catch (e) { /* ignore */ }
-      
+        await apiCall(
+          `documents?person_id=in.(select id from people where client_id=${demoClient.id})`,
+          'DELETE'
+        );
+      } catch (e) {
+        /* ignore */
+      }
+
       try {
-        await apiCall(`tasks?person_id=in.(select id from people where client_id=${demoClient.id})`, 'DELETE');
-      } catch (e) { /* ignore */ }
-      
+        await apiCall(
+          `tasks?person_id=in.(select id from people where client_id=${demoClient.id})`,
+          'DELETE'
+        );
+      } catch (e) {
+        /* ignore */
+      }
+
       try {
         await apiCall(`people?client_id=eq.${demoClient.id}`, 'DELETE');
-      } catch (e) { /* ignore */ }
-      
+      } catch (e) {
+        /* ignore */
+      }
+
       try {
         await apiCall(`invitations?client_id=eq.${demoClient.id}`, 'DELETE');
-      } catch (e) { /* ignore */ }
-      
+      } catch (e) {
+        /* ignore */
+      }
+
       try {
         await apiCall(`client_applications?client_id=eq.${demoClient.id}`, 'DELETE');
-      } catch (e) { /* ignore */ }
-      
+      } catch (e) {
+        /* ignore */
+      }
+
       try {
         await apiCall(`clients?id=eq.${demoClient.id}`, 'DELETE');
-      } catch (e) { /* ignore */ }
-      
+      } catch (e) {
+        /* ignore */
+      }
+
       spinner.succeed('Cleaned up existing demo data');
     } else {
       spinner.succeed('No existing demo data found to clean up');
@@ -146,7 +177,7 @@ async function cleanupExistingData(spinner) {
  */
 async function createDemoClient(spinner) {
   spinner.text = 'Setting up demo client...';
-  
+
   // First check if Hygge & Hvidløg already exists
   try {
     const { data: existingClient } = await supabase
@@ -154,7 +185,7 @@ async function createDemoClient(spinner) {
       .select('*')
       .eq('client_code', 'hygge-hvidlog')
       .single();
-    
+
     if (existingClient) {
       spinner.succeed(`Using existing demo client: ${existingClient.legal_name}`);
       return existingClient;
@@ -162,7 +193,7 @@ async function createDemoClient(spinner) {
   } catch (error) {
     // Client doesn't exist, will create it
   }
-  
+
   // Create Hygge & Hvidløg client (not the nets-demo from config)
   const hyggeClient = {
     client_code: 'hygge-hvidlog',
@@ -177,9 +208,9 @@ async function createDemoClient(spinner) {
     company_size: 'large',
     country_code: 'DK',
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
   };
-  
+
   const client = await apiCall('clients', 'POST', hyggeClient);
   const createdClient = client[0];
   spinner.succeed(`Created demo client: ${createdClient.legal_name}`);
@@ -191,14 +222,14 @@ async function createDemoClient(spinner) {
  */
 async function createClientApplications(clientId, spinner) {
   spinner.text = 'Setting up client applications...';
-  
+
   // Check if applications already exist
   try {
     const { data: existingApps } = await supabase
       .from('client_applications')
       .select('*')
       .eq('client_id', clientId);
-    
+
     if (existingApps && existingApps.length > 0) {
       spinner.succeed(`Using existing ${existingApps.length} client applications`);
       return existingApps;
@@ -206,14 +237,15 @@ async function createClientApplications(clientId, spinner) {
   } catch (error) {
     // Applications don't exist, will create them
   }
-  
+
   // Create Hygge & Hvidløg specific applications
   const hyggeApplications = [
     {
       app_code: 'employee-onboarding',
       app_name: 'Employee Onboarding',
       app_version: '2.1.0',
-      app_description: 'Comprehensive onboarding for sustainable food technology company with multilingual support',
+      app_description:
+        'Comprehensive onboarding for sustainable food technology company with multilingual support',
       status: 'active',
       configuration: {
         theme: 'hygge',
@@ -221,27 +253,27 @@ async function createClientApplications(clientId, spinner) {
         branding: {
           primary_color: '#2F5233',
           secondary_color: '#8FBC8F',
-          accent_color: '#DAA520'
+          accent_color: '#DAA520',
         },
         features: {
           multilingual: true,
           sustainability_training: true,
-          remote_onboarding: true
-        }
+          remote_onboarding: true,
+        },
       },
       features: [
         'document-capture',
-        'task-management', 
+        'task-management',
         'video-onboarding',
         'multilingual-support',
         'sustainability-training',
-        'remote-work-setup'
+        'remote-work-setup',
       ],
-      max_concurrent_users: 200
+      max_concurrent_users: 200,
     },
     {
       app_code: 'knowledge-offboarding',
-      app_name: 'Knowledge Transfer & Offboarding', 
+      app_name: 'Knowledge Transfer & Offboarding',
       app_version: '1.8.0',
       app_description: 'Knowledge preservation and sustainable transition processes',
       status: 'active',
@@ -249,29 +281,29 @@ async function createClientApplications(clientId, spinner) {
         theme: 'hygge',
         locale: 'da-DK',
         knowledge_retention: true,
-        sustainability_focus: true
+        sustainability_focus: true,
       },
       features: [
         'knowledge-transfer',
         'documentation',
         'mentorship-matching',
-        'sustainable-transition'
+        'sustainable-transition',
       ],
-      max_concurrent_users: 150
-    }
+      max_concurrent_users: 150,
+    },
   ];
-  
+
   const applications = [];
   for (const appConfig of hyggeApplications) {
     const app = await apiCall('client_applications', 'POST', {
       ...appConfig,
       client_id: clientId,
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     });
     applications.push(app[0]);
   }
-  
+
   spinner.succeed(`Created ${applications.length} client applications`);
   return applications;
 }
@@ -285,7 +317,7 @@ const DEMO_COMPANIES = {
     domain: 'hygge-hvidlog.dk',
     departments: [
       'Product Development',
-      'Marketing', 
+      'Marketing',
       'Operations',
       'R&D',
       'Sales',
@@ -293,73 +325,202 @@ const DEMO_COMPANIES = {
       'Finance',
       'Human Resources',
       'IT & Development',
-      'Legal & Compliance'
+      'Legal & Compliance',
     ],
     locations: ['Copenhagen, Denmark', 'Aarhus, Denmark', 'Malmö, Sweden', 'Oslo, Norway'],
     positions: {
       'Product Development': [
-        'Senior Product Manager', 'Product Designer', 'UX Researcher', 'Product Analyst',
-        'Innovation Lead', 'Product Owner', 'Market Research Analyst'
+        'Senior Product Manager',
+        'Product Designer',
+        'UX Researcher',
+        'Product Analyst',
+        'Innovation Lead',
+        'Product Owner',
+        'Market Research Analyst',
       ],
-      'Marketing': [
-        'Marketing Manager', 'Content Creator', 'Social Media Manager', 'Brand Manager',
-        'Digital Marketing Specialist', 'Campaign Manager', 'Marketing Analyst'
+      Marketing: [
+        'Marketing Manager',
+        'Content Creator',
+        'Social Media Manager',
+        'Brand Manager',
+        'Digital Marketing Specialist',
+        'Campaign Manager',
+        'Marketing Analyst',
       ],
-      'Operations': [
-        'Operations Manager', 'Supply Chain Analyst', 'Logistics Coordinator',
-        'Production Manager', 'Quality Control Specialist', 'Inventory Manager'
+      Operations: [
+        'Operations Manager',
+        'Supply Chain Analyst',
+        'Logistics Coordinator',
+        'Production Manager',
+        'Quality Control Specialist',
+        'Inventory Manager',
       ],
       'R&D': [
-        'Food Scientist', 'Research Associate', 'Lab Technician', 'Innovation Manager',
-        'Sustainability Researcher', 'Fermentation Specialist', 'Nutrition Scientist'
+        'Food Scientist',
+        'Research Associate',
+        'Lab Technician',
+        'Innovation Manager',
+        'Sustainability Researcher',
+        'Fermentation Specialist',
+        'Nutrition Scientist',
       ],
-      'Sales': [
-        'Sales Manager', 'Account Executive', 'Business Development', 'Key Account Manager',
-        'Sales Coordinator', 'Customer Success Manager', 'Regional Sales Director'
+      Sales: [
+        'Sales Manager',
+        'Account Executive',
+        'Business Development',
+        'Key Account Manager',
+        'Sales Coordinator',
+        'Customer Success Manager',
+        'Regional Sales Director',
       ],
       'Quality Assurance': [
-        'QA Manager', 'Quality Inspector', 'Compliance Officer', 'Food Safety Specialist',
-        'QA Analyst', 'Regulatory Affairs Specialist'
+        'QA Manager',
+        'Quality Inspector',
+        'Compliance Officer',
+        'Food Safety Specialist',
+        'QA Analyst',
+        'Regulatory Affairs Specialist',
       ],
-      'Finance': [
-        'Financial Analyst', 'Accounting Manager', 'Controller', 'Finance Director',
-        'Budget Analyst', 'Tax Specialist', 'Financial Planning Manager'
+      Finance: [
+        'Financial Analyst',
+        'Accounting Manager',
+        'Controller',
+        'Finance Director',
+        'Budget Analyst',
+        'Tax Specialist',
+        'Financial Planning Manager',
       ],
       'Human Resources': [
-        'HR Manager', 'Talent Acquisition Specialist', 'HR Business Partner', 'Learning & Development Manager',
-        'HR Coordinator', 'Compensation Analyst', 'Employee Relations Specialist'
+        'HR Manager',
+        'Talent Acquisition Specialist',
+        'HR Business Partner',
+        'Learning & Development Manager',
+        'HR Coordinator',
+        'Compensation Analyst',
+        'Employee Relations Specialist',
       ],
       'IT & Development': [
-        'Software Engineer', 'DevOps Engineer', 'Data Analyst', 'IT Manager',
-        'Frontend Developer', 'Backend Developer', 'System Administrator'
+        'Software Engineer',
+        'DevOps Engineer',
+        'Data Analyst',
+        'IT Manager',
+        'Frontend Developer',
+        'Backend Developer',
+        'System Administrator',
       ],
       'Legal & Compliance': [
-        'Legal Counsel', 'Compliance Manager', 'Regulatory Affairs Manager', 'Contract Manager',
-        'IP Specialist', 'Data Protection Officer'
-      ]
-    }
-  }
+        'Legal Counsel',
+        'Compliance Manager',
+        'Regulatory Affairs Manager',
+        'Contract Manager',
+        'IP Specialist',
+        'Data Protection Officer',
+      ],
+    },
+  },
 };
 
 // Realistic Danish/Scandinavian name pools
 const DANISH_FIRST_NAMES = [
-  'Mads', 'Emma', 'William', 'Sofia', 'Noah', 'Freja', 'Lucas', 'Anna',
-  'Oliver', 'Clara', 'Malte', 'Lærke', 'Elias', 'Ida', 'Magnus', 'Alma',
-  'Frederik', 'Astrid', 'Emil', 'Josefine', 'Alexander', 'Mille', 'Victor',
-  'Nora', 'Oscar', 'Ellen', 'Aksel', 'Olivia', 'Carl', 'Agnes', 'Storm',
-  'Frida', 'August', 'Karla', 'Arthur', 'Maja', 'Viggo', 'Esther', 'Anton',
-  'Isabella', 'Felix', 'Alberte', 'Theo', 'Marie', 'Milas', 'Laura',
-  'Sebastian', 'Celeste', 'Christian', 'Liv', 'Valdemar', 'Ella', 'Liam',
-  'Saga', 'Jakob', 'Victoria', 'Alfred', 'Mathilde', 'Nikolaj', 'Emilie'
+  'Mads',
+  'Emma',
+  'William',
+  'Sofia',
+  'Noah',
+  'Freja',
+  'Lucas',
+  'Anna',
+  'Oliver',
+  'Clara',
+  'Malte',
+  'Lærke',
+  'Elias',
+  'Ida',
+  'Magnus',
+  'Alma',
+  'Frederik',
+  'Astrid',
+  'Emil',
+  'Josefine',
+  'Alexander',
+  'Mille',
+  'Victor',
+  'Nora',
+  'Oscar',
+  'Ellen',
+  'Aksel',
+  'Olivia',
+  'Carl',
+  'Agnes',
+  'Storm',
+  'Frida',
+  'August',
+  'Karla',
+  'Arthur',
+  'Maja',
+  'Viggo',
+  'Esther',
+  'Anton',
+  'Isabella',
+  'Felix',
+  'Alberte',
+  'Theo',
+  'Marie',
+  'Milas',
+  'Laura',
+  'Sebastian',
+  'Celeste',
+  'Christian',
+  'Liv',
+  'Valdemar',
+  'Ella',
+  'Liam',
+  'Saga',
+  'Jakob',
+  'Victoria',
+  'Alfred',
+  'Mathilde',
+  'Nikolaj',
+  'Emilie',
 ];
 
 const DANISH_LAST_NAMES = [
-  'Nielsen', 'Hansen', 'Andersen', 'Pedersen', 'Christensen', 'Larsen',
-  'Sørensen', 'Rasmussen', 'Jørgensen', 'Petersen', 'Madsen', 'Kristensen',
-  'Olsen', 'Thomsen', 'Christiansen', 'Poulsen', 'Johansen', 'Møller',
-  'Mortensen', 'Jensen', 'Henriksen', 'Lund', 'Schmidt', 'Knudsen',
-  'Vestergaard', 'Andreasen', 'Berg', 'Eriksen', 'Carlsen', 'Laursen',
-  'Dahl', 'Jakobsen', 'Holm', 'Iversen', 'Danielsen', 'Svendsen'
+  'Nielsen',
+  'Hansen',
+  'Andersen',
+  'Pedersen',
+  'Christensen',
+  'Larsen',
+  'Sørensen',
+  'Rasmussen',
+  'Jørgensen',
+  'Petersen',
+  'Madsen',
+  'Kristensen',
+  'Olsen',
+  'Thomsen',
+  'Christiansen',
+  'Poulsen',
+  'Johansen',
+  'Møller',
+  'Mortensen',
+  'Jensen',
+  'Henriksen',
+  'Lund',
+  'Schmidt',
+  'Knudsen',
+  'Vestergaard',
+  'Andreasen',
+  'Berg',
+  'Eriksen',
+  'Carlsen',
+  'Laursen',
+  'Dahl',
+  'Jakobsen',
+  'Holm',
+  'Iversen',
+  'Danielsen',
+  'Svendsen',
 ];
 
 /**
@@ -386,13 +547,20 @@ function normalizeForEmail(text) {
 /**
  * Generate realistic employee data for bulk creation
  */
-function generateBulkEmployee(companyCode, personCodePrefix, department, position, location, index) {
+function generateBulkEmployee(
+  companyCode,
+  personCodePrefix,
+  department,
+  position,
+  location,
+  index
+) {
   const firstName = DANISH_FIRST_NAMES[Math.floor(Math.random() * DANISH_FIRST_NAMES.length)];
   const lastName = DANISH_LAST_NAMES[Math.floor(Math.random() * DANISH_LAST_NAMES.length)];
   const company = DEMO_COMPANIES[companyCode];
 
   const startDate = randomDate(new Date(2018, 0, 1), new Date(2024, 11, 31));
-  
+
   // Status distribution: 85% active, 12% former, 3% future
   const rand = Math.random();
   let employmentStatus;
@@ -405,7 +573,7 @@ function generateBulkEmployee(companyCode, personCodePrefix, department, positio
   }
 
   const personCode = `${personCodePrefix}-${String(index).padStart(3, '0')}`;
-  
+
   return {
     person_code: personCode,
     company_email: `${normalizeForEmail(firstName)}.${normalizeForEmail(lastName)}.${index}@${company.domain}`,
@@ -415,16 +583,20 @@ function generateBulkEmployee(companyCode, personCodePrefix, department, positio
     position,
     location,
     start_date: startDate.toISOString().split('T')[0],
-    end_date: employmentStatus === 'former' ? randomDate(startDate, new Date()).toISOString().split('T')[0] : null,
+    end_date:
+      employmentStatus === 'former'
+        ? randomDate(startDate, new Date()).toISOString().split('T')[0]
+        : null,
     employment_status: employmentStatus,
     employment_type: 'full_time',
-    work_location: Math.random() > 0.4 ? 'hybrid' : (Math.random() > 0.5 ? 'office' : 'remote'),
-    security_clearance: Math.random() > 0.7 ? 'high' : (Math.random() > 0.5 ? 'medium' : 'low'),
-    manager: Math.random() > 0.7 
-      ? `${DANISH_FIRST_NAMES[Math.floor(Math.random() * DANISH_FIRST_NAMES.length)]} ${DANISH_LAST_NAMES[Math.floor(Math.random() * DANISH_LAST_NAMES.length)]}`
-      : null,
+    work_location: Math.random() > 0.4 ? 'hybrid' : Math.random() > 0.5 ? 'office' : 'remote',
+    security_clearance: Math.random() > 0.7 ? 'high' : Math.random() > 0.5 ? 'medium' : 'low',
+    manager:
+      Math.random() > 0.7
+        ? `${DANISH_FIRST_NAMES[Math.floor(Math.random() * DANISH_FIRST_NAMES.length)]} ${DANISH_LAST_NAMES[Math.floor(Math.random() * DANISH_LAST_NAMES.length)]}`
+        : null,
     skills: ['Teamwork', 'Communication', 'Problem Solving'],
-    languages: ['Danish', 'English']
+    languages: ['Danish', 'English'],
   };
 }
 
@@ -433,12 +605,12 @@ function generateBulkEmployee(companyCode, personCodePrefix, department, positio
  */
 async function createBulkEmployees(clientId, targetCount, spinner) {
   spinner.text = `Generating ${targetCount} employees...`;
-  
+
   const companyCode = 'hygge-hvidlog';
   const personCodePrefix = 'hh';
   const companyInfo = DEMO_COMPANIES[companyCode];
   const employees = [];
-  
+
   const employeesPerDept = Math.ceil(targetCount / companyInfo.departments.length);
   let employeeIndex = 9; // Start after the 8 seed employees (hh-001 through hh-008)
 
@@ -447,32 +619,40 @@ async function createBulkEmployees(clientId, targetCount, spinner) {
 
     for (let i = 0; i < employeesPerDept && employees.length < targetCount; i++) {
       const position = positions[i % positions.length];
-      const location = companyInfo.locations[Math.floor(Math.random() * companyInfo.locations.length)];
+      const location =
+        companyInfo.locations[Math.floor(Math.random() * companyInfo.locations.length)];
 
-      const employee = generateBulkEmployee(companyCode, personCodePrefix, department, position, location, employeeIndex++);
+      const employee = generateBulkEmployee(
+        companyCode,
+        personCodePrefix,
+        department,
+        position,
+        location,
+        employeeIndex++
+      );
       employees.push({
         ...employee,
-        client_id: clientId
+        client_id: clientId,
       });
     }
   }
 
   spinner.text = `Inserting ${employees.length} employees in batches...`;
-  
+
   // Insert employees in batches to avoid memory issues
   const batchSize = 100;
   const createdEmployees = [];
-  
+
   for (let i = 0; i < employees.length; i += batchSize) {
     const batch = employees.slice(i, i + batchSize);
     const batchEmployees = await apiCall('people', 'POST', batch);
     createdEmployees.push(...batchEmployees);
-    
+
     if (i % (batchSize * 5) === 0) {
       spinner.text = `Inserted ${i + batch.length}/${employees.length} employees...`;
     }
   }
-  
+
   return createdEmployees;
 }
 
@@ -482,7 +662,7 @@ async function createBulkEmployees(clientId, targetCount, spinner) {
 async function createEmployees(clientId, spinner) {
   // Create the core seed employees first (these have specific enrollments/documents/tasks)
   spinner.text = 'Creating seed employees...';
-  
+
   const seedEmployeesData = [
     {
       person_code: 'hh-001',
@@ -499,7 +679,7 @@ async function createEmployees(clientId, spinner) {
       employment_type: 'full_time',
       work_location: 'hybrid',
       skills: ['JavaScript', 'TypeScript', 'React', 'Node.js', 'Food Tech APIs'],
-      languages: ['Danish', 'English', 'Swedish']
+      languages: ['Danish', 'English', 'Swedish'],
     },
     {
       person_code: 'hh-002',
@@ -516,7 +696,7 @@ async function createEmployees(clientId, spinner) {
       employment_type: 'full_time',
       work_location: 'office',
       skills: ['Product Strategy', 'Agile', 'Data Analysis', 'Sustainable Foods', 'User Research'],
-      languages: ['Danish', 'English', 'Norwegian']
+      languages: ['Danish', 'English', 'Norwegian'],
     },
     {
       person_code: 'hh-003',
@@ -533,7 +713,7 @@ async function createEmployees(clientId, spinner) {
       employment_type: 'full_time',
       work_location: 'remote',
       skills: ['UX Design', 'Figma', 'User Research', 'Prototyping', 'Accessibility'],
-      languages: ['Swedish', 'English', 'Danish']
+      languages: ['Swedish', 'English', 'Danish'],
     },
     {
       person_code: 'hh-004',
@@ -551,7 +731,7 @@ async function createEmployees(clientId, spinner) {
       employment_type: 'full_time',
       work_location: 'hybrid',
       skills: ['Kubernetes', 'Docker', 'AWS', 'CI/CD', 'Infrastructure as Code'],
-      languages: ['Swedish', 'English']
+      languages: ['Swedish', 'English'],
     },
     {
       person_code: 'hh-005',
@@ -568,7 +748,7 @@ async function createEmployees(clientId, spinner) {
       employment_type: 'full_time',
       work_location: 'hybrid',
       skills: ['React', 'Vue.js', 'TypeScript', 'CSS', 'Testing'],
-      languages: ['Danish', 'English', 'German']
+      languages: ['Danish', 'English', 'German'],
     },
     {
       person_code: 'hh-006',
@@ -585,8 +765,14 @@ async function createEmployees(clientId, spinner) {
       security_clearance: 'low',
       employment_type: 'full_time',
       work_location: 'office',
-      skills: ['Digital Marketing', 'Content Strategy', 'Analytics', 'Social Media', 'Brand Management'],
-      languages: ['Danish', 'English', 'French']
+      skills: [
+        'Digital Marketing',
+        'Content Strategy',
+        'Analytics',
+        'Social Media',
+        'Brand Management',
+      ],
+      languages: ['Danish', 'English', 'French'],
     },
     {
       person_code: 'hh-007',
@@ -603,7 +789,7 @@ async function createEmployees(clientId, spinner) {
       employment_type: null,
       work_location: 'office',
       skills: ['Cybersecurity', 'Risk Assessment', 'Compliance', 'Audit', 'GDPR'],
-      languages: ['English', 'Danish']
+      languages: ['English', 'Danish'],
     },
     {
       person_code: 'hh-008',
@@ -620,34 +806,34 @@ async function createEmployees(clientId, spinner) {
       employment_type: 'full_time',
       work_location: 'hybrid',
       skills: ['Financial Analysis', 'Excel', 'SQL', 'Risk Management', 'Compliance'],
-      languages: ['Swedish', 'English', 'Norwegian']
-    }
+      languages: ['Swedish', 'English', 'Norwegian'],
+    },
   ];
-  
+
   const createdSeedEmployees = [];
   for (const empData of seedEmployeesData) {
     const employee = await apiCall('people', 'POST', {
       ...empData,
-      client_id: clientId
+      client_id: clientId,
     });
     createdSeedEmployees.push(employee[0]);
   }
-  
+
   spinner.succeed(`Created ${createdSeedEmployees.length} seed employees`);
-  
+
   // Now generate bulk employees to reach the target of 1200 total
   const targetTotal = 1200;
   const associatesCount = 10; // Will be created separately
   const bulkCount = targetTotal - createdSeedEmployees.length - associatesCount;
-  
+
   const bulkEmployees = await createBulkEmployees(clientId, bulkCount, spinner);
-  
+
   spinner.succeed(`Created ${bulkEmployees.length} bulk employees`);
-  
+
   // Return combined dataset
   const allEmployees = [...createdSeedEmployees, ...bulkEmployees];
   spinner.succeed(`Total employees created: ${allEmployees.length}`);
-  
+
   return allEmployees;
 }
 
@@ -656,7 +842,7 @@ async function createEmployees(clientId, spinner) {
  */
 async function createAssociates(clientId, spinner) {
   spinner.text = 'Creating associates...';
-  
+
   const associatesData = [
     // Board Members
     {
@@ -673,8 +859,13 @@ async function createAssociates(clientId, spinner) {
       start_date: '2022-01-01',
       employment_type: null,
       work_location: 'remote',
-      skills: ['Corporate Governance', 'Sustainable Business', 'Food Industry', 'Strategic Planning'],
-      languages: ['Danish', 'English', 'German']
+      skills: [
+        'Corporate Governance',
+        'Sustainable Business',
+        'Food Industry',
+        'Strategic Planning',
+      ],
+      languages: ['Danish', 'English', 'German'],
     },
     {
       client_id: clientId,
@@ -691,7 +882,7 @@ async function createAssociates(clientId, spinner) {
       employment_type: null,
       work_location: 'remote',
       skills: ['Finance', 'Investment', 'Venture Capital', 'Food Tech'],
-      languages: ['Danish', 'English']
+      languages: ['Danish', 'English'],
     },
     // Strategic Advisors
     {
@@ -708,8 +899,13 @@ async function createAssociates(clientId, spinner) {
       start_date: '2023-03-01',
       employment_type: null,
       work_location: 'remote',
-      skills: ['Sustainability', 'Environmental Science', 'Plant-based Nutrition', 'EU Regulations'],
-      languages: ['Swedish', 'Danish', 'English', 'Norwegian']
+      skills: [
+        'Sustainability',
+        'Environmental Science',
+        'Plant-based Nutrition',
+        'EU Regulations',
+      ],
+      languages: ['Swedish', 'Danish', 'English', 'Norwegian'],
     },
     {
       client_id: clientId,
@@ -726,7 +922,7 @@ async function createAssociates(clientId, spinner) {
       employment_type: null,
       work_location: 'hybrid',
       skills: ['Food Technology', 'Biotechnology', 'Innovation Management', 'R&D Strategy'],
-      languages: ['Norwegian', 'English', 'Danish']
+      languages: ['Norwegian', 'English', 'Danish'],
     },
     // Consultants
     {
@@ -744,7 +940,7 @@ async function createAssociates(clientId, spinner) {
       employment_type: null,
       work_location: 'hybrid',
       skills: ['Brand Strategy', 'Digital Marketing', 'Sustainable Branding', 'Nordic Markets'],
-      languages: ['Danish', 'English', 'Swedish']
+      languages: ['Danish', 'English', 'Swedish'],
     },
     {
       client_id: clientId,
@@ -761,7 +957,7 @@ async function createAssociates(clientId, spinner) {
       employment_type: null,
       work_location: 'remote',
       skills: ['Supply Chain', 'Logistics', 'Procurement', 'Sustainable Sourcing'],
-      languages: ['Danish', 'English', 'Dutch']
+      languages: ['Danish', 'English', 'Dutch'],
     },
     // External Contractors
     {
@@ -779,7 +975,7 @@ async function createAssociates(clientId, spinner) {
       employment_type: null,
       work_location: 'remote',
       skills: ['DevOps', 'Cloud Infrastructure', 'Kubernetes', 'CI/CD', 'Security'],
-      languages: ['Swedish', 'English', 'Finnish']
+      languages: ['Swedish', 'English', 'Finnish'],
     },
     {
       client_id: clientId,
@@ -796,7 +992,7 @@ async function createAssociates(clientId, spinner) {
       employment_type: null,
       work_location: 'office',
       skills: ['Food Safety', 'Quality Control', 'HACCP', 'EU Food Regulations'],
-      languages: ['Danish', 'English', 'German']
+      languages: ['Danish', 'English', 'German'],
     },
     // Business Partners
     {
@@ -814,7 +1010,7 @@ async function createAssociates(clientId, spinner) {
       employment_type: null,
       work_location: 'hybrid',
       skills: ['Partnership Development', 'Business Development', 'Nordic Markets', 'Retail'],
-      languages: ['Swedish', 'Danish', 'English', 'Norwegian']
+      languages: ['Swedish', 'Danish', 'English', 'Norwegian'],
     },
     {
       client_id: clientId,
@@ -831,19 +1027,19 @@ async function createAssociates(clientId, spinner) {
       employment_type: null,
       work_location: 'remote',
       skills: ['Food Science', 'Research', 'Innovation', 'Academic Collaboration'],
-      languages: ['Norwegian', 'English', 'Danish']
-    }
+      languages: ['Norwegian', 'English', 'Danish'],
+    },
   ];
 
   const createdAssociates = [];
   for (const associateData of associatesData) {
     const associate = await apiCall('people', 'POST', {
       ...associateData,
-      client_id: clientId
+      client_id: clientId,
     });
     createdAssociates.push(associate[0]);
   }
-  
+
   spinner.succeed(`Created ${createdAssociates.length} associates`);
   return createdAssociates;
 }
@@ -855,44 +1051,94 @@ async function createAllRelatedData(employees, applications, clientId, spinner) 
   // Create enrollments
   spinner.text = 'Creating employee enrollments...';
   const enrollments = await createEmployeeEnrollments(employees);
-  
+
   // Create documents
   spinner.text = 'Creating documents...';
   const documents = await createDocuments(employees);
-  
+
   // Create tasks
   spinner.text = 'Creating tasks...';
   const tasks = await createTasks(employees);
-  
+
   // Create invitations
   spinner.text = 'Creating invitations...';
   const invitations = await createInvitations(clientId, applications, employees);
-  
+
   return { enrollments, documents, tasks, invitations };
 }
 
 // Helper functions (condensed versions from rich demo script)
 async function createEmployeeEnrollments(employees) {
   const enrollmentsData = [
-    { person_code: 'emp-001', onboarding_completed: true, completion_percentage: 100, mentor: 'Lars Nielsen', buddy_program: true },
-    { person_code: 'emp-002', onboarding_completed: true, completion_percentage: 100, mentor: 'Maria Andersen', buddy_program: true },
-    { person_code: 'emp-003', onboarding_completed: false, completion_percentage: 45, mentor: 'Peter Olsen', buddy_program: true },
-    { person_code: 'emp-004', onboarding_completed: true, completion_percentage: 100, mentor: 'Lars Nielsen', buddy_program: true, offboarding_completed: true },
-    { person_code: 'emp-005', onboarding_completed: false, completion_percentage: 0, mentor: 'Anna Hansen', buddy_program: true },
-    { person_code: 'emp-006', onboarding_completed: true, completion_percentage: 100, mentor: 'Erik Larsen', buddy_program: true, offboarding_initiated: true },
-    { person_code: 'emp-007', onboarding_completed: false, completion_percentage: 20, mentor: 'Security Director', buddy_program: false },
-    { person_code: 'emp-008', onboarding_completed: true, completion_percentage: 100, mentor: 'Finance Director', buddy_program: true }
+    {
+      person_code: 'emp-001',
+      onboarding_completed: true,
+      completion_percentage: 100,
+      mentor: 'Lars Nielsen',
+      buddy_program: true,
+    },
+    {
+      person_code: 'emp-002',
+      onboarding_completed: true,
+      completion_percentage: 100,
+      mentor: 'Maria Andersen',
+      buddy_program: true,
+    },
+    {
+      person_code: 'emp-003',
+      onboarding_completed: false,
+      completion_percentage: 45,
+      mentor: 'Peter Olsen',
+      buddy_program: true,
+    },
+    {
+      person_code: 'emp-004',
+      onboarding_completed: true,
+      completion_percentage: 100,
+      mentor: 'Lars Nielsen',
+      buddy_program: true,
+      offboarding_completed: true,
+    },
+    {
+      person_code: 'emp-005',
+      onboarding_completed: false,
+      completion_percentage: 0,
+      mentor: 'Anna Hansen',
+      buddy_program: true,
+    },
+    {
+      person_code: 'emp-006',
+      onboarding_completed: true,
+      completion_percentage: 100,
+      mentor: 'Erik Larsen',
+      buddy_program: true,
+      offboarding_initiated: true,
+    },
+    {
+      person_code: 'emp-007',
+      onboarding_completed: false,
+      completion_percentage: 20,
+      mentor: 'Security Director',
+      buddy_program: false,
+    },
+    {
+      person_code: 'emp-008',
+      onboarding_completed: true,
+      completion_percentage: 100,
+      mentor: 'Finance Director',
+      buddy_program: true,
+    },
   ];
-  
+
   const created = [];
   for (const enrollData of enrollmentsData) {
-    const employee = employees.find(e => e.person_code === enrollData.person_code);
+    const employee = employees.find((e) => e.person_code === enrollData.person_code);
     if (!employee) continue;
-    
+
     const { person_code, ...enrollmentData } = enrollData;
     const enrollment = await apiCall('people_enrollments', 'POST', {
       ...enrollmentData,
-      person_id: employee.id
+      person_id: employee.id,
     });
     created.push(enrollment[0]);
   }
@@ -904,18 +1150,24 @@ async function createDocuments(employees) {
   for (let i = 0; i < employees.length; i++) {
     const employee = employees[i];
     const docCount = Math.floor(Math.random() * 3) + 2; // 2-4 documents per employee
-    
+
     for (let j = 0; j < docCount; j++) {
-      const docTypes = ['contract', 'id_verification', 'tax_form', 'gdpr_consent', 'financial_disclosure'];
+      const docTypes = [
+        'contract',
+        'id_verification',
+        'tax_form',
+        'gdpr_consent',
+        'financial_disclosure',
+      ];
       const statuses = ['verified', 'pending', 'uploaded'];
-      
+
       const doc = await apiCall('documents', 'POST', {
         person_id: employee.id,
         name: `Document ${j + 1} for ${employee.first_name}`,
         type: docTypes[j % docTypes.length],
         status: statuses[j % statuses.length],
         uploaded_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-        reviewed_by: j % 2 === 0 ? 'HR Team' : null
+        reviewed_by: j % 2 === 0 ? 'HR Team' : null,
       });
       documents.push(doc[0]);
     }
@@ -928,12 +1180,12 @@ async function createTasks(employees) {
   for (let i = 0; i < employees.length; i++) {
     const employee = employees[i];
     const taskCount = Math.floor(Math.random() * 3) + 2; // 2-4 tasks per employee
-    
+
     for (let j = 0; j < taskCount; j++) {
       const categories = ['training', 'compliance', 'equipment', 'security'];
       const statuses = ['completed', 'in_progress', 'not_started'];
       const priorities = ['high', 'medium', 'low'];
-      
+
       const task = await apiCall('tasks', 'POST', {
         person_id: employee.id,
         title: `Task ${j + 1} for ${employee.first_name}`,
@@ -942,7 +1194,7 @@ async function createTasks(employees) {
         status: statuses[j % statuses.length],
         priority: priorities[j % priorities.length],
         assigned_by: 'Demo System',
-        assigned_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
+        assigned_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
       });
       tasks.push(task[0]);
     }
@@ -952,36 +1204,39 @@ async function createTasks(employees) {
 
 async function createInvitations(clientId, applications, employees) {
   const appMap = {};
-  applications.forEach(app => {
+  applications.forEach((app) => {
     appMap[app.app_code] = app.id;
   });
-  
+
   const invitationsData = [
     { person_code: 'emp-005', app_code: 'onboarding', employment_status: 'future' },
     { person_code: 'emp-006', app_code: 'offboarding', employment_status: 'future' },
-    { person_code: 'emp-007', app_code: 'onboarding', employment_status: 'expired' }
+    { person_code: 'emp-007', app_code: 'onboarding', employment_status: 'expired' },
   ];
-  
+
   const created = [];
   for (const invData of invitationsData) {
-    const employee = employees.find(e => e.person_code === invData.person_code);
+    const employee = employees.find((e) => e.person_code === invData.person_code);
     const appId = appMap[invData.app_code];
-    
+
     if (!employee || !appId) continue;
-    
-    const jwtHash = crypto.createHash('sha256').update(`${employee.id}-${Date.now()}`).digest('hex');
+
+    const jwtHash = crypto
+      .createHash('sha256')
+      .update(`${employee.id}-${Date.now()}`)
+      .digest('hex');
     let expiresAt, createdAt;
-    
+
     if (invData.status === 'expired') {
       // For expired invitations, set created date in the past and expiry before that
-      createdAt = new Date(Date.now() - (14 * 24 * 60 * 60 * 1000)); // 14 days ago
-      expiresAt = new Date(Date.now() - (7 * 24 * 60 * 60 * 1000));  // 7 days ago
+      createdAt = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000); // 14 days ago
+      expiresAt = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
     } else {
       // For active invitations, normal future expiry
       createdAt = new Date();
-      expiresAt = new Date(Date.now() + (7 * 24 * 60 * 60 * 1000));  // 7 days from now
+      expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
     }
-    
+
     const invitation = await apiCall('invitations', 'POST', {
       client_id: clientId,
       app_id: appId,
@@ -996,10 +1251,10 @@ async function createInvitations(clientId, applications, employees) {
         person_id: employee.id,
         person_code: employee.person_code,
         department: employee.department,
-        demo_invitation: true
-      }
+        demo_invitation: true,
+      },
     });
-    
+
     created.push(invitation[0]);
   }
   return created;
@@ -1010,29 +1265,34 @@ async function createInvitations(clientId, applications, employees) {
  */
 async function setupCompleteDemo(options = {}) {
   const spinner = ora('Setting up complete demo...').start();
-  
+
   try {
     // Step 1: Cleanup existing data
     if (!options.keepExisting) {
       await cleanupExistingData(spinner);
     }
-    
+
     // Step 2: Create demo client
     const client = await createDemoClient(spinner);
-    
+
     // Step 3: Create client applications
     const applications = await createClientApplications(client.id, spinner);
-    
+
     // Step 4: Create employees
     const employees = await createEmployees(client.id, spinner);
-    
+
     // Step 4.5: Create associates
     const associates = await createAssociates(client.id, spinner);
-    
+
     // Step 5: Create all related data
     spinner.text = 'Creating related data...';
-    const { enrollments, documents, tasks, invitations } = await createAllRelatedData(employees, applications, client.id, spinner);
-    
+    const { enrollments, documents, tasks, invitations } = await createAllRelatedData(
+      employees,
+      applications,
+      client.id,
+      spinner
+    );
+
     // Step 6: Create offboarding demo data (if tables exist)
     let offboardingData = null;
     try {
@@ -1046,13 +1306,15 @@ async function setupCompleteDemo(options = {}) {
       console.log(chalk.white('      1. Run the SQL files manually via Supabase Dashboard'));
       console.log(chalk.white('      2. Then run: pnpm run demo:complete again'));
     }
-    
+
     // Display success summary
     console.log(chalk.green.bold('\n✅ Complete demo setup finished!\n'));
     console.log(chalk.cyan('📊 Created:'));
     console.log(`   • Client: ${chalk.white(client.legal_name)}`);
     console.log(`   • Applications: ${chalk.white(applications.length)}`);
-    console.log(`   • Employees: ${chalk.white(employees.length)} (8 seed + ${employees.length - 8} bulk)`);
+    console.log(
+      `   • Employees: ${chalk.white(employees.length)} (8 seed + ${employees.length - 8} bulk)`
+    );
     console.log(`   • Associates: ${chalk.white(associates.length)}`);
     console.log(`   • Total People: ${chalk.white(employees.length + associates.length)}`);
     console.log(`   • Enrollments: ${chalk.white(enrollments.length)}`);
@@ -1065,29 +1327,34 @@ async function setupCompleteDemo(options = {}) {
       console.log(`   • Compliance Checks: ${chalk.white('4')}`);
       console.log(`   • Credit Balance: ${chalk.white('85 credits available')}`);
     }
-    
+
     // Display status breakdown for verification
     console.log(chalk.cyan('\n📊 Employment Status Distribution:'));
     const statusCounts = { active: 0, former: 0, future: 0, associates: associates.length };
-    employees.forEach(emp => {
+    employees.forEach((emp) => {
       if (emp.employment_status === 'active') statusCounts.active++;
       else if (emp.employment_status === 'former') statusCounts.former++;
       else if (emp.employment_status === 'future') statusCounts.future++;
     });
-    
-    console.log(`   • Active: ${chalk.green(statusCounts.active)} (~${Math.round(statusCounts.active / employees.length * 100)}%)`);
-    console.log(`   • Former: ${chalk.yellow(statusCounts.former)} (~${Math.round(statusCounts.former / employees.length * 100)}%)`);
-    console.log(`   • Future: ${chalk.blue(statusCounts.future)} (~${Math.round(statusCounts.future / employees.length * 100)}%)`);
+
+    console.log(
+      `   • Active: ${chalk.green(statusCounts.active)} (~${Math.round((statusCounts.active / employees.length) * 100)}%)`
+    );
+    console.log(
+      `   • Former: ${chalk.yellow(statusCounts.former)} (~${Math.round((statusCounts.former / employees.length) * 100)}%)`
+    );
+    console.log(
+      `   • Future: ${chalk.blue(statusCounts.future)} (~${Math.round((statusCounts.future / employees.length) * 100)}%)`
+    );
     console.log(`   • Associates: ${chalk.cyan(statusCounts.associates)}`);
-    
+
     console.log(chalk.green('\n🚀 Demo is ready!'));
     console.log(`   Launch: ${chalk.yellow('pnpm run demo:admin')}`);
     console.log(`   URL: ${chalk.yellow('http://localhost:5173/')}`);
     console.log(`   Expected test counts: ~1020 active, ~144 former, ~36 future, 10 associates`);
     console.log('');
-    
+
     spinner.succeed('Complete demo setup completed successfully!');
-    
   } catch (error) {
     spinner.fail(`Demo setup failed: ${error.message}`);
     console.error(chalk.red(error.stack));

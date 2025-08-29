@@ -7,7 +7,8 @@ export const mockOffboardingTemplates = [
   {
     id: 'tmpl-001',
     name: 'Standard Employee Offboarding',
-    description: 'Standard process for regular employee departures with basic handover requirements',
+    description:
+      'Standard process for regular employee departures with basic handover requirements',
     template_type: 'company_wide',
     department: null,
     role_category: null,
@@ -20,12 +21,13 @@ export const mockOffboardingTemplates = [
     requires_manager_approval: true,
     requires_hr_approval: false,
     requires_security_review: false,
-    created_at: '2024-01-15T10:00:00Z'
+    created_at: '2024-01-15T10:00:00Z',
   },
   {
     id: 'tmpl-002',
     name: 'Engineering Department Offboarding',
-    description: 'Specialized process for engineering team members including code review and system access',
+    description:
+      'Specialized process for engineering team members including code review and system access',
     template_type: 'department_specific',
     department: 'Engineering',
     role_category: 'technical',
@@ -38,12 +40,13 @@ export const mockOffboardingTemplates = [
     requires_manager_approval: true,
     requires_hr_approval: true,
     requires_security_review: true,
-    created_at: '2024-02-01T14:30:00Z'
+    created_at: '2024-02-01T14:30:00Z',
   },
   {
     id: 'tmpl-003',
     name: 'Sales Team Offboarding',
-    description: 'Client relationship handover focused process with emphasis on account transitions',
+    description:
+      'Client relationship handover focused process with emphasis on account transitions',
     template_type: 'department_specific',
     department: 'Sales',
     role_category: 'client_facing',
@@ -56,12 +59,13 @@ export const mockOffboardingTemplates = [
     requires_manager_approval: true,
     requires_hr_approval: false,
     requires_security_review: false,
-    created_at: '2024-03-10T09:15:00Z'
+    created_at: '2024-03-10T09:15:00Z',
   },
   {
     id: 'tmpl-004',
     name: 'Executive Offboarding',
-    description: 'High-level offboarding process for C-suite and VP positions with board notifications',
+    description:
+      'High-level offboarding process for C-suite and VP positions with board notifications',
     template_type: 'role_specific',
     department: null,
     role_category: 'executive',
@@ -75,12 +79,13 @@ export const mockOffboardingTemplates = [
     requires_hr_approval: true,
     requires_security_review: true,
     requires_legal_review: true,
-    created_at: '2024-01-20T11:00:00Z'
+    created_at: '2024-01-20T11:00:00Z',
   },
   {
     id: 'tmpl-005',
     name: 'Remote Employee Offboarding',
-    description: 'Process for remote workers including equipment return logistics and virtual handovers',
+    description:
+      'Process for remote workers including equipment return logistics and virtual handovers',
     template_type: 'custom',
     department: null,
     role_category: null,
@@ -93,8 +98,8 @@ export const mockOffboardingTemplates = [
     requires_manager_approval: true,
     requires_hr_approval: false,
     requires_security_review: true,
-    created_at: '2024-04-05T13:20:00Z'
-  }
+    created_at: '2024-04-05T13:20:00Z',
+  },
 ];
 
 export const mockOffboardingProcesses = [
@@ -117,7 +122,7 @@ export const mockOffboardingProcesses = [
     total_tasks: 18,
     completed_tasks: 8,
     created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    created_by: 'manager@company.com'
+    created_by: 'manager@company.com',
   },
   {
     id: 'proc-002',
@@ -137,7 +142,7 @@ export const mockOffboardingProcesses = [
     total_tasks: 15,
     completed_tasks: 0,
     created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    created_by: 'hr@company.com'
+    created_by: 'hr@company.com',
   },
   {
     id: 'proc-003',
@@ -157,7 +162,7 @@ export const mockOffboardingProcesses = [
     total_tasks: 12,
     completed_tasks: 9,
     created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-    created_by: 'manager@company.com'
+    created_by: 'manager@company.com',
   },
   {
     id: 'proc-004',
@@ -177,7 +182,7 @@ export const mockOffboardingProcesses = [
     total_tasks: 25,
     completed_tasks: 5,
     created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    created_by: 'ceo@company.com'
+    created_by: 'ceo@company.com',
   },
   // Recently completed
   {
@@ -198,7 +203,7 @@ export const mockOffboardingProcesses = [
     total_tasks: 12,
     completed_tasks: 12,
     created_at: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
-    created_by: 'manager@company.com'
+    created_by: 'manager@company.com',
   },
   {
     id: 'proc-006',
@@ -218,7 +223,7 @@ export const mockOffboardingProcesses = [
     total_tasks: 14,
     completed_tasks: 14,
     created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-    created_by: 'hr@company.com'
+    created_by: 'hr@company.com',
   },
   // On hold
   {
@@ -240,8 +245,8 @@ export const mockOffboardingProcesses = [
     completed_tasks: 6,
     created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
     created_by: 'manager@company.com',
-    hold_reason: 'Employee requested extension due to critical project completion'
-  }
+    hold_reason: 'Employee requested extension due to critical project completion',
+  },
 ];
 
 export const mockOffboardingTasks = [
@@ -250,7 +255,8 @@ export const mockOffboardingTasks = [
     id: 'task-001',
     process_id: 'proc-001',
     task_name: 'Return laptop and equipment',
-    description: 'Collect and inventory all company equipment including laptop, monitor, and accessories',
+    description:
+      'Collect and inventory all company equipment including laptop, monitor, and accessories',
     status: 'completed',
     priority: 'high',
     assigned_to: 'IT Department',
@@ -260,7 +266,7 @@ export const mockOffboardingTasks = [
     actual_hours: 0.5,
     task_order: 1,
     dependencies: [],
-    documents_required: ['Equipment Checklist', 'Return Receipt']
+    documents_required: ['Equipment Checklist', 'Return Receipt'],
   },
   {
     id: 'task-002',
@@ -276,7 +282,7 @@ export const mockOffboardingTasks = [
     actual_hours: 2,
     task_order: 2,
     dependencies: ['task-001'],
-    documents_required: ['Knowledge Transfer Template', 'Technical Documentation']
+    documents_required: ['Knowledge Transfer Template', 'Technical Documentation'],
   },
   {
     id: 'task-003',
@@ -292,7 +298,7 @@ export const mockOffboardingTasks = [
     actual_hours: 0,
     task_order: 3,
     dependencies: ['task-002'],
-    documents_required: ['Access Revocation Form']
+    documents_required: ['Access Revocation Form'],
   },
   {
     id: 'task-004',
@@ -309,7 +315,7 @@ export const mockOffboardingTasks = [
     task_order: 4,
     dependencies: [],
     documents_required: ['Exit Interview Form', 'Feedback Survey'],
-    blocked_reason: 'Waiting for employee availability'
+    blocked_reason: 'Waiting for employee availability',
   },
   {
     id: 'task-005',
@@ -325,7 +331,7 @@ export const mockOffboardingTasks = [
     actual_hours: 0,
     task_order: 5,
     dependencies: [],
-    documents_required: ['Final Pay Calculation', 'PTO Balance Report']
+    documents_required: ['Final Pay Calculation', 'PTO Balance Report'],
   },
   // Tasks for Mike Wilson (proc-003)
   {
@@ -342,7 +348,7 @@ export const mockOffboardingTasks = [
     actual_hours: 2.5,
     task_order: 1,
     dependencies: [],
-    documents_required: ['Asset Inventory', 'Campaign Documentation']
+    documents_required: ['Asset Inventory', 'Campaign Documentation'],
   },
   {
     id: 'task-011',
@@ -358,7 +364,7 @@ export const mockOffboardingTasks = [
     actual_hours: 1,
     task_order: 2,
     dependencies: [],
-    documents_required: ['Account Access List']
+    documents_required: ['Account Access List'],
   },
   {
     id: 'task-012',
@@ -374,7 +380,7 @@ export const mockOffboardingTasks = [
     actual_hours: 0,
     task_order: 3,
     dependencies: [],
-    documents_required: ['Email Forwarding Setup']
+    documents_required: ['Email Forwarding Setup'],
   },
   // Tasks for Emily Chen (proc-004)
   {
@@ -391,7 +397,7 @@ export const mockOffboardingTasks = [
     actual_hours: 2,
     task_order: 1,
     dependencies: [],
-    documents_required: ['Board Communication Template']
+    documents_required: ['Board Communication Template'],
   },
   {
     id: 'task-021',
@@ -407,7 +413,7 @@ export const mockOffboardingTasks = [
     actual_hours: 3,
     task_order: 2,
     dependencies: [],
-    documents_required: ['Strategic Plan', 'Project Status Reports']
+    documents_required: ['Strategic Plan', 'Project Status Reports'],
   },
   {
     id: 'task-022',
@@ -423,7 +429,7 @@ export const mockOffboardingTasks = [
     actual_hours: 0,
     task_order: 3,
     dependencies: ['task-021'],
-    documents_required: ['Transition Plan', 'Org Structure Update']
+    documents_required: ['Transition Plan', 'Org Structure Update'],
   },
   {
     id: 'task-023',
@@ -440,8 +446,8 @@ export const mockOffboardingTasks = [
     task_order: 4,
     dependencies: [],
     documents_required: ['Separation Agreement', 'NDA Updates'],
-    overdue: true
-  }
+    overdue: true,
+  },
 ];
 
 // Helper function to get mock data
@@ -449,16 +455,16 @@ export function getMockOffboardingData() {
   return {
     templates: mockOffboardingTemplates,
     processes: mockOffboardingProcesses,
-    tasks: mockOffboardingTasks
+    tasks: mockOffboardingTasks,
   };
 }
 
 // Helper function to get tasks for a specific process
 export function getTasksForProcess(processId) {
-  return mockOffboardingTasks.filter(task => task.process_id === processId);
+  return mockOffboardingTasks.filter((task) => task.process_id === processId);
 }
 
 // Helper function to get template by ID
 export function getTemplateById(templateId) {
-  return mockOffboardingTemplates.find(template => template.id === templateId);
+  return mockOffboardingTemplates.find((template) => template.id === templateId);
 }

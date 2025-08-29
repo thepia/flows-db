@@ -1,9 +1,14 @@
 <script lang="ts">
+import { goto } from '$app/navigation';
 import { Button } from '$lib/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
+import { demoClientSwitcher } from '$lib/orchestrators/demo-client-switcher';
+import { clientStore } from '$lib/stores/domains/client/client.store';
+import { setCurrentClientId } from '$lib/utils/client-persistence';
 import {
   Activity,
   AlertCircle,
+  Building2,
   CheckCircle2,
   Database,
   RefreshCw,
@@ -13,13 +18,8 @@ import {
   WifiOff,
   XCircle,
   Zap,
-  Building2,
 } from 'lucide-svelte';
 import { onMount } from 'svelte';
-import { goto } from '$app/navigation';
-import { clientStore } from '$lib/stores/domains/client/client.store';
-import { demoClientSwitcher } from '$lib/orchestrators/demo-client-switcher';
-import { setCurrentClientId } from '$lib/utils/client-persistence';
 
 // Status states
 let isOpen = false;
@@ -53,7 +53,7 @@ async function loadSystemStatus() {
     errorReportingConfig = {
       enabled: false,
       serverType: 'Error loading config',
-      environment: 'unknown'
+      environment: 'unknown',
     };
     queueSize = 0;
   }
@@ -94,7 +94,7 @@ function toggleStatus() {
 onMount(async () => {
   console.log('[FloatingStatusButton] Component mounted');
   loadSystemStatus();
-  
+
   // Load clients if not already loaded (handled automatically by clientStore)
   try {
     // The clientStore automatically loads clients on mount
@@ -103,7 +103,7 @@ onMount(async () => {
       clients: $clientStore.clients,
       currentClient: $clientStore.currentClient,
       loading: $clientStore.loading,
-      error: $clientStore.error
+      error: $clientStore.error,
     });
   } catch (error) {
     console.error('[FloatingStatusButton] Failed to load clients:', error);

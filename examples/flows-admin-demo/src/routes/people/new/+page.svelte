@@ -23,7 +23,15 @@ let formData = {
   employmentType: 'full_time' as 'full_time' | 'part_time' | 'contractor' | 'intern',
   workLocation: 'office' as 'office' | 'remote' | 'hybrid',
   employmentStatus: 'active' as 'active' | 'former' | 'future',
-  associateStatus: null as 'board_member' | 'consultant' | 'advisor' | 'contractor' | 'volunteer' | 'partner' | 'other' | null,
+  associateStatus: null as
+    | 'board_member'
+    | 'consultant'
+    | 'advisor'
+    | 'contractor'
+    | 'volunteer'
+    | 'partner'
+    | 'other'
+    | null,
   securityClearance: 'low' as 'low' | 'medium' | 'high',
 };
 
@@ -145,7 +153,7 @@ function resetForm() {
     endDate: '',
     employmentType: 'full_time',
     workLocation: 'office',
-    employmentStatus: personType === 'employee' ? 'active' : null as any,
+    employmentStatus: personType === 'employee' ? 'active' : (null as any),
     associateStatus: personType === 'associate' ? 'consultant' : null,
     securityClearance: 'low',
   };

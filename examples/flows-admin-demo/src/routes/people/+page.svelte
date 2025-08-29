@@ -1,13 +1,13 @@
 <script lang="ts">
-import { 
-  PeopleHeader, 
-  PeopleStatsCards, 
-  PeopleFilters, 
-  PeopleActiveFilters, 
-  PeopleGrid, 
-  PeopleLoadMore 
+import {
+  PeopleActiveFilters,
+  PeopleFilters,
+  PeopleGrid,
+  PeopleHeader,
+  PeopleLoadMore,
+  PeopleStatsCards,
 } from '$lib/components/people';
-import { loading, loadDemoData, people, totalPeopleCount } from '$lib/stores/data';
+import { loadDemoData, loading, people, totalPeopleCount } from '$lib/stores/data';
 import { onMount } from 'svelte';
 
 // Search and filter state
@@ -20,11 +20,11 @@ onMount(() => {
   loadDemoData();
 });
 
-
 // Filtered people based on search and filters
 $: filteredPeople = $people.filter((person) => {
   // Search filter
-  const matchesSearch = searchTerm === '' || 
+  const matchesSearch =
+    searchTerm === '' ||
     person.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     person.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     person.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -32,13 +32,15 @@ $: filteredPeople = $people.filter((person) => {
     person.position.toLowerCase().includes(searchTerm.toLowerCase());
 
   // Status filter
-  const matchesStatus = selectedStatus === 'all' || 
+  const matchesStatus =
+    selectedStatus === 'all' ||
     (selectedStatus === 'active' && person.employmentStatus === 'active') ||
     (selectedStatus === 'former' && person.employmentStatus === 'former') ||
     (selectedStatus === 'future' && person.employmentStatus === 'future');
 
   // Type filter
-  const matchesType = selectedType === 'all' ||
+  const matchesType =
+    selectedType === 'all' ||
     (selectedType === 'employee' && person.employmentStatus) ||
     (selectedType === 'associate' && person.associateStatus);
 
@@ -47,9 +49,9 @@ $: filteredPeople = $people.filter((person) => {
 
 // Statistics
 $: totalPeople = $totalPeopleCount || $people.length;
-$: activeEmployees = $people.filter(p => p.employmentStatus === 'active').length;
-$: associates = $people.filter(p => p.associateStatus).length;
-$: futureEmployees = $people.filter(p => p.employmentStatus === 'future').length;
+$: activeEmployees = $people.filter((p) => p.employmentStatus === 'active').length;
+$: associates = $people.filter((p) => p.associateStatus).length;
+$: futureEmployees = $people.filter((p) => p.employmentStatus === 'future').length;
 </script>
 
 <svelte:head>

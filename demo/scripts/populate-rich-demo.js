@@ -2,20 +2,20 @@
 
 /**
  * Rich Demo Data Population Script
- * 
+ *
  * Creates comprehensive demo data with variety and richness
  * matching and exceeding the mock data scope for compelling demos.
  */
 
-import { Command } from 'commander';
-import { createClient } from '@supabase/supabase-js';
-import chalk from 'chalk';
-import ora from 'ora';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createClient } from '@supabase/supabase-js';
+import chalk from 'chalk';
+import { Command } from 'commander';
 import { config } from 'dotenv';
+import ora from 'ora';
 
 // Load environment variables
 config();
@@ -30,7 +30,9 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseServiceKey) {
-  console.error(chalk.red('❌ Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables'));
+  console.error(
+    chalk.red('❌ Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables')
+  );
   process.exit(1);
 }
 
@@ -41,26 +43,28 @@ async function apiCall(endpoint, method = 'GET', data = null) {
   const options = {
     method,
     headers: {
-      'apikey': supabaseServiceKey,
-      'Authorization': `Bearer ${supabaseServiceKey}`,
-      'Content-Type': 'application/json'
-    }
+      apikey: supabaseServiceKey,
+      Authorization: `Bearer ${supabaseServiceKey}`,
+      'Content-Type': 'application/json',
+    },
   };
-  
+
   if (data && (method === 'POST' || method === 'PATCH')) {
     options.body = JSON.stringify(data);
     if (method === 'POST') {
       options.headers['Prefer'] = 'return=representation';
     }
   }
-  
+
   const response = await fetch(`${supabaseUrl}/rest/v1/${endpoint}`, options);
-  
+
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`API call failed: ${method} ${endpoint} - HTTP ${response.status}: ${errorText}`);
+    throw new Error(
+      `API call failed: ${method} ${endpoint} - HTTP ${response.status}: ${errorText}`
+    );
   }
-  
+
   return method === 'DELETE' ? null : await response.json();
 }
 
@@ -71,15 +75,15 @@ async function getDemoClientAndApps() {
   const configPath = path.join(__dirname, '../config/client.json');
   const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
   const clientCode = config.client.client_code;
-  
+
   const clients = await apiCall(`clients?select=*&client_code=eq.${clientCode}`);
   if (!clients || clients.length === 0) {
     throw new Error('Demo client not found. Run demo:setup first.');
   }
-  
+
   const client = clients[0];
   const applications = await apiCall(`client_applications?select=*&client_id=eq.${client.id}`);
-  
+
   return { client, applications };
 }
 
@@ -103,7 +107,7 @@ async function createEmployees(clientId) {
       employment_type: 'full_time',
       work_location: 'hybrid',
       skills: ['JavaScript', 'TypeScript', 'React', 'Node.js', 'Payment APIs'],
-      languages: ['Danish', 'English', 'Swedish']
+      languages: ['Danish', 'English', 'Swedish'],
     },
     {
       person_code: 'emp-002',
@@ -120,7 +124,7 @@ async function createEmployees(clientId) {
       employment_type: 'full_time',
       work_location: 'office',
       skills: ['Product Strategy', 'Agile', 'Data Analysis', 'Financial Services', 'User Research'],
-      languages: ['Danish', 'English', 'Norwegian']
+      languages: ['Danish', 'English', 'Norwegian'],
     },
     {
       person_code: 'emp-003',
@@ -137,7 +141,7 @@ async function createEmployees(clientId) {
       employment_type: 'full_time',
       work_location: 'remote',
       skills: ['UX Design', 'Figma', 'User Research', 'Prototyping', 'Accessibility'],
-      languages: ['Swedish', 'English', 'Danish']
+      languages: ['Swedish', 'English', 'Danish'],
     },
     {
       person_code: 'emp-004',
@@ -155,7 +159,7 @@ async function createEmployees(clientId) {
       employment_type: 'full_time',
       work_location: 'hybrid',
       skills: ['Kubernetes', 'Docker', 'AWS', 'CI/CD', 'Infrastructure as Code'],
-      languages: ['Swedish', 'English']
+      languages: ['Swedish', 'English'],
     },
     // Additional employees for richer demo
     {
@@ -173,7 +177,7 @@ async function createEmployees(clientId) {
       employment_type: 'full_time',
       work_location: 'hybrid',
       skills: ['React', 'Vue.js', 'TypeScript', 'CSS', 'Testing'],
-      languages: ['Danish', 'English', 'German']
+      languages: ['Danish', 'English', 'German'],
     },
     {
       person_code: 'emp-006',
@@ -190,8 +194,14 @@ async function createEmployees(clientId) {
       security_clearance: 'low',
       employment_type: 'full_time',
       work_location: 'office',
-      skills: ['Digital Marketing', 'Content Strategy', 'Analytics', 'Social Media', 'Brand Management'],
-      languages: ['Danish', 'English', 'French']
+      skills: [
+        'Digital Marketing',
+        'Content Strategy',
+        'Analytics',
+        'Social Media',
+        'Brand Management',
+      ],
+      languages: ['Danish', 'English', 'French'],
     },
     {
       person_code: 'emp-007',
@@ -208,7 +218,7 @@ async function createEmployees(clientId) {
       employment_type: 'full_time',
       work_location: 'office',
       skills: ['Cybersecurity', 'Risk Assessment', 'Compliance', 'Audit', 'GDPR'],
-      languages: ['English', 'Danish']
+      languages: ['English', 'Danish'],
     },
     {
       person_code: 'emp-008',
@@ -225,19 +235,19 @@ async function createEmployees(clientId) {
       employment_type: 'full_time',
       work_location: 'hybrid',
       skills: ['Financial Analysis', 'Excel', 'SQL', 'Risk Management', 'Compliance'],
-      languages: ['Swedish', 'English', 'Norwegian']
-    }
+      languages: ['Swedish', 'English', 'Norwegian'],
+    },
   ];
-  
+
   const createdEmployees = [];
   for (const empData of employeesData) {
     const employee = await apiCall('people', 'POST', {
       ...empData,
-      client_id: clientId
+      client_id: clientId,
     });
     createdEmployees.push(employee[0]);
   }
-  
+
   return createdEmployees;
 }
 
@@ -253,7 +263,7 @@ async function createEmployeeEnrollments(employees) {
       completion_percentage: 100,
       mentor: 'Lars Nielsen',
       buddy_program: true,
-      last_activity: '2024-01-15T16:00:00Z'
+      last_activity: '2024-01-15T16:00:00Z',
     },
     {
       person_code: 'emp-002',
@@ -262,7 +272,7 @@ async function createEmployeeEnrollments(employees) {
       completion_percentage: 100,
       mentor: 'Maria Andersen',
       buddy_program: true,
-      last_activity: '2024-02-05T17:00:00Z'
+      last_activity: '2024-02-05T17:00:00Z',
     },
     {
       person_code: 'emp-003',
@@ -270,7 +280,7 @@ async function createEmployeeEnrollments(employees) {
       completion_percentage: 45,
       mentor: 'Peter Olsen',
       buddy_program: true,
-      last_activity: '2024-03-02T15:30:00Z'
+      last_activity: '2024-03-02T15:30:00Z',
     },
     {
       person_code: 'emp-004',
@@ -290,7 +300,7 @@ async function createEmployeeEnrollments(employees) {
       equipment_returned: true,
       access_revoked: true,
       final_payroll: true,
-      last_activity: '2024-03-15T17:00:00Z'
+      last_activity: '2024-03-15T17:00:00Z',
     },
     {
       person_code: 'emp-005',
@@ -298,7 +308,7 @@ async function createEmployeeEnrollments(employees) {
       completion_percentage: 0,
       mentor: 'Anna Hansen',
       buddy_program: true,
-      last_activity: '2024-03-15T10:00:00Z'
+      last_activity: '2024-03-15T10:00:00Z',
     },
     {
       person_code: 'emp-006',
@@ -316,7 +326,7 @@ async function createEmployeeEnrollments(employees) {
       equipment_returned: false,
       access_revoked: false,
       final_payroll: false,
-      last_activity: '2024-03-16T14:30:00Z'
+      last_activity: '2024-03-16T14:30:00Z',
     },
     {
       person_code: 'emp-007',
@@ -324,7 +334,7 @@ async function createEmployeeEnrollments(employees) {
       completion_percentage: 20,
       mentor: 'Security Director',
       buddy_program: false,
-      last_activity: '2024-03-08T09:00:00Z'
+      last_activity: '2024-03-08T09:00:00Z',
     },
     {
       person_code: 'emp-008',
@@ -333,23 +343,23 @@ async function createEmployeeEnrollments(employees) {
       completion_percentage: 100,
       mentor: 'Finance Director',
       buddy_program: true,
-      last_activity: '2024-01-15T17:00:00Z'
-    }
+      last_activity: '2024-01-15T17:00:00Z',
+    },
   ];
-  
+
   const createdEnrollments = [];
   for (const enrollData of enrollmentsData) {
-    const employee = employees.find(e => e.person_code === enrollData.person_code);
+    const employee = employees.find((e) => e.person_code === enrollData.person_code);
     if (!employee) continue;
-    
+
     const { person_code, ...enrollmentData } = enrollData;
     const enrollment = await apiCall('people_enrollments', 'POST', {
       ...enrollmentData,
-      person_id: employee.id
+      person_id: employee.id,
     });
     createdEnrollments.push(enrollment[0]);
   }
-  
+
   return createdEnrollments;
 }
 
@@ -368,7 +378,7 @@ async function createDocuments(employees) {
           employment_status: 'verified',
           uploaded_at: '2024-01-10T10:00:00Z',
           reviewed_at: '2024-01-12T14:30:00Z',
-          reviewed_by: 'HR Team'
+          reviewed_by: 'HR Team',
         },
         {
           name: 'ID Verification',
@@ -376,7 +386,7 @@ async function createDocuments(employees) {
           employment_status: 'verified',
           uploaded_at: '2024-01-10T10:30:00Z',
           reviewed_at: '2024-01-12T14:35:00Z',
-          reviewed_by: 'Security Team'
+          reviewed_by: 'Security Team',
         },
         {
           name: 'GDPR Consent Form',
@@ -384,9 +394,9 @@ async function createDocuments(employees) {
           employment_status: 'verified',
           uploaded_at: '2024-01-10T11:00:00Z',
           reviewed_at: '2024-01-12T15:00:00Z',
-          reviewed_by: 'Compliance Team'
-        }
-      ]
+          reviewed_by: 'Compliance Team',
+        },
+      ],
     },
     // Erik Larsen - Product role specific
     {
@@ -398,7 +408,7 @@ async function createDocuments(employees) {
           employment_status: 'verified',
           uploaded_at: '2024-01-25T11:00:00Z',
           reviewed_at: '2024-01-26T10:00:00Z',
-          reviewed_by: 'HR Team'
+          reviewed_by: 'HR Team',
         },
         {
           name: 'Financial Disclosure',
@@ -406,7 +416,7 @@ async function createDocuments(employees) {
           employment_status: 'verified',
           uploaded_at: '2024-01-25T12:00:00Z',
           reviewed_at: '2024-01-26T11:00:00Z',
-          reviewed_by: 'Compliance Team'
+          reviewed_by: 'Compliance Team',
         },
         {
           name: 'Product NDA',
@@ -414,9 +424,9 @@ async function createDocuments(employees) {
           employment_status: 'verified',
           uploaded_at: '2024-01-25T13:00:00Z',
           reviewed_at: '2024-01-26T12:00:00Z',
-          reviewed_by: 'Legal Team'
-        }
-      ]
+          reviewed_by: 'Legal Team',
+        },
+      ],
     },
     // Sofia Berg - Pending onboarding
     {
@@ -426,21 +436,21 @@ async function createDocuments(employees) {
           name: 'Employment Contract',
           type: 'contract',
           employment_status: 'future',
-          uploaded_at: '2024-02-25T14:00:00Z'
+          uploaded_at: '2024-02-25T14:00:00Z',
         },
         {
           name: 'Tax Forms',
           type: 'tax_form',
           employment_status: 'uploaded',
-          uploaded_at: '2024-02-26T09:30:00Z'
+          uploaded_at: '2024-02-26T09:30:00Z',
         },
         {
           name: 'Design Portfolio Review',
           type: 'other',
           employment_status: 'uploaded',
-          uploaded_at: '2024-02-26T10:00:00Z'
-        }
-      ]
+          uploaded_at: '2024-02-26T10:00:00Z',
+        },
+      ],
     },
     // Magnus Johansson - Offboarded
     {
@@ -452,7 +462,7 @@ async function createDocuments(employees) {
           employment_status: 'verified',
           uploaded_at: '2024-03-01T09:00:00Z',
           reviewed_at: '2024-03-01T14:00:00Z',
-          reviewed_by: 'HR Director'
+          reviewed_by: 'HR Director',
         },
         {
           name: 'Knowledge Transfer Document',
@@ -460,7 +470,7 @@ async function createDocuments(employees) {
           employment_status: 'verified',
           uploaded_at: '2024-03-10T16:00:00Z',
           reviewed_at: '2024-03-11T10:00:00Z',
-          reviewed_by: 'Lars Nielsen'
+          reviewed_by: 'Lars Nielsen',
         },
         {
           name: 'Equipment Return Receipt',
@@ -468,9 +478,9 @@ async function createDocuments(employees) {
           employment_status: 'verified',
           uploaded_at: '2024-03-14T12:00:00Z',
           reviewed_at: '2024-03-14T14:00:00Z',
-          reviewed_by: 'IT Department'
-        }
-      ]
+          reviewed_by: 'IT Department',
+        },
+      ],
     },
     // Mette Sørensen - Offboarding in progress
     {
@@ -480,15 +490,15 @@ async function createDocuments(employees) {
           name: 'Termination Notice',
           type: 'termination_notice',
           employment_status: 'future',
-          uploaded_at: '2024-03-16T09:00:00Z'
+          uploaded_at: '2024-03-16T09:00:00Z',
         },
         {
           name: 'Marketing Campaign Handover',
           type: 'knowledge_transfer',
           employment_status: 'uploaded',
-          uploaded_at: '2024-03-16T14:00:00Z'
-        }
-      ]
+          uploaded_at: '2024-03-16T14:00:00Z',
+        },
+      ],
     },
     // John Smith - Security consultant
     {
@@ -500,15 +510,15 @@ async function createDocuments(employees) {
           employment_status: 'verified',
           uploaded_at: '2024-03-01T09:00:00Z',
           reviewed_at: '2024-03-02T10:00:00Z',
-          reviewed_by: 'Legal Team'
+          reviewed_by: 'Legal Team',
         },
         {
           name: 'Security Clearance Form',
           type: 'other',
           employment_status: 'future',
-          uploaded_at: '2024-03-01T10:00:00Z'
-        }
-      ]
+          uploaded_at: '2024-03-01T10:00:00Z',
+        },
+      ],
     },
     // Astrid Lindberg - Finance
     {
@@ -520,7 +530,7 @@ async function createDocuments(employees) {
           employment_status: 'verified',
           uploaded_at: '2024-01-02T10:00:00Z',
           reviewed_at: '2024-01-03T14:00:00Z',
-          reviewed_by: 'HR Team'
+          reviewed_by: 'HR Team',
         },
         {
           name: 'Financial Compliance Certification',
@@ -528,7 +538,7 @@ async function createDocuments(employees) {
           employment_status: 'verified',
           uploaded_at: '2024-01-02T11:00:00Z',
           reviewed_at: '2024-01-03T15:00:00Z',
-          reviewed_by: 'Compliance Team'
+          reviewed_by: 'Compliance Team',
         },
         {
           name: 'Background Check Results',
@@ -536,26 +546,26 @@ async function createDocuments(employees) {
           employment_status: 'verified',
           uploaded_at: '2024-01-05T09:00:00Z',
           reviewed_at: '2024-01-05T16:00:00Z',
-          reviewed_by: 'Security Team'
-        }
-      ]
-    }
+          reviewed_by: 'Security Team',
+        },
+      ],
+    },
   ];
-  
+
   const createdDocuments = [];
   for (const empDocs of documentsData) {
-    const employee = employees.find(e => e.person_code === empDocs.person_code);
+    const employee = employees.find((e) => e.person_code === empDocs.person_code);
     if (!employee) continue;
-    
+
     for (const docData of empDocs.documents) {
       const document = await apiCall('documents', 'POST', {
         ...docData,
-        person_id: employee.id
+        person_id: employee.id,
       });
       createdDocuments.push(document[0]);
     }
   }
-  
+
   return createdDocuments;
 }
 
@@ -576,7 +586,7 @@ async function createTasks(employees) {
           priority: 'high',
           assigned_by: 'IT Department',
           assigned_at: '2024-01-15T09:00:00Z',
-          completed_at: '2024-01-15T16:00:00Z'
+          completed_at: '2024-01-15T16:00:00Z',
         },
         {
           title: 'Payment Systems Training',
@@ -586,7 +596,7 @@ async function createTasks(employees) {
           priority: 'high',
           assigned_by: 'Product Team',
           assigned_at: '2024-01-16T09:00:00Z',
-          completed_at: '2024-01-18T17:00:00Z'
+          completed_at: '2024-01-18T17:00:00Z',
         },
         {
           title: 'Security Clearance Verification',
@@ -596,9 +606,9 @@ async function createTasks(employees) {
           priority: 'high',
           assigned_by: 'Security Team',
           assigned_at: '2024-01-12T09:00:00Z',
-          completed_at: '2024-01-19T17:00:00Z'
-        }
-      ]
+          completed_at: '2024-01-19T17:00:00Z',
+        },
+      ],
     },
     // Erik Larsen - Product manager
     {
@@ -612,7 +622,7 @@ async function createTasks(employees) {
           priority: 'medium',
           assigned_by: 'Product Team',
           assigned_at: '2024-02-01T09:00:00Z',
-          completed_at: '2024-02-05T17:00:00Z'
+          completed_at: '2024-02-05T17:00:00Z',
         },
         {
           title: 'Stakeholder Introductions',
@@ -622,9 +632,9 @@ async function createTasks(employees) {
           priority: 'medium',
           assigned_by: 'Maria Andersen',
           assigned_at: '2024-02-02T09:00:00Z',
-          completed_at: '2024-02-06T16:00:00Z'
-        }
-      ]
+          completed_at: '2024-02-06T16:00:00Z',
+        },
+      ],
     },
     // Sofia Berg - Pending onboarding
     {
@@ -638,7 +648,7 @@ async function createTasks(employees) {
           priority: 'high',
           assigned_by: 'Design Team',
           assigned_at: '2024-03-01T09:00:00Z',
-          due_date: '2024-03-05T17:00:00Z'
+          due_date: '2024-03-05T17:00:00Z',
         },
         {
           title: 'Complete Company Handbook',
@@ -648,7 +658,7 @@ async function createTasks(employees) {
           priority: 'medium',
           assigned_by: 'HR Team',
           assigned_at: '2024-03-01T09:00:00Z',
-          due_date: '2024-03-10T17:00:00Z'
+          due_date: '2024-03-10T17:00:00Z',
         },
         {
           title: 'Design System Familiarization',
@@ -658,9 +668,9 @@ async function createTasks(employees) {
           priority: 'medium',
           assigned_by: 'Design Team',
           assigned_at: '2024-03-01T10:00:00Z',
-          due_date: '2024-03-08T17:00:00Z'
-        }
-      ]
+          due_date: '2024-03-08T17:00:00Z',
+        },
+      ],
     },
     // Magnus Johansson - Offboarded
     {
@@ -674,7 +684,7 @@ async function createTasks(employees) {
           priority: 'high',
           assigned_by: 'Lars Nielsen',
           assigned_at: '2024-03-01T09:00:00Z',
-          completed_at: '2024-03-10T17:00:00Z'
+          completed_at: '2024-03-10T17:00:00Z',
         },
         {
           title: 'Access Revocation Audit',
@@ -684,9 +694,9 @@ async function createTasks(employees) {
           priority: 'high',
           assigned_by: 'Security Team',
           assigned_at: '2024-03-14T09:00:00Z',
-          completed_at: '2024-03-15T10:00:00Z'
-        }
-      ]
+          completed_at: '2024-03-15T10:00:00Z',
+        },
+      ],
     },
     // Mette Sørensen - Offboarding in progress
     {
@@ -700,7 +710,7 @@ async function createTasks(employees) {
           priority: 'high',
           assigned_by: 'Erik Larsen',
           assigned_at: '2024-03-16T09:00:00Z',
-          due_date: '2024-03-18T17:00:00Z'
+          due_date: '2024-03-18T17:00:00Z',
         },
         {
           title: 'Brand Asset Organization',
@@ -710,9 +720,9 @@ async function createTasks(employees) {
           priority: 'medium',
           assigned_by: 'Marketing Director',
           assigned_at: '2024-03-16T10:00:00Z',
-          due_date: '2024-03-20T17:00:00Z'
-        }
-      ]
+          due_date: '2024-03-20T17:00:00Z',
+        },
+      ],
     },
     // John Smith - Security consultant
     {
@@ -726,7 +736,7 @@ async function createTasks(employees) {
           priority: 'high',
           assigned_by: 'Security Director',
           assigned_at: '2024-03-01T09:00:00Z',
-          due_date: '2024-03-15T17:00:00Z'
+          due_date: '2024-03-15T17:00:00Z',
         },
         {
           title: 'Access Credential Setup',
@@ -736,9 +746,9 @@ async function createTasks(employees) {
           priority: 'high',
           assigned_by: 'IT Security',
           assigned_at: '2024-03-01T10:00:00Z',
-          due_date: '2024-03-10T17:00:00Z'
-        }
-      ]
+          due_date: '2024-03-10T17:00:00Z',
+        },
+      ],
     },
     // Astrid Lindberg - Finance
     {
@@ -752,7 +762,7 @@ async function createTasks(employees) {
           priority: 'high',
           assigned_by: 'Finance Director',
           assigned_at: '2024-01-08T09:00:00Z',
-          completed_at: '2024-01-12T17:00:00Z'
+          completed_at: '2024-01-12T17:00:00Z',
         },
         {
           title: 'Compliance Certification',
@@ -762,26 +772,26 @@ async function createTasks(employees) {
           priority: 'high',
           assigned_by: 'Compliance Team',
           assigned_at: '2024-01-10T09:00:00Z',
-          completed_at: '2024-01-15T17:00:00Z'
-        }
-      ]
-    }
+          completed_at: '2024-01-15T17:00:00Z',
+        },
+      ],
+    },
   ];
-  
+
   const createdTasks = [];
   for (const empTasks of tasksData) {
-    const employee = employees.find(e => e.person_code === empTasks.person_code);
+    const employee = employees.find((e) => e.person_code === empTasks.person_code);
     if (!employee) continue;
-    
+
     for (const taskData of empTasks.tasks) {
       const task = await apiCall('tasks', 'POST', {
         ...taskData,
-        person_id: employee.id
+        person_id: employee.id,
       });
       createdTasks.push(task[0]);
     }
   }
-  
+
   return createdTasks;
 }
 
@@ -793,68 +803,68 @@ function generateJWTHash(employee, appCode) {
     iss: 'api.thepia.com',
     aud: 'flows.thepia.net',
     sub: `inv-${employee.person_code}-${Date.now()}`,
-    exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60),
+    exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
     iat: Math.floor(Date.now() / 1000),
     invitation: {
       invitee: {
         fullName: `${employee.first_name} ${employee.last_name}`,
         companyEmail: employee.company_email,
-        privateEmail: employee.company_email.replace('@nets.eu', '@gmail.com')
+        privateEmail: employee.company_email.replace('@nets.eu', '@gmail.com'),
       },
       position: employee.position,
       department: employee.department,
-      type: appCode
-    }
+      type: appCode,
+    },
   };
-  
+
   return crypto.createHash('sha256').update(JSON.stringify(jwtPayload)).digest('hex');
 }
 
 async function createRichInvitations(clientId, applications, employees) {
   const appMap = {};
-  applications.forEach(app => {
+  applications.forEach((app) => {
     appMap[app.app_code] = app.id;
   });
-  
+
   const invitationsData = [
     {
       person_code: 'emp-005', // Lars - new onboarding invitation
       app_code: 'onboarding',
       employment_status: 'future',
       created_by: 'Anna Hansen',
-      permissions: ['document_upload', 'task_completion', 'training_access']
+      permissions: ['document_upload', 'task_completion', 'training_access'],
     },
     {
       person_code: 'emp-006', // Mette - offboarding invitation
       app_code: 'offboarding',
       employment_status: 'future',
       created_by: 'Erik Larsen',
-      permissions: ['document_upload', 'equipment_return', 'exit_interview']
+      permissions: ['document_upload', 'equipment_return', 'exit_interview'],
     },
     {
       person_code: 'emp-007', // John - expired onboarding invitation
       app_code: 'onboarding',
       employment_status: 'expired',
       created_by: 'Anna Hansen',
-      permissions: ['document_upload', 'security_clearance', 'training_access']
-    }
+      permissions: ['document_upload', 'security_clearance', 'training_access'],
+    },
   ];
-  
+
   const createdInvitations = [];
   for (const invData of invitationsData) {
-    const employee = employees.find(e => e.person_code === invData.person_code);
+    const employee = employees.find((e) => e.person_code === invData.person_code);
     const appId = appMap[invData.app_code];
-    
+
     if (!employee || !appId) continue;
-    
+
     const jwtHash = generateJWTHash(employee, invData.app_code);
-    const expiresAt = new Date(Date.now() + (7 * 24 * 60 * 60 * 1000));
-    
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
     // Adjust expiration for expired invitation
     if (invData.status === 'expired') {
       expiresAt.setDate(expiresAt.getDate() - 14); // 2 weeks ago
     }
-    
+
     const invitation = await apiCall('invitations', 'POST', {
       client_id: clientId,
       app_id: appId,
@@ -863,7 +873,7 @@ async function createRichInvitations(clientId, applications, employees) {
       restrictions: {
         max_sessions: 5,
         person_code: employee.person_code,
-        department: employee.department
+        department: employee.department,
       },
       employment_status: invData.status,
       expires_at: expiresAt.toISOString(),
@@ -873,13 +883,13 @@ async function createRichInvitations(clientId, applications, employees) {
         person_code: employee.person_code,
         department: employee.department,
         position: employee.position,
-        demo_invitation: true
-      }
+        demo_invitation: true,
+      },
     });
-    
+
     createdInvitations.push(invitation[0]);
   }
-  
+
   return createdInvitations;
 }
 
@@ -888,37 +898,37 @@ async function createRichInvitations(clientId, applications, employees) {
  */
 async function populateRichDemo(options = {}) {
   const spinner = ora('Populating rich demo data...').start();
-  
+
   try {
     // Get demo client and applications
     spinner.text = 'Getting demo client and applications...';
     const { client, applications } = await getDemoClientAndApps();
-    
+
     // Create employees
     spinner.text = 'Creating employees...';
     const employees = await createEmployees(client.id);
     spinner.succeed(`Created ${employees.length} employees`);
-    
+
     // Create employee enrollments
     spinner.start('Creating employee enrollments...');
     const enrollments = await createEmployeeEnrollments(employees);
     spinner.succeed(`Created ${enrollments.length} employee enrollments`);
-    
+
     // Create documents
     spinner.start('Creating documents...');
     const documents = await createDocuments(employees);
     spinner.succeed(`Created ${documents.length} documents`);
-    
+
     // Create tasks
     spinner.start('Creating tasks...');
     const tasks = await createTasks(employees);
     spinner.succeed(`Created ${tasks.length} tasks`);
-    
+
     // Create invitations
     spinner.start('Creating rich invitations...');
     const invitations = await createRichInvitations(client.id, applications, employees);
     spinner.succeed(`Created ${invitations.length} invitations`);
-    
+
     // Display summary
     console.log(chalk.green.bold('\\n✅ Rich demo data population completed!\\n'));
     console.log(chalk.cyan('📊 Rich Demo Data Summary:'));
@@ -928,7 +938,7 @@ async function populateRichDemo(options = {}) {
     console.log(`   Documents:    ${chalk.white(documents.length)} (vs ~8 in mock)`);
     console.log(`   Tasks:        ${chalk.white(tasks.length)} (vs ~6 in mock)`);
     console.log(`   Invitations:  ${chalk.white(invitations.length)} (vs 3 in mock)`);
-    
+
     console.log(chalk.cyan('\\n👥 Employee Status Distribution:'));
     const statusCounts = employees.reduce((acc, emp) => {
       acc[emp.status] = (acc[emp.status] || 0) + 1;
@@ -937,7 +947,7 @@ async function populateRichDemo(options = {}) {
     Object.entries(statusCounts).forEach(([status, count]) => {
       console.log(`   • ${status}: ${count} employees`);
     });
-    
+
     console.log(chalk.cyan('\\n📄 Document Status Distribution:'));
     const docStatusCounts = documents.reduce((acc, doc) => {
       acc[doc.status] = (acc[doc.status] || 0) + 1;
@@ -946,7 +956,7 @@ async function populateRichDemo(options = {}) {
     Object.entries(docStatusCounts).forEach(([status, count]) => {
       console.log(`   • ${status}: ${count} documents`);
     });
-    
+
     console.log(chalk.cyan('\\n✅ Task Status Distribution:'));
     const taskStatusCounts = tasks.reduce((acc, task) => {
       acc[task.status] = (acc[task.status] || 0) + 1;
@@ -955,14 +965,13 @@ async function populateRichDemo(options = {}) {
     Object.entries(taskStatusCounts).forEach(([status, count]) => {
       console.log(`   • ${status}: ${count} tasks`);
     });
-    
+
     console.log(chalk.yellow('\\n🔗 Next Steps:'));
     console.log(`   1. Verify rich data: Check Supabase dashboard api schema`);
     console.log(`   2. Launch demo: ${chalk.green('pnpm run demo:admin')}`);
     console.log(`   3. Update UI to connect to real database`);
     console.log(`   4. Compare with mock data completeness`);
     console.log('');
-    
   } catch (error) {
     spinner.fail(`Rich demo population failed: ${error.message}`);
     console.error(chalk.red(error.stack));

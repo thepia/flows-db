@@ -2,7 +2,7 @@
 
 /**
  * Copy promotional screenshots to thepia.com repository
- * 
+ *
  * This script copies screenshots from the flows-db test results
  * to the thepia.com src/assets directory for promotional use.
  */
@@ -42,13 +42,13 @@ async function copyFile(source, target) {
 
 async function findScreenshots(dir) {
   const screenshots = [];
-  
+
   try {
     const entries = await fs.readdir(dir, { withFileTypes: true });
-    
+
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
-      
+
       if (entry.isDirectory()) {
         // Recursively search subdirectories
         const subScreenshots = await findScreenshots(fullPath);
@@ -60,7 +60,7 @@ async function findScreenshots(dir) {
   } catch (error) {
     console.log(`⚠️  Could not read directory ${dir}: ${error.message}`);
   }
-  
+
   return screenshots;
 }
 
@@ -127,15 +127,15 @@ async function main() {
   try {
     console.log('🚀 Starting screenshot organization...');
     console.log(`📂 Target: ${TARGET_DIR}`);
-    
+
     // Ensure target directories exist
     await ensureDirectoryExists(TARGET_DIR);
     await ensureDirectoryExists(path.join(TARGET_DIR, 'desktop'));
     await ensureDirectoryExists(path.join(TARGET_DIR, 'tablet'));
-    
+
     // Generate README
     await generateReadme();
-    
+
     console.log('✅ Screenshot organization completed!');
     console.log(`📁 Screenshots available in: ${TARGET_DIR}`);
     console.log('🎉 All done!');

@@ -16,11 +16,11 @@ export class TestSetup {
   async setupMockApiResponses() {
     // Mock all offboarding API endpoints
     for (const [endpoint, response] of Object.entries(mockApiResponses)) {
-      await this.page.route(`**${endpoint}*`, route => {
+      await this.page.route(`**${endpoint}*`, (route) => {
         route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify(response)
+          body: JSON.stringify(response),
         });
       });
     }
@@ -30,14 +30,14 @@ export class TestSetup {
    * Setup error responses for testing error handling
    */
   async setupErrorResponses() {
-    await this.page.route('**/api/offboarding/**', route => {
+    await this.page.route('**/api/offboarding/**', (route) => {
       route.fulfill({
         status: 500,
         contentType: 'application/json',
         body: JSON.stringify({
           error: 'Internal Server Error',
-          message: 'Database connection failed'
-        })
+          message: 'Database connection failed',
+        }),
       });
     });
   }
@@ -46,8 +46,8 @@ export class TestSetup {
    * Setup slow responses for testing loading states
    */
   async setupSlowResponses(delay = 2000) {
-    await this.page.route('**/api/offboarding/**', async route => {
-      await new Promise(resolve => setTimeout(resolve, delay));
+    await this.page.route('**/api/offboarding/**', async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, delay));
       route.continue();
     });
   }
@@ -60,9 +60,11 @@ export class TestSetup {
     await this.page.waitForSelector('[data-testid="app-loaded"]', { state: 'visible' });
     await this.page.waitForLoadState('networkidle');
     // Wait for loading indicator to be hidden to ensure demo data has loaded
-    await this.page.waitForSelector('[data-testid="loading-indicator"]', { state: 'hidden' }).catch(() => {
-      // Loading indicator might not exist, which is fine
-    });
+    await this.page
+      .waitForSelector('[data-testid="loading-indicator"]', { state: 'hidden' })
+      .catch(() => {
+        // Loading indicator might not exist, which is fine
+      });
   }
 
   /**
@@ -80,7 +82,7 @@ export class TestSetup {
     const viewports = {
       desktop: { width: 1280, height: 720 },
       tablet: { width: 768, height: 1024 },
-      mobile: { width: 375, height: 667 }
+      mobile: { width: 375, height: 667 },
     };
 
     await this.page.setViewportSize(viewports[device]);
@@ -92,7 +94,7 @@ export class TestSetup {
   async setupAccessibilityTesting() {
     // Inject axe-core for accessibility testing
     await this.page.addScriptTag({
-      url: 'https://unpkg.com/axe-core@4.7.0/axe.min.js'
+      url: 'https://unpkg.com/axe-core@4.7.0/axe.min.js',
     });
   }
 
@@ -105,7 +107,7 @@ export class TestSetup {
     const defaultOptions = {
       fullPage: false,
       animations: 'disabled',
-      path: `test-results/screenshots/${name}.png`
+      path: `test-results/screenshots/${name}.png`,
     };
 
     return await this.page.screenshot({ ...defaultOptions, ...options });
@@ -116,9 +118,7 @@ export class TestSetup {
    */
   async waitForAnimations() {
     await this.page.waitForFunction(() => {
-      return Promise.all(
-        document.getAnimations().map(animation => animation.finished)
-      );
+      return Promise.all(document.getAnimations().map((animation) => animation.finished));
     });
   }
 
@@ -159,7 +159,7 @@ export class TestSetup {
           transition-duration: 0s !important;
           transition-delay: 0s !important;
         }
-      `
+      `,
     });
   }
 
@@ -179,21 +179,22 @@ export class TestSetup {
     await this.page.addInitScript(() => {
       window.performanceMetrics = {
         navigationStart: performance.now(),
-        metrics: []
+        metrics: [],
       };
-      
+
       // Monitor navigation timing
       window.addEventListener('load', () => {
-        window.performanceMetrics.loadTime = performance.now() - window.performanceMetrics.navigationStart;
+        window.performanceMetrics.loadTime =
+          performance.now() - window.performanceMetrics.navigationStart;
       });
-      
+
       // Monitor user interactions
-      ['click', 'keydown', 'input'].forEach(eventType => {
+      ['click', 'keydown', 'input'].forEach((eventType) => {
         document.addEventListener(eventType, (e) => {
           window.performanceMetrics.metrics.push({
             type: eventType,
             timestamp: performance.now(),
-            target: e.target.tagName
+            target: e.target.tagName,
           });
         });
       });

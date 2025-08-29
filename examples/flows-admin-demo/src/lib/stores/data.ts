@@ -1,16 +1,16 @@
+import { getCurrentClientId } from '$lib/utils/client-persistence';
 import { writable } from 'svelte/store';
 import { reportSupabaseError } from '../config/errorReporting.js';
 import { supabase } from '../supabase.js';
-import { getCurrentClientId } from '$lib/utils/client-persistence';
 import type {
   Application,
   Client,
   DocumentStatus,
   Employee,
   EmployeeEnrollment,
+  Invitation,
   Person,
   PersonEnrollment,
-  Invitation,
   TaskStatus,
 } from '../types.js';
 
@@ -30,7 +30,7 @@ export const loadingProgress = writable({
   stage: '',
   current: 0,
   total: 0,
-  message: ''
+  message: '',
 });
 export const error = writable<string | null>(null);
 
@@ -68,7 +68,10 @@ function transformPerson(dbPerson: any): Person {
 
 // Backward compatibility: transform person to old employee format
 function transformPersonToEmployee(dbPerson: any): Employee {
-  const mapToLegacyStatus = (employmentStatus: string | null, associateStatus: string | null): string => {
+  const mapToLegacyStatus = (
+    employmentStatus: string | null,
+    associateStatus: string | null
+  ): string => {
     if (employmentStatus === 'active') return 'active';
     if (employmentStatus === 'former') return 'previous';
     if (employmentStatus === 'future') return 'future';
@@ -138,7 +141,11 @@ function transformPersonEnrollment(
 }
 
 // Backward compatibility: transform to old employee enrollment format
-function transformToEmployeeEnrollment(dbEnrollment: any, dbDocuments: any[], dbTasks: any[]): EmployeeEnrollment {
+function transformToEmployeeEnrollment(
+  dbEnrollment: any,
+  dbDocuments: any[],
+  dbTasks: any[]
+): EmployeeEnrollment {
   const personEnrollment = transformPersonEnrollment(dbEnrollment, dbDocuments, dbTasks);
   return {
     ...personEnrollment,
@@ -249,13 +256,13 @@ export async function loadClientData(clientId: string) {
 async function loadClientSpecificData(clientId: string) {
   loading.set(true);
   error.set(null);
-  
+
   // Reset progress
   loadingProgress.set({
     stage: 'Initializing',
     current: 0,
     total: 7,
-    message: 'Starting data load...'
+    message: 'Starting data load...',
   });
 
   try {
@@ -264,9 +271,9 @@ async function loadClientSpecificData(clientId: string) {
       stage: 'Client',
       current: 1,
       total: 6,
-      message: 'Loading client information...'
+      message: 'Loading client information...',
     });
-    
+
     const { data: clientData, error: clientError } = await supabase
       .from('clients')
       .select('*')
@@ -295,9 +302,9 @@ async function loadClientSpecificData(clientId: string) {
         stage: 'Applications',
         current: 2,
         total: 6,
-        message: 'Loading applications...'
+        message: 'Loading applications...',
       });
-      
+
       const { data: appsData, error: appsError } = await supabase
         .from('client_applications')
         .select('*')
@@ -363,7 +370,7 @@ async function loadClientSpecificData(clientId: string) {
             maxConcurrentUsers: 50,
             lastAccessed: new Date().toISOString(),
             createdAt: new Date().toISOString(),
-          }
+          },
         ];
         console.log('📱 Applications using mock data:', mockApps);
         applications.set(mockApps);
@@ -374,9 +381,9 @@ async function loadClientSpecificData(clientId: string) {
         stage: 'People Count',
         current: 3,
         total: 7, // Increased total steps
-        message: 'Getting total people count...'
+        message: 'Getting total people count...',
       });
-      
+
       // Get total count without loading data
       const { count: peopleCount, error: countError } = await supabase
         .from('people')
@@ -395,9 +402,9 @@ async function loadClientSpecificData(clientId: string) {
         stage: 'People Data',
         current: 4,
         total: 7,
-        message: `Loading first 50 of ${peopleCount || 0} people...`
+        message: `Loading first 50 of ${peopleCount || 0} people...`,
       });
-      
+
       const { data: peopleData, error: peopleError } = await supabase
         .from('people')
         .select('*')
@@ -415,25 +422,25 @@ async function loadClientSpecificData(clientId: string) {
       if (peopleData) {
         const transformedPeople: Person[] = peopleData.map(transformPerson);
         people.set(transformedPeople);
-        
+
         // Set the total count from the count query
         totalPeopleCount.set(peopleCount || 0);
-        
+
         // Backward compatibility: also set employees store with transformed data
         const transformedEmployees: Employee[] = peopleData.map(transformPersonToEmployee);
         employees.set(transformedEmployees);
 
         // Load enrollments, documents, and tasks efficiently using bulk queries
-        const personIds = peopleData.map(p => p.id);
-        
+        const personIds = peopleData.map((p) => p.id);
+
         // Step 5: Bulk load enrollments
         loadingProgress.set({
           stage: 'Enrollments',
           current: 5,
           total: 7,
-          message: `Loading enrollments for ${peopleData.length} people...`
+          message: `Loading enrollments for ${peopleData.length} people...`,
         });
-        
+
         const { data: allEnrollments } = await supabase
           .from('people_enrollments')
           .select('*')
@@ -444,9 +451,9 @@ async function loadClientSpecificData(clientId: string) {
           stage: 'Documents & Tasks',
           current: 6,
           total: 7,
-          message: 'Loading documents and tasks...'
+          message: 'Loading documents and tasks...',
         });
-        
+
         // Bulk load documents using person_id
         const { data: documentsData } = await supabase
           .from('documents')
@@ -460,12 +467,12 @@ async function loadClientSpecificData(clientId: string) {
           .in('person_id', personIds);
 
         // Create lookup maps for efficient data association
-        const enrollmentMap = new Map(allEnrollments?.map(e => [e.person_id, e]) || []);
+        const enrollmentMap = new Map(allEnrollments?.map((e) => [e.person_id, e]) || []);
         const documentsMap = new Map<string, any[]>();
         const tasksMap = new Map<string, any[]>();
 
         // Group documents by person_id
-        documentsData?.forEach(doc => {
+        documentsData?.forEach((doc) => {
           const personId = doc.person_id;
           if (!documentsMap.has(personId)) {
             documentsMap.set(personId, []);
@@ -474,7 +481,7 @@ async function loadClientSpecificData(clientId: string) {
         });
 
         // Group tasks by person_id
-        tasksData?.forEach(task => {
+        tasksData?.forEach((task) => {
           const personId = task.person_id;
           if (!tasksMap.has(personId)) {
             tasksMap.set(personId, []);
@@ -486,16 +493,14 @@ async function loadClientSpecificData(clientId: string) {
         const enrollmentsData: PersonEnrollment[] = [];
         const employeeEnrollmentsData: EmployeeEnrollment[] = [];
 
-        peopleData.forEach(person => {
+        peopleData.forEach((person) => {
           const enrollment = enrollmentMap.get(person.id);
           const personDocs = documentsMap.get(person.id) || [];
           const personTasks = tasksMap.get(person.id) || [];
 
           if (enrollment) {
-            enrollmentsData.push(
-              transformPersonEnrollment(enrollment, personDocs, personTasks)
-            );
-            
+            enrollmentsData.push(transformPersonEnrollment(enrollment, personDocs, personTasks));
+
             // Backward compatibility
             employeeEnrollmentsData.push(
               transformToEmployeeEnrollment(enrollment, personDocs, personTasks)
@@ -507,34 +512,38 @@ async function loadClientSpecificData(clientId: string) {
 
         // Store all documents and tasks for global access
         if (documentsData) {
-          documents.set(documentsData.map(
-            (doc: any): DocumentStatus => ({
-              id: doc.id,
-              name: doc.name,
-              type: doc.type,
-              status: doc.status,
-              uploadedAt: doc.uploaded_at,
-              reviewedAt: doc.reviewed_at,
-              reviewedBy: doc.reviewed_by,
-            })
-          ));
+          documents.set(
+            documentsData.map(
+              (doc: any): DocumentStatus => ({
+                id: doc.id,
+                name: doc.name,
+                type: doc.type,
+                status: doc.status,
+                uploadedAt: doc.uploaded_at,
+                reviewedAt: doc.reviewed_at,
+                reviewedBy: doc.reviewed_by,
+              })
+            )
+          );
         }
 
         if (tasksData) {
-          tasks.set(tasksData.map(
-            (task: any): TaskStatus => ({
-              id: task.id,
-              title: task.title,
-              description: task.description,
-              category: task.category,
-              status: task.status,
-              assignedAt: task.assigned_at,
-              completedAt: task.completed_at,
-              dueDate: task.due_date,
-              assignedBy: task.assigned_by,
-              priority: task.priority,
-            })
-          ));
+          tasks.set(
+            tasksData.map(
+              (task: any): TaskStatus => ({
+                id: task.id,
+                title: task.title,
+                description: task.description,
+                category: task.category,
+                status: task.status,
+                assignedAt: task.assigned_at,
+                completedAt: task.completed_at,
+                dueDate: task.due_date,
+                assignedBy: task.assigned_by,
+                priority: task.priority,
+              })
+            )
+          );
         }
       }
 
@@ -543,9 +552,9 @@ async function loadClientSpecificData(clientId: string) {
         stage: 'Invitations',
         current: 7,
         total: 7,
-        message: 'Loading invitations...'
+        message: 'Loading invitations...',
       });
-      
+
       const { data: invitationsData, error: invitationsError } = await supabase
         .from('invitations')
         .select(
@@ -592,7 +601,7 @@ async function loadClientSpecificData(clientId: string) {
       stage: 'Complete',
       current: 7,
       total: 7,
-      message: 'Data loading complete!'
+      message: 'Data loading complete!',
     });
   }
 }
@@ -623,26 +632,28 @@ export async function loadDemoData() {
 
     if (clientError) {
       console.error(`[loadDemoData] Error loading client ${currentClientId}:`, clientError);
-      
+
       // If it's a PGRST116 error (no rows), try the default client
       if (clientError.code === 'PGRST116') {
-        console.log(`[loadDemoData] Client ${currentClientId} not found, trying default: hygge-hvidlog`);
-        
+        console.log(
+          `[loadDemoData] Client ${currentClientId} not found, trying default: hygge-hvidlog`
+        );
+
         const { data: fallbackData, error: fallbackError } = await supabase
           .from('clients')
           .select('*')
           .eq('client_code', 'hygge-hvidlog')
           .single();
-          
+
         if (!fallbackError && fallbackData) {
           console.log('[loadDemoData] Using default client: hygge-hvidlog');
           await loadClientData(fallbackData.id);
           return;
         }
       }
-      
+
       error.set(`Unable to load client data. Please check your database connection.`);
-      
+
       // Clear any stale data
       client.set(null);
       applications.set([]);
@@ -652,16 +663,18 @@ export async function loadDemoData() {
       tasks.set([]);
       invitations.set([]);
       totalPeopleCount.set(0);
-      
+
       await reportSupabaseError('clients', 'select', clientError, {
         client_code: currentClientId,
-        operation: 'loadDemoData'
+        operation: 'loadDemoData',
       });
       return;
     }
 
     if (clientData) {
-      console.log(`[loadDemoData] Successfully loaded client: ${clientData.client_code} (${clientData.legal_name})`);
+      console.log(
+        `[loadDemoData] Successfully loaded client: ${clientData.client_code} (${clientData.legal_name})`
+      );
       await loadClientData(clientData.id);
     } else {
       // This shouldn't happen with .single() but handle it anyway
@@ -1011,11 +1024,15 @@ export async function getClientMetrics() {
         .eq('status', 'pending');
 
       if (!invitationError && invitationData) {
-        offboardingCount = invitationData.filter((inv) => inv.client_applications?.app_code === 'offboarding').length;
+        offboardingCount = invitationData.filter(
+          (inv) => inv.client_applications?.app_code === 'offboarding'
+        ).length;
       }
     }
 
-    console.log(`Metrics: ${onboardingCount} people in onboarding, ${offboardingCount} people in offboarding`);
+    console.log(
+      `Metrics: ${onboardingCount} people in onboarding, ${offboardingCount} people in offboarding`
+    );
 
     return {
       onboardingCount,

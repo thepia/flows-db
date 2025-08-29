@@ -1,9 +1,9 @@
 <script lang="ts">
-import { page } from '$app/stores';
 import { goto } from '$app/navigation';
+import { page } from '$app/stores';
 import { Button } from '$lib/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
-import { client, people, enrollments, loadDemoData } from '$lib/stores/data';
+import { client, enrollments, loadDemoData, people } from '$lib/stores/data';
 import type { DocumentStatus, Person, TaskStatus } from '$lib/types';
 import {
   AlertCircle,
@@ -113,24 +113,20 @@ function cancelEditing() {
 
 async function saveChanges() {
   if (!person) return;
-  
+
   isSaving = true;
   saveError = null;
-  
+
   try {
     // TODO: Implement actual save function to Supabase
     // For now, just simulate a save
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     // Update the local store (in real implementation, this would come from Supabase response)
-    people.update(people => 
-      people.map(p => 
-        p.id === person.id 
-          ? { ...p, ...editFormData }
-          : p
-      )
+    people.update((people) =>
+      people.map((p) => (p.id === person.id ? { ...p, ...editFormData } : p))
     );
-    
+
     isEditing = false;
   } catch (err) {
     console.error('Failed to save person:', err);

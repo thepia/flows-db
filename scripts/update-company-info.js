@@ -2,7 +2,7 @@
 
 /**
  * Update Company Information
- * 
+ *
  * Updates the demo companies with rich, detailed information from DEMO_COMPANIES.md
  */
 
@@ -12,15 +12,11 @@ import { config } from 'dotenv';
 // Load environment variables
 config();
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
-  {
-    db: {
-      schema: 'api'
-    }
-  }
-);
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+  db: {
+    schema: 'api',
+  },
+});
 
 // Company information updates
 const COMPANY_UPDATES = {
@@ -28,7 +24,8 @@ const COMPANY_UPDATES = {
     legal_name: 'Hygge & Hvidløg A/S',
     name: 'Hygge & Hvidløg',
     industry: 'Sustainable Food Technology & Wellness Products',
-    description: 'B2B2C sustainable food technology company specializing in plant-based protein alternatives, fermentation technologies, and wellness food products. Danish design philosophy meets innovative food science.',
+    description:
+      'B2B2C sustainable food technology company specializing in plant-based protein alternatives, fermentation technologies, and wellness food products. Danish design philosophy meets innovative food science.',
     tier: 'enterprise',
     status: 'active',
     founded_year: 1987,
@@ -39,13 +36,14 @@ const COMPANY_UPDATES = {
     geographic_scope: 'international',
     primary_market: 'europe',
     sustainability_focus: true,
-    innovation_level: 'high'
+    innovation_level: 'high',
   },
   'meridian-brands': {
     legal_name: 'Meridian Brands International',
     name: 'Meridian Brands',
     industry: 'Consumer Products & Lifestyle Brands',
-    description: 'Portfolio of consumer lifestyle brands spanning personal care, home goods, food & beverages, and digital lifestyle products. Operates in 47 countries with strong presence in emerging markets.',
+    description:
+      'Portfolio of consumer lifestyle brands spanning personal care, home goods, food & beverages, and digital lifestyle products. Operates in 47 countries with strong presence in emerging markets.',
     tier: 'enterprise',
     status: 'active',
     founded_year: 1952,
@@ -56,8 +54,8 @@ const COMPANY_UPDATES = {
     geographic_scope: 'global',
     primary_market: 'global',
     brand_portfolio_size: 47,
-    market_presence: 'established_multinational'
-  }
+    market_presence: 'established_multinational',
+  },
 };
 
 // Update company information
@@ -67,10 +65,7 @@ async function updateCompanyInfo() {
   for (const [clientCode, updates] of Object.entries(COMPANY_UPDATES)) {
     console.log(`📝 Updating ${updates.legal_name}...`);
 
-    const { error } = await supabase
-      .from('clients')
-      .update(updates)
-      .eq('client_code', clientCode);
+    const { error } = await supabase.from('clients').update(updates).eq('client_code', clientCode);
 
     if (error) {
       console.error(`  ❌ Error updating ${clientCode}:`, error);
@@ -84,9 +79,7 @@ async function updateCompanyInfo() {
 async function createAdminAccess() {
   console.log('\n🔐 Creating admin access records...\n');
 
-  const { data: contacts } = await supabase
-    .from('account_contacts')
-    .select('*');
+  const { data: contacts } = await supabase.from('account_contacts').select('*');
 
   if (!contacts || contacts.length === 0) {
     console.log('  No contacts found');
@@ -102,36 +95,44 @@ async function createAdminAccess() {
       .single();
 
     if (existingAccess) {
-      console.log(`  ⏭️  Admin access already exists for ${contact.first_name} ${contact.last_name}`);
+      console.log(
+        `  ⏭️  Admin access already exists for ${contact.first_name} ${contact.last_name}`
+      );
       continue;
     }
 
     // Create admin access based on contact type
-    const accessLevel = contact.contact_type === 'primary' ? 'owner' : 
-                       contact.contact_type === 'billing' ? 'billing_only' : 
-                       'admin';
+    const accessLevel =
+      contact.contact_type === 'primary'
+        ? 'owner'
+        : contact.contact_type === 'billing'
+          ? 'billing_only'
+          : 'admin';
 
-    const { error: accessError } = await supabase
-      .from('admin_access')
-      .insert({
-        client_id: contact.client_id,
-        contact_id: contact.id,
-        access_level: accessLevel,
-        can_purchase_credits: contact.can_purchase_credits || false,
-        can_view_billing: contact.can_view_billing || false,
-        can_view_usage_analytics: contact.contact_type !== 'billing',
-        can_manage_account_settings: contact.contact_type === 'primary',
-        can_manage_users: contact.can_manage_users || false,
-        can_initiate_workflows: contact.contact_type !== 'billing',
-        can_view_credit_transactions: contact.can_view_billing || false,
-        status: 'active',
-        granted_at: new Date(Date.now() - 730 * 24 * 60 * 60 * 1000).toISOString() // 2 years ago
-      });
+    const { error: accessError } = await supabase.from('admin_access').insert({
+      client_id: contact.client_id,
+      contact_id: contact.id,
+      access_level: accessLevel,
+      can_purchase_credits: contact.can_purchase_credits || false,
+      can_view_billing: contact.can_view_billing || false,
+      can_view_usage_analytics: contact.contact_type !== 'billing',
+      can_manage_account_settings: contact.contact_type === 'primary',
+      can_manage_users: contact.can_manage_users || false,
+      can_initiate_workflows: contact.contact_type !== 'billing',
+      can_view_credit_transactions: contact.can_view_billing || false,
+      status: 'active',
+      granted_at: new Date(Date.now() - 730 * 24 * 60 * 60 * 1000).toISOString(), // 2 years ago
+    });
 
     if (accessError) {
-      console.error(`  ❌ Error creating admin access for ${contact.first_name} ${contact.last_name}:`, accessError);
+      console.error(
+        `  ❌ Error creating admin access for ${contact.first_name} ${contact.last_name}:`,
+        accessError
+      );
     } else {
-      console.log(`  ✅ Created ${accessLevel} access for ${contact.first_name} ${contact.last_name}`);
+      console.log(
+        `  ✅ Created ${accessLevel} access for ${contact.first_name} ${contact.last_name}`
+      );
     }
   }
 }

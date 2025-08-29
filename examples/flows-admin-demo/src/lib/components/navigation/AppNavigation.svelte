@@ -1,7 +1,7 @@
 <script lang="ts">
-import { createEventDispatcher } from 'svelte';
-import { Briefcase, Settings, Users } from 'lucide-svelte';
 import type { Application } from '$lib/types';
+import { Briefcase, Settings, Users } from 'lucide-svelte';
+import { createEventDispatcher } from 'svelte';
 
 export let activeTab: string;
 export let applications: Application[] = [];

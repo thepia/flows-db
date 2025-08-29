@@ -5,7 +5,7 @@ import restart from 'vite-plugin-restart';
 export default defineConfig(({ mode }) => {
   // Load env file from current directory
   const env = loadEnv(mode, process.cwd(), '');
-  
+
   return {
     plugins: [
       sveltekit(),
@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
         restart: [
           // Restart when database schemas change
           '../../schemas/*.sql',
-          // Restart when scripts change  
+          // Restart when scripts change
           '../../scripts/*.js',
           '../../scripts/*.cjs',
           '../../scripts/*.ts',
@@ -31,9 +31,9 @@ export default defineConfig(({ mode }) => {
           'package.json',
           // Restart when demo data configurations change
           'src/lib/mockData/*.js',
-          'src/lib/services/demoDataGenerator.ts'
-        ]
-      })
+          'src/lib/services/demoDataGenerator.ts',
+        ],
+      }),
     ],
     define: {
       // Make environment variables available in the build

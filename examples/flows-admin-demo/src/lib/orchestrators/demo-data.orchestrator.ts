@@ -1,7 +1,7 @@
-import { get } from 'svelte/store';
+import { loadingProgress } from '$lib/stores/data';
 import { clientStore } from '$lib/stores/domains/client/client.store';
 import { tfcStore } from '$lib/stores/domains/tfc/tfc.store';
-import { loadingProgress } from '$lib/stores/data';
+import { get } from 'svelte/store';
 
 /**
  * Orchestrator pattern: Coordinates multiple domains for complex operations
@@ -18,18 +18,18 @@ export class DemoDataOrchestrator {
       { name: 'Loading client data', action: () => this.setupClient(clientCode) },
       { name: 'Generating people data', action: () => this.generatePeopleData(clientCode) },
       { name: 'Setting up TFC data', action: () => this.setupTFCData(clientCode) },
-      { name: 'Creating process data', action: () => this.generateProcessData(clientCode) }
+      { name: 'Creating process data', action: () => this.generateProcessData(clientCode) },
     ];
 
     for (let i = 0; i < steps.length; i++) {
       const step = steps[i];
-      
+
       // Update UI progress (orchestrator concern)
       loadingProgress.set({
         stage: step.name,
         current: i + 1,
         total: steps.length,
-        message: `${step.name}...`
+        message: `${step.name}...`,
       });
 
       try {
@@ -45,8 +45,8 @@ export class DemoDataOrchestrator {
   private async setupClient(clientCode: string) {
     // Coordinate with client domain
     const clients = get(clientStore.clients);
-    const client = clients.find(c => c.client_code === clientCode);
-    
+    const client = clients.find((c) => c.client_code === clientCode);
+
     if (client) {
       await clientStore.actions.selectClient(client.client_id);
     } else {
@@ -76,13 +76,13 @@ export class DemoDataOrchestrator {
 
   private handleSetupError(step: string, error: unknown) {
     console.error(`Demo setup failed at step: ${step}`, error);
-    
+
     // Orchestrator can make decisions about error handling
     if (step.includes('TFC') && error instanceof Error && error.message.includes('not found')) {
       console.warn('TFC data not available, continuing without it');
       return; // Continue setup
     }
-    
+
     // For other errors, let them bubble up
     throw error;
   }

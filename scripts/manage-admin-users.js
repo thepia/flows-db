@@ -2,7 +2,7 @@
 
 /**
  * CLI tool for managing Thepia admin users
- * 
+ *
  * Usage:
  *   node scripts/manage-admin-users.js assign user@example.com
  *   node scripts/manage-admin-users.js remove user@example.com
@@ -26,16 +26,16 @@ if (!supabaseUrl || !serviceRoleKey) {
 
 // Create Supabase client with service role (bypasses RLS)
 const supabase = createClient(supabaseUrl, serviceRoleKey, {
-  db: { schema: 'api' }
+  db: { schema: 'api' },
 });
 
 async function assignAdminRole(email, notes = 'CLI assignment') {
   try {
     console.log(`🔄 Assigning thepia_staff role to ${email}...`);
-    
+
     const { data, error } = await supabase.rpc('assign_thepia_staff_role', {
       target_user_email: email,
-      assigner_notes: notes
+      assigner_notes: notes,
     });
 
     if (error) {
@@ -59,9 +59,9 @@ async function assignAdminRole(email, notes = 'CLI assignment') {
 async function removeAdminRole(email) {
   try {
     console.log(`🔄 Removing role from ${email}...`);
-    
+
     const { data, error } = await supabase.rpc('remove_user_role', {
-      target_user_email: email
+      target_user_email: email,
     });
 
     if (error) {
@@ -85,7 +85,7 @@ async function removeAdminRole(email) {
 async function listAdminUsers() {
   try {
     console.log('📋 Listing all admin users...\n');
-    
+
     const { data, error } = await supabase.rpc('list_user_roles');
 
     if (error) {
@@ -99,14 +99,16 @@ async function listAdminUsers() {
     }
 
     console.log('Email                    | Role          | Assigned By          | Assigned At');
-    console.log('-------------------------|---------------|----------------------|--------------------');
-    
-    data.forEach(user => {
+    console.log(
+      '-------------------------|---------------|----------------------|--------------------'
+    );
+
+    data.forEach((user) => {
       const email = user.user_email.padEnd(24);
       const role = user.role.padEnd(13);
       const assignedBy = (user.assigned_by_email || 'System').padEnd(20);
       const assignedAt = new Date(user.assigned_at).toLocaleDateString();
-      
+
       console.log(`${email} | ${role} | ${assignedBy} | ${assignedAt}`);
     });
 
@@ -121,9 +123,9 @@ async function listAdminUsers() {
 async function checkUserRole(email) {
   try {
     console.log(`🔍 Checking role for ${email}...`);
-    
+
     const { data, error } = await supabase.rpc('get_user_role', {
-      check_user_email: email
+      check_user_email: email,
     });
 
     if (error) {
@@ -133,13 +135,13 @@ async function checkUserRole(email) {
 
     const role = data || 'authenticated';
     console.log(`📋 User ${email} has role: ${role}`);
-    
+
     if (role === 'thepia_staff') {
       console.log('✅ User has admin access');
     } else {
       console.log('ℹ️  User does not have admin access');
     }
-    
+
     return true;
   } catch (err) {
     console.error('❌ Exception:', err.message);
@@ -150,14 +152,12 @@ async function checkUserRole(email) {
 async function testConnection() {
   try {
     console.log('🔄 Testing Supabase connection...');
-    
-    // Test basic connection
-    const { data, error } = await supabase
-      .from('user_roles')
-      .select('count')
-      .limit(1);
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned, which is OK
+    // Test basic connection
+    const { data, error } = await supabase.from('user_roles').select('count').limit(1);
+
+    if (error && error.code !== 'PGRST116') {
+      // PGRST116 = no rows returned, which is OK
       console.error('❌ Connection failed:', error.message);
       return false;
     }
@@ -173,7 +173,7 @@ async function testConnection() {
 // CLI Interface
 async function main() {
   const args = process.argv.slice(2);
-  
+
   if (args.length === 0) {
     console.log(`
 🔧 Thepia Admin User Management CLI
@@ -251,7 +251,7 @@ Examples:
   process.exit(success ? 0 : 1);
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('❌ Fatal error:', err.message);
   process.exit(1);
 });

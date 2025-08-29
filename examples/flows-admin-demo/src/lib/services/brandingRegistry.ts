@@ -1,10 +1,10 @@
 import type { BrandingConfig } from '$lib/types';
 import { reportDataError } from '$lib/utils/errorReporter';
 
-// Static imports for local branding modules to avoid dynamic import issues
-import * as thepiaDefaultBranding from '../branding/thepia-default/index';
 import * as hyggeHvidlogBranding from '../branding/hygge-hvidlog/index';
 import * as meridianBrandsBranding from '../branding/meridian-brands/index';
+// Static imports for local branding modules to avoid dynamic import issues
+import * as thepiaDefaultBranding from '../branding/thepia-default/index';
 
 // Static branding module map
 const LOCAL_BRANDING_MODULES = {
@@ -96,7 +96,7 @@ export async function loadBrandingTokens(brandingConfig: BrandingConfig): Promis
     }
   } catch (error) {
     console.warn(`Failed to load branding tokens for ${brandingConfig.name}:`, error);
-    
+
     // Report the error to error reporting system
     await reportDataError(
       'branding.loadTokens',
@@ -117,7 +117,7 @@ export async function loadBrandingTokens(brandingConfig: BrandingConfig): Promis
         return fallbackModule.tokens || fallbackModule.default?.tokens || {};
       } catch (fallbackError) {
         console.warn('Failed to load fallback branding tokens:', fallbackError);
-        
+
         // Report fallback error too
         await reportDataError(
           'branding.loadFallbackTokens',

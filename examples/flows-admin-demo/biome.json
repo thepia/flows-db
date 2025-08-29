@@ -39,7 +39,7 @@
   },
   "overrides": [
     {
-      "includes": ["build", ".svelte-kit", "dist", "coverage", "node_modules"],
+      "include": ["build", ".svelte-kit", "dist", "coverage", "node_modules"],
       "linter": {
         "enabled": false
       },
@@ -48,12 +48,7 @@
       }
     }
   ],
-  "assist": {
-    "enabled": true,
-    "actions": {
-      "source": {
-        "organizeImports": "on"
-      }
-    }
+  "organizeImports": {
+    "enabled": true
   }
 }

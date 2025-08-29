@@ -8,15 +8,11 @@
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
-  {
-    db: {
-      schema: 'api'
-    }
-  }
-);
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+  db: {
+    schema: 'api',
+  },
+});
 
 async function populateProcessData() {
   console.log('🔄 Populating process data...\n');
@@ -31,7 +27,7 @@ async function populateProcessData() {
 
     for (const client of clients) {
       console.log(`📊 Processing client: ${client.legal_name} (${client.client_code})`);
-      
+
       // Get people for this client
       const { data: people, error: peopleError } = await supabase
         .from('people')
@@ -46,7 +42,7 @@ async function populateProcessData() {
       console.log(`   📋 Found ${people.length} people`);
 
       // Create default offboarding template if it doesn't exist
-      let { data: templates, error: templateError } = await supabase
+      const { data: templates, error: templateError } = await supabase
         .from('offboarding_templates')
         .select('id')
         .eq('client_id', client.id)
@@ -75,13 +71,16 @@ async function populateProcessData() {
             requires_manager_approval: true,
             requires_hr_approval: true,
             auto_assign_tasks: true,
-            created_by: 'system-demo'
+            created_by: 'system-demo',
           })
           .select('id')
           .single();
 
         if (createTemplateError) {
-          console.warn(`❌ Error creating template for ${client.client_code}:`, createTemplateError);
+          console.warn(
+            `❌ Error creating template for ${client.client_code}:`,
+            createTemplateError
+          );
           continue;
         }
         templateId = newTemplate.id;
@@ -104,7 +103,7 @@ async function populateProcessData() {
             completion_percentage: completionPercentage,
             mentor: 'Demo Mentor',
             buddy_program: Math.random() > 0.5,
-            last_activity: new Date().toISOString()
+            last_activity: new Date().toISOString(),
           });
         }
 
@@ -121,8 +120,10 @@ async function populateProcessData() {
             process_name: `${person.first_name} ${person.last_name} Offboarding`,
             status: statuses[Math.floor(Math.random() * statuses.length)],
             priority: priorities[Math.floor(Math.random() * priorities.length)],
-            target_completion_date: new Date(Date.now() + (Math.floor(Math.random() * 30) + 15) * 24 * 60 * 60 * 1000).toISOString(),
-            created_by: 'demo-system'
+            target_completion_date: new Date(
+              Date.now() + (Math.floor(Math.random() * 30) + 15) * 24 * 60 * 60 * 1000
+            ).toISOString(),
+            created_by: 'demo-system',
           });
         }
       });
@@ -134,7 +135,10 @@ async function populateProcessData() {
           .insert(enrollments);
 
         if (enrollmentInsertError) {
-          console.warn(`❌ Error inserting enrollments for ${client.client_code}:`, enrollmentInsertError);
+          console.warn(
+            `❌ Error inserting enrollments for ${client.client_code}:`,
+            enrollmentInsertError
+          );
         } else {
           console.log(`   ✅ Created ${enrollments.length} enrollment records`);
         }
@@ -143,29 +147,31 @@ async function populateProcessData() {
       // Insert process data (try with smaller batches to avoid constraint issues)
       if (processes.length > 0) {
         console.log(`   📋 Attempting to insert ${processes.length} processes in batches...`);
-        
+
         let successCount = 0;
         const batchSize = 1; // Insert one at a time to isolate issues
-        
+
         for (let i = 0; i < processes.length; i += batchSize) {
           const batch = processes.slice(i, i + batchSize);
-          
+
           try {
             // Try without audit logging by using a simplified insert
             const { error: processInsertError } = await supabase
               .from('offboarding_processes')
-              .insert(batch.map(p => ({
-                client_id: p.client_id,
-                template_id: p.template_id,
-                employee_uid: p.employee_uid,
-                employee_department: p.employee_department,
-                employee_role: p.employee_role,
-                process_name: p.process_name,
-                status: p.status,
-                priority: p.priority,
-                target_completion_date: p.target_completion_date,
-                created_by: p.created_by
-              })));
+              .insert(
+                batch.map((p) => ({
+                  client_id: p.client_id,
+                  template_id: p.template_id,
+                  employee_uid: p.employee_uid,
+                  employee_department: p.employee_department,
+                  employee_role: p.employee_role,
+                  process_name: p.process_name,
+                  status: p.status,
+                  priority: p.priority,
+                  target_completion_date: p.target_completion_date,
+                  created_by: p.created_by,
+                }))
+              );
 
             if (processInsertError) {
               console.warn(`   ❌ Batch ${i + 1}: ${processInsertError.message}`);
@@ -180,7 +186,7 @@ async function populateProcessData() {
             console.warn(`   ❌ Batch ${i + 1} failed:`, e.message);
           }
         }
-        
+
         if (successCount > 0) {
           console.log(`   ✅ Created ${successCount} offboarding processes`);
         } else {
@@ -188,11 +194,12 @@ async function populateProcessData() {
         }
       }
 
-      console.log(`   📊 Summary: ${enrollments.length} onboarding, ${processes.length} offboarding\n`);
+      console.log(
+        `   📊 Summary: ${enrollments.length} onboarding, ${processes.length} offboarding\n`
+      );
     }
 
     console.log('✅ Process data population completed!');
-
   } catch (error) {
     console.error('💥 Error populating process data:', error);
     process.exit(1);

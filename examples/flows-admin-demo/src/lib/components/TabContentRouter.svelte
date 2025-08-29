@@ -1,12 +1,12 @@
 <script lang="ts">
-import { createEventDispatcher } from 'svelte';
-import { AlertCircle } from 'lucide-svelte';
 import LoadingAnimation from '$lib/components/shared/LoadingAnimation.svelte';
-import PeopleTab from './tabs/PeopleTab.svelte';
-import ProcessesTab from './tabs/ProcessesTab.svelte';
+import type { Application } from '$lib/types';
+import { AlertCircle } from 'lucide-svelte';
+import { createEventDispatcher } from 'svelte';
 import AccountTab from './tabs/AccountTab.svelte';
 import ApplicationTab from './tabs/ApplicationTab.svelte';
-import type { Application } from '$lib/types';
+import PeopleTab from './tabs/PeopleTab.svelte';
+import ProcessesTab from './tabs/ProcessesTab.svelte';
 
 export let activeTab: string;
 export let selectedApp: Application | null = null;

@@ -1,6 +1,6 @@
 // Notification Types and Interfaces for flows-admin-demo
 
-export type NotificationType = 
+export type NotificationType =
   | 'onboarding_reminder'
   | 'document_review'
   | 'task_assignment'
@@ -53,22 +53,22 @@ export interface Notification {
   priority: NotificationPriority;
   status: NotificationStatus;
   channels: NotificationChannel[];
-  
+
   // Stakeholder information
   from: NotificationStakeholder;
   to: NotificationStakeholder[];
-  
+
   // Timestamps
   createdAt: string;
   scheduledFor?: string;
   readAt?: string;
   archivedAt?: string;
   expiresAt?: string;
-  
+
   // Actions and metadata
   actions?: NotificationAction[];
   metadata?: NotificationMetadata;
-  
+
   // Client context
   clientId: string;
   applicationId: string;
@@ -77,10 +77,10 @@ export interface Notification {
 export interface NotificationPreferences {
   userId: string;
   clientId: string;
-  
+
   // Channel preferences by notification type
   channelPreferences: Record<NotificationType, NotificationChannel[]>;
-  
+
   // General settings
   enableBatching: boolean;
   batchingInterval: number; // minutes
@@ -88,7 +88,7 @@ export interface NotificationPreferences {
   quietHoursStart?: string; // HH:MM format
   quietHoursEnd?: string; // HH:MM format
   timezone: string;
-  
+
   // Frequency limits
   maxDailyNotifications: number;
   enableUrgentOverride: boolean;
@@ -124,18 +124,18 @@ export interface NotificationService {
   markAsUnread(id: string): Promise<void>;
   archiveNotification(id: string): Promise<void>;
   dismissNotification(id: string): Promise<void>;
-  
+
   // Bulk operations
   markAllAsRead(filter?: NotificationFilter): Promise<void>;
   archiveAll(filter?: NotificationFilter): Promise<void>;
-  
+
   // Statistics and analytics
   getStats(filter?: NotificationFilter): Promise<NotificationStats>;
-  
+
   // Real-time subscriptions
   subscribe(callback: (notification: Notification) => void): () => void;
   subscribeToStats(callback: (stats: NotificationStats) => void): () => void;
-  
+
   // Demo and testing
   generateDemoNotifications(count?: number): Promise<Notification[]>;
   clearAllNotifications(): Promise<void>;
@@ -158,7 +158,7 @@ export interface NotificationScenario {
 }
 
 // Event types for real-time updates
-export type NotificationEvent = 
+export type NotificationEvent =
   | { type: 'notification_created'; notification: Notification }
   | { type: 'notification_updated'; notification: Notification }
   | { type: 'notification_deleted'; notificationId: string }

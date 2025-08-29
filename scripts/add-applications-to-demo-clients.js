@@ -2,19 +2,19 @@
 
 /**
  * Add Applications to All Demo Clients
- * 
+ *
  * This script ensures all demo clients have at least one application defined.
  * Run this after setting up the initial demo clients to ensure every client
  * can display application tabs.
- * 
+ *
  * Usage: node scripts/add-applications-to-demo-clients.js
  */
 
+import { readFileSync } from 'fs';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 import { createClient } from '@supabase/supabase-js';
 import { config } from 'dotenv';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import { readFileSync } from 'fs';
 
 // Load environment variables
 const __filename = fileURLToPath(import.meta.url);
@@ -32,7 +32,7 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
 
 // Initialize Supabase client with service role key
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
-  db: { schema: 'api' }
+  db: { schema: 'api' },
 });
 
 async function addApplicationsToDemoClients() {
@@ -55,11 +55,16 @@ async function addApplicationsToDemoClients() {
               locale: 'en-US',
               features: {
                 code_assessment: true,
-                github_integration: true
-              }
+                github_integration: true,
+              },
             },
-            features: ['technical-assessments', 'github-integration', 'equipment-tracking', 'security-clearance'],
-            max_concurrent_users: 100
+            features: [
+              'technical-assessments',
+              'github-integration',
+              'equipment-tracking',
+              'security-clearance',
+            ],
+            max_concurrent_users: 100,
           },
           {
             app_code: 'tech-offboarding',
@@ -70,12 +75,12 @@ async function addApplicationsToDemoClients() {
             configuration: {
               theme: 'tech',
               locale: 'en-US',
-              security_focused: true
+              security_focused: true,
             },
             features: ['access-revocation', 'code-review', 'knowledge-transfer', 'security-audit'],
-            max_concurrent_users: 100
-          }
-        ]
+            max_concurrent_users: 100,
+          },
+        ],
       },
       {
         clientCode: 'test-solutions',
@@ -91,11 +96,16 @@ async function addApplicationsToDemoClients() {
               locale: 'en-GB',
               compliance: {
                 gdpr: true,
-                sox: true
-              }
+                sox: true,
+              },
             },
-            features: ['compliance-tracking', 'multi-department', 'role-based-access', 'audit-trail'],
-            max_concurrent_users: 1000
+            features: [
+              'compliance-tracking',
+              'multi-department',
+              'role-based-access',
+              'audit-trail',
+            ],
+            max_concurrent_users: 1000,
           },
           {
             app_code: 'enterprise-offboarding',
@@ -106,12 +116,17 @@ async function addApplicationsToDemoClients() {
             configuration: {
               theme: 'corporate',
               locale: 'en-GB',
-              legal_compliance: true
+              legal_compliance: true,
             },
-            features: ['legal-compliance', 'data-retention', 'audit-reports', 'automated-workflows'],
-            max_concurrent_users: 1000
-          }
-        ]
+            features: [
+              'legal-compliance',
+              'data-retention',
+              'audit-reports',
+              'automated-workflows',
+            ],
+            max_concurrent_users: 1000,
+          },
+        ],
       },
       {
         clientCode: 'sample-industries',
@@ -124,12 +139,12 @@ async function addApplicationsToDemoClients() {
             status: 'active',
             configuration: {
               theme: 'default',
-              locale: 'en-US'
+              locale: 'en-US',
             },
             features: ['document-upload', 'basic-tasks', 'email-notifications'],
-            max_concurrent_users: 25
-          }
-        ]
+            max_concurrent_users: 25,
+          },
+        ],
       },
       {
         clientCode: 'demo-healthcare',
@@ -138,18 +153,24 @@ async function addApplicationsToDemoClients() {
             app_code: 'healthcare-onboarding',
             app_name: 'Healthcare Staff Onboarding',
             app_version: '3.1.0',
-            app_description: 'Specialized onboarding for healthcare professionals with credential verification',
+            app_description:
+              'Specialized onboarding for healthcare professionals with credential verification',
             status: 'active',
             configuration: {
               theme: 'healthcare',
               locale: 'en-US',
               features: {
                 credential_verification: true,
-                hipaa_compliance: true
-              }
+                hipaa_compliance: true,
+              },
             },
-            features: ['credential-verification', 'hipaa-training', 'department-rotation', 'mentor-assignment'],
-            max_concurrent_users: 500
+            features: [
+              'credential-verification',
+              'hipaa-training',
+              'department-rotation',
+              'mentor-assignment',
+            ],
+            max_concurrent_users: 500,
           },
           {
             app_code: 'healthcare-offboarding',
@@ -160,12 +181,17 @@ async function addApplicationsToDemoClients() {
             configuration: {
               theme: 'healthcare',
               locale: 'en-US',
-              hipaa_compliant: true
+              hipaa_compliant: true,
             },
-            features: ['patient-handover', 'credential-removal', 'compliance-checklist', 'exit-documentation'],
-            max_concurrent_users: 500
-          }
-        ]
+            features: [
+              'patient-handover',
+              'credential-removal',
+              'compliance-checklist',
+              'exit-documentation',
+            ],
+            max_concurrent_users: 500,
+          },
+        ],
       },
       {
         clientCode: 'test-mfg',
@@ -179,10 +205,15 @@ async function addApplicationsToDemoClients() {
             configuration: {
               theme: 'industrial',
               locale: 'en-US',
-              safety_focused: true
+              safety_focused: true,
             },
-            features: ['safety-training', 'equipment-certification', 'shift-assignment', 'ppe-tracking'],
-            max_concurrent_users: 200
+            features: [
+              'safety-training',
+              'equipment-certification',
+              'shift-assignment',
+              'ppe-tracking',
+            ],
+            max_concurrent_users: 200,
           },
           {
             app_code: 'factory-offboarding',
@@ -193,12 +224,17 @@ async function addApplicationsToDemoClients() {
             configuration: {
               theme: 'industrial',
               locale: 'en-US',
-              equipment_tracking: true
+              equipment_tracking: true,
             },
-            features: ['equipment-return', 'safety-clearance', 'tool-inventory', 'final-inspection'],
-            max_concurrent_users: 200
-          }
-        ]
+            features: [
+              'equipment-return',
+              'safety-clearance',
+              'tool-inventory',
+              'final-inspection',
+            ],
+            max_concurrent_users: 200,
+          },
+        ],
       },
       {
         clientCode: 'nets-demo',
@@ -211,10 +247,10 @@ async function addApplicationsToDemoClients() {
             status: 'active',
             configuration: {
               theme: 'default',
-              locale: 'en-US'
+              locale: 'en-US',
             },
             features: ['document-management', 'task-tracking', 'email-notifications', 'reporting'],
-            max_concurrent_users: 100
+            max_concurrent_users: 100,
           },
           {
             app_code: 'standard-offboarding',
@@ -224,13 +260,18 @@ async function addApplicationsToDemoClients() {
             status: 'active',
             configuration: {
               theme: 'default',
-              locale: 'en-US'
+              locale: 'en-US',
             },
-            features: ['checklist-management', 'asset-return', 'knowledge-transfer', 'exit-interview'],
-            max_concurrent_users: 100
-          }
-        ]
-      }
+            features: [
+              'checklist-management',
+              'asset-return',
+              'knowledge-transfer',
+              'exit-interview',
+            ],
+            max_concurrent_users: 100,
+          },
+        ],
+      },
     ];
 
     // Process each client
@@ -262,7 +303,7 @@ async function addApplicationsToDemoClients() {
 
         if (existingApp) {
           console.log(`   ↩️  ${app.app_name} already exists, updating...`);
-          
+
           const { error: updateError } = await supabase
             .from('client_applications')
             .update({
@@ -273,7 +314,7 @@ async function addApplicationsToDemoClients() {
               configuration: app.configuration,
               features: app.features,
               max_concurrent_users: app.max_concurrent_users,
-              updated_at: new Date().toISOString()
+              updated_at: new Date().toISOString(),
             })
             .eq('id', existingApp.id);
 
@@ -283,13 +324,11 @@ async function addApplicationsToDemoClients() {
             console.log(`   ✅ Updated ${app.app_name}`);
           }
         } else {
-          const { error: insertError } = await supabase
-            .from('client_applications')
-            .insert({
-              client_id: client.id,
-              ...app,
-              created_at: new Date().toISOString()
-            });
+          const { error: insertError } = await supabase.from('client_applications').insert({
+            client_id: client.id,
+            ...app,
+            created_at: new Date().toISOString(),
+          });
 
           if (insertError) {
             console.error(`   ❌ Error creating ${app.app_name}:`, insertError.message);
@@ -310,16 +349,14 @@ async function addApplicationsToDemoClients() {
 
     if (netsError || !netsClient) {
       console.log('Creating Nets Demo client...');
-      const { error: createError } = await supabase
-        .from('clients')
-        .insert({
-          legal_name: 'Nets Demo Company',
-          client_code: 'nets-demo',
-          domain: 'nets-demo.com',
-          tier: 'enterprise',
-          status: 'active',
-          region: 'EU'
-        });
+      const { error: createError } = await supabase.from('clients').insert({
+        legal_name: 'Nets Demo Company',
+        client_code: 'nets-demo',
+        domain: 'nets-demo.com',
+        tier: 'enterprise',
+        status: 'active',
+        region: 'EU',
+      });
 
       if (createError) {
         console.error('❌ Error creating Nets Demo client:', createError.message);
@@ -337,9 +374,14 @@ async function addApplicationsToDemoClients() {
       .from('clients')
       .select('client_code, legal_name')
       .in('client_code', [
-        'demo-tech', 'test-solutions', 'sample-industries', 
-        'demo-healthcare', 'test-mfg', 'nets-demo',
-        'hygge-hvidlog', 'meridian-brands'
+        'demo-tech',
+        'test-solutions',
+        'sample-industries',
+        'demo-healthcare',
+        'test-mfg',
+        'nets-demo',
+        'hygge-hvidlog',
+        'meridian-brands',
       ])
       .order('client_code');
 
@@ -356,10 +398,11 @@ async function addApplicationsToDemoClients() {
 
     console.log('\n✅ All demo clients now have applications!');
     console.log('\n💡 To use this in the app:');
-    console.log('1. The SQL script has been created at: schemas/10_add_applications_to_all_demo_clients.sql');
+    console.log(
+      '1. The SQL script has been created at: schemas/10_add_applications_to_all_demo_clients.sql'
+    );
     console.log('2. Run it in your Supabase SQL editor');
     console.log('3. Or use this script which does the same thing programmatically');
-
   } catch (error) {
     console.error('❌ Error:', error);
     process.exit(1);

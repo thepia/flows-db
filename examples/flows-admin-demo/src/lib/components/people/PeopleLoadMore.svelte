@@ -1,7 +1,7 @@
 <script lang="ts">
-import { createEventDispatcher } from 'svelte';
 import { Button } from '$lib/components/ui/button';
-import { Users, Loader2 } from 'lucide-svelte';
+import { Loader2, Users } from 'lucide-svelte';
+import { createEventDispatcher } from 'svelte';
 
 export let currentCount: number;
 export let totalCount: number;

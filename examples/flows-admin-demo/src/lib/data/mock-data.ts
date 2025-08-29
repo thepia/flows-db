@@ -4,9 +4,9 @@ import type {
   DocumentStatus,
   Employee,
   EmployeeEnrollment,
+  Invitation,
   Person,
   PersonEnrollment,
-  Invitation,
   TaskStatus,
 } from '$lib/types';
 
@@ -125,11 +125,16 @@ export const mockPeople: Person[] = [
 ];
 
 // Backward compatibility: Export employees with old format
-export const mockEmployees: Employee[] = mockPeople.map(person => ({
+export const mockEmployees: Employee[] = mockPeople.map((person) => ({
   ...person,
-  status: person.employmentStatus === 'active' ? 'active' :
-          person.employmentStatus === 'former' ? 'previous' :
-          person.employmentStatus === 'future' ? 'future' : 'other'
+  status:
+    person.employmentStatus === 'active'
+      ? 'active'
+      : person.employmentStatus === 'former'
+        ? 'previous'
+        : person.employmentStatus === 'future'
+          ? 'future'
+          : 'other',
 }));
 
 // Mock enrollment data
@@ -306,9 +311,9 @@ export const mockInvitations: Invitation[] = [
 ];
 
 // Backward compatibility: Export enrollments with old format
-export const mockEnrollments: EmployeeEnrollment[] = mockPersonEnrollments.map(enrollment => ({
+export const mockEnrollments: EmployeeEnrollment[] = mockPersonEnrollments.map((enrollment) => ({
   ...enrollment,
-  employeeId: enrollment.personId
+  employeeId: enrollment.personId,
 }));
 
 // Helper functions to get related data

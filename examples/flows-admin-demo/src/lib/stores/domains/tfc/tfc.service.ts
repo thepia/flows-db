@@ -1,11 +1,11 @@
-import { supabase } from '$lib/supabase';
 import { reportSupabaseError } from '$lib/config/errorReporting';
-import type { 
-  TFCBalance, 
-  TFCTransaction, 
-  TFCUsageAnalytics, 
+import { supabase } from '$lib/supabase';
+import type {
+  TFCBalance,
   TFCPricingTier,
-  TimeSavingsCalculation 
+  TFCTransaction,
+  TFCUsageAnalytics,
+  TimeSavingsCalculation,
 } from './tfc.types';
 
 export class TFCService {
@@ -16,27 +16,27 @@ export class TFCService {
       minAmount: 1,
       maxAmount: 499,
       discountPercentage: 0,
-      pricePerCredit: 150.00
+      pricePerCredit: 150.0,
     },
     {
       tier: 'bulk_tier_1',
       minAmount: 500,
       maxAmount: 2499,
       discountPercentage: 25,
-      pricePerCredit: 112.50
+      pricePerCredit: 112.5,
     },
     {
       tier: 'bulk_tier_2',
       minAmount: 2500,
       discountPercentage: 30,
-      pricePerCredit: 105.00
-    }
+      pricePerCredit: 105.0,
+    },
   ];
 
   // Time savings constants
   private readonly timeSavingsPerProcess = {
     onboarding: 10, // hours saved per onboarding
-    offboarding: 8   // hours saved per offboarding
+    offboarding: 8, // hours saved per offboarding
   };
 
   /**
@@ -50,10 +50,11 @@ export class TFCService {
         .eq('client_id', clientId)
         .single();
 
-      if (error && error.code !== 'PGRST116') { // Not found is ok
+      if (error && error.code !== 'PGRST116') {
+        // Not found is ok
         await reportSupabaseError('tfc_client_balances', 'select', error, {
           operation: 'loadBalance',
-          clientId
+          clientId,
         });
         throw new Error(`Failed to load TFC balance: ${error.message}`);
       }
@@ -62,7 +63,7 @@ export class TFCService {
     } catch (error) {
       await reportSupabaseError('tfc_client_balances', 'select', error, {
         operation: 'loadBalance',
-        clientId
+        clientId,
       });
       throw error;
     }
@@ -83,7 +84,7 @@ export class TFCService {
       if (error) {
         await reportSupabaseError('tfc_credit_transactions', 'select', error, {
           operation: 'loadTransactions',
-          clientId
+          clientId,
         });
         throw new Error(`Failed to load transactions: ${error.message}`);
       }
@@ -92,7 +93,7 @@ export class TFCService {
     } catch (error) {
       await reportSupabaseError('tfc_credit_transactions', 'select', error, {
         operation: 'loadTransactions',
-        clientId
+        clientId,
       });
       throw error;
     }
@@ -116,7 +117,7 @@ export class TFCService {
       if (error) {
         await reportSupabaseError('tfc_workflow_usage', 'select', error, {
           operation: 'loadUsageAnalytics',
-          clientId
+          clientId,
         });
         throw new Error(`Failed to load usage analytics: ${error.message}`);
       }
@@ -127,7 +128,7 @@ export class TFCService {
     } catch (error) {
       await reportSupabaseError('tfc_workflow_usage', 'select', error, {
         operation: 'loadUsageAnalytics',
-        clientId
+        clientId,
       });
       throw error;
     }
@@ -137,13 +138,14 @@ export class TFCService {
    * Calculate pricing for a given credit amount
    */
   calculatePricing(creditAmount: number): TFCPricingTier & { totalAmount: number } {
-    const tier = this.pricingTiers.find(t => 
-      creditAmount >= t.minAmount && (!t.maxAmount || creditAmount <= t.maxAmount)
-    ) || this.pricingTiers[0];
+    const tier =
+      this.pricingTiers.find(
+        (t) => creditAmount >= t.minAmount && (!t.maxAmount || creditAmount <= t.maxAmount)
+      ) || this.pricingTiers[0];
 
     return {
       ...tier,
-      totalAmount: creditAmount * tier.pricePerCredit
+      totalAmount: creditAmount * tier.pricePerCredit,
     };
   }
 
@@ -155,15 +157,15 @@ export class TFCService {
     const hoursByDepartment: Record<string, number> = {};
     const hoursByWorkflowType: Record<string, number> = {};
 
-    usageAnalytics.forEach(usage => {
+    usageAnalytics.forEach((usage) => {
       const hours = usage.count * this.timeSavingsPerProcess[usage.workflow_type];
-      
+
       totalHoursSaved += hours;
-      
-      hoursByDepartment[usage.department_category] = 
+
+      hoursByDepartment[usage.department_category] =
         (hoursByDepartment[usage.department_category] || 0) + hours;
-      
-      hoursByWorkflowType[usage.workflow_type] = 
+
+      hoursByWorkflowType[usage.workflow_type] =
         (hoursByWorkflowType[usage.workflow_type] || 0) + hours;
     });
 
@@ -171,7 +173,7 @@ export class TFCService {
       totalHoursSaved,
       workingDaysSaved: Math.round(totalHoursSaved / 8), // Assuming 8-hour work days
       hoursByDepartment,
-      hoursByWorkflowType
+      hoursByWorkflowType,
     };
   }
 
@@ -198,16 +200,16 @@ export class TFCService {
   private aggregateUsageData(rawData: any[]): TFCUsageAnalytics[] {
     const aggregated: Record<string, TFCUsageAnalytics> = {};
 
-    rawData.forEach(usage => {
+    rawData.forEach((usage) => {
       const key = `${usage.workflow_type}-${usage.department_category}`;
-      
+
       if (!aggregated[key]) {
         aggregated[key] = {
           workflow_type: usage.workflow_type,
           department_category: usage.department_category,
           count: 0,
           credits_consumed: 0,
-          hours_saved: 0
+          hours_saved: 0,
         };
       }
 

@@ -16,18 +16,8 @@
       "securityClearance": "high",
       "employmentType": "full_time",
       "workLocation": "hybrid",
-      "skills": [
-        "JavaScript",
-        "TypeScript",
-        "React",
-        "Node.js",
-        "Payment APIs"
-      ],
-      "languages": [
-        "Danish",
-        "English",
-        "Swedish"
-      ],
+      "skills": ["JavaScript", "TypeScript", "React", "Node.js", "Payment APIs"],
+      "languages": ["Danish", "English", "Swedish"],
       "onboarding": {
         "completed": true,
         "completionDate": "2024-01-20",
@@ -102,11 +92,7 @@
         "Financial Services",
         "User Research"
       ],
-      "languages": [
-        "Danish",
-        "English",
-        "Norwegian"
-      ],
+      "languages": ["Danish", "English", "Norwegian"],
       "onboarding": {
         "completed": true,
         "completionDate": "2024-02-07",
@@ -167,18 +153,8 @@
       "securityClearance": "medium",
       "employmentType": "full_time",
       "workLocation": "remote",
-      "skills": [
-        "UX Design",
-        "Figma",
-        "User Research",
-        "Prototyping",
-        "Accessibility"
-      ],
-      "languages": [
-        "Swedish",
-        "English",
-        "Danish"
-      ],
+      "skills": ["UX Design", "Figma", "User Research", "Prototyping", "Accessibility"],
+      "languages": ["Swedish", "English", "Danish"],
       "onboarding": {
         "completed": false,
         "completionDate": null,
@@ -236,17 +212,8 @@
       "securityClearance": "high",
       "employmentType": "full_time",
       "workLocation": "hybrid",
-      "skills": [
-        "Kubernetes",
-        "Docker",
-        "AWS",
-        "CI/CD",
-        "Infrastructure as Code"
-      ],
-      "languages": [
-        "Swedish",
-        "English"
-      ],
+      "skills": ["Kubernetes", "Docker", "AWS", "CI/CD", "Infrastructure as Code"],
+      "languages": ["Swedish", "English"],
       "onboarding": {
         "completed": true,
         "completionDate": "2023-12-08",
@@ -326,18 +293,8 @@
       "securityClearance": "medium",
       "employmentType": "full_time",
       "workLocation": "hybrid",
-      "skills": [
-        "React",
-        "Vue.js",
-        "TypeScript",
-        "CSS",
-        "Testing"
-      ],
-      "languages": [
-        "Danish",
-        "English",
-        "German"
-      ],
+      "skills": ["React", "Vue.js", "TypeScript", "CSS", "Testing"],
+      "languages": ["Danish", "English", "German"],
       "onboarding": {
         "completed": false,
         "completionDate": null,
@@ -372,11 +329,7 @@
         "Social Media",
         "Brand Management"
       ],
-      "languages": [
-        "Danish",
-        "English",
-        "French"
-      ],
+      "languages": ["Danish", "English", "French"],
       "onboarding": {
         "completed": true,
         "completionDate": "2023-11-22",
@@ -460,9 +413,7 @@
       "position_elimination",
       "new_hire_invitation"
     ],
-    "last_refresh_actions": [
-      "refresh_invitation"
-    ],
+    "last_refresh_actions": ["refresh_invitation"],
     "invited": 1
   }
 }

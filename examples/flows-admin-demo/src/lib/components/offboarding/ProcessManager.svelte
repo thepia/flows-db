@@ -1,20 +1,20 @@
 <script lang="ts">
+import { Badge } from '$lib/components/ui/badge';
 import { Button } from '$lib/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
-import { Badge } from '$lib/components/ui/badge';
 import { Progress } from '$lib/components/ui/progress';
-import { 
-  CheckCircle, 
-  Clock, 
-  AlertTriangle, 
-  User, 
+import {
+  AlertTriangle,
   Calendar,
-  MoreHorizontal,
-  Play,
-  Pause,
+  CheckCircle,
   CheckSquare,
+  Clock,
   FileText,
-  Users
+  MoreHorizontal,
+  Pause,
+  Play,
+  User,
+  Users,
 } from 'lucide-svelte';
 
 // Props
@@ -50,11 +50,16 @@ function getStatusInfo(status) {
 // Get priority color
 function getPriorityColor(priority) {
   switch (priority) {
-    case 'urgent': return 'bg-red-100 text-red-800';
-    case 'high': return 'bg-orange-100 text-orange-800';
-    case 'medium': return 'bg-yellow-100 text-yellow-800';
-    case 'low': return 'bg-green-100 text-green-800';
-    default: return 'bg-gray-100 text-gray-800';
+    case 'urgent':
+      return 'bg-red-100 text-red-800';
+    case 'high':
+      return 'bg-orange-100 text-orange-800';
+    case 'medium':
+      return 'bg-yellow-100 text-yellow-800';
+    case 'low':
+      return 'bg-green-100 text-green-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
   }
 }
 

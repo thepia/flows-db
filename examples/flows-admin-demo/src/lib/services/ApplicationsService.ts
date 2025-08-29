@@ -1,5 +1,5 @@
-import { supabase } from '$lib/supabase';
 import { reportSupabaseError } from '$lib/config/errorReporting';
+import { supabase } from '$lib/supabase';
 import type { Application } from '$lib/types';
 
 export class ApplicationsService {
@@ -30,7 +30,7 @@ export class ApplicationsService {
       console.error('Error loading applications:', error);
       await reportSupabaseError('client_applications', 'select', error, {
         client_id: clientId,
-        operation: 'loadApplications'
+        operation: 'loadApplications',
       });
       throw error;
     }
@@ -94,7 +94,7 @@ export class ApplicationsService {
         maxConcurrentUsers: 50,
         lastAccessed: new Date().toISOString(),
         createdAt: new Date().toISOString(),
-      }
+      },
     ];
   }
 
@@ -102,10 +102,10 @@ export class ApplicationsService {
    * Get application by type
    */
   static async getApplicationByType(
-    clientId: string, 
+    clientId: string,
     type: 'onboarding' | 'offboarding'
   ): Promise<Application | null> {
     const applications = await this.loadApplications(clientId);
-    return applications.find(app => app.type === type) || null;
+    return applications.find((app) => app.type === type) || null;
   }
 }

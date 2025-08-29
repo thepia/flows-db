@@ -1,5 +1,5 @@
 <script lang="ts">
-import { AlertCircle, UserPlus, Users, UserX } from 'lucide-svelte';
+import { AlertCircle, UserPlus, UserX, Users } from 'lucide-svelte';
 import MetricCard from './MetricCard.svelte';
 
 // Props

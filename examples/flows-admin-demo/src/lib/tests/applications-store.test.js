@@ -3,9 +3,9 @@
  * Test to understand and verify applications store behavior
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { get } from 'svelte/store';
 import { applications } from '$lib/stores/data';
+import { get } from 'svelte/store';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 describe('Applications Store', () => {
   beforeEach(() => {
@@ -35,13 +35,13 @@ describe('Applications Store', () => {
         permissions: {},
         maxConcurrentUsers: 10,
         lastAccessed: new Date().toISOString(),
-        createdAt: new Date().toISOString()
-      }
+        createdAt: new Date().toISOString(),
+      },
     ];
 
     applications.set(testApps);
     const value = get(applications);
-    
+
     expect(value).toHaveLength(1);
     expect(value[0].code).toBe('test');
     expect(value[0].name).toBe('Test App');
@@ -69,7 +69,7 @@ describe('Applications Store', () => {
     let reactiveCallCount = 0;
 
     // Simulate reactive statement
-    const unsubscribe = applications.subscribe(value => {
+    const unsubscribe = applications.subscribe((value) => {
       reactiveValue = value;
       reactiveCallCount++;
     });
@@ -110,7 +110,7 @@ describe('Applications Store Reactive Behavior', () => {
     console.log('🔍 Type:', typeof currentValue);
     console.log('🔍 Is Array:', Array.isArray(currentValue));
     console.log('🔍 Length:', currentValue?.length);
-    
+
     // Let's see what's actually in the store
     expect(Array.isArray(currentValue)).toBe(true);
   });
@@ -118,13 +118,13 @@ describe('Applications Store Reactive Behavior', () => {
   it('should work with Svelte reactive statements', () => {
     // Reset store first
     applications.set([]);
-    
+
     let reactiveApps = null;
     let reactiveLength = 0;
     let reactiveCallCount = 0;
 
     // Simulate a Svelte reactive statement: $: { ... }
-    const unsubscribe = applications.subscribe(apps => {
+    const unsubscribe = applications.subscribe((apps) => {
       console.log('🔄 Store subscription triggered with:', apps);
       reactiveApps = apps;
       reactiveLength = apps?.length || 0;
@@ -140,9 +140,9 @@ describe('Applications Store Reactive Behavior', () => {
     // Add applications
     const testApps = [
       { id: 'app1', code: 'onboarding', name: 'Onboarding' },
-      { id: 'app2', code: 'offboarding', name: 'Offboarding' }
+      { id: 'app2', code: 'offboarding', name: 'Offboarding' },
     ];
-    
+
     applications.set(testApps);
 
     expect(reactiveApps).toEqual(testApps);

@@ -1,7 +1,7 @@
 <script lang="ts">
-import { Card, CardContent } from '$lib/components/ui/card';
 import { Button } from '$lib/components/ui/button';
-import { Users, UserPlus } from 'lucide-svelte';
+import { Card, CardContent } from '$lib/components/ui/card';
+import { UserPlus, Users } from 'lucide-svelte';
 
 export let hasActiveFilters: boolean;
 </script>

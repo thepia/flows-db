@@ -2,17 +2,17 @@
 
 /**
  * Add Associate People to Hygge & Hvidløg Demo Data
- * 
+ *
  * Creates realistic associates for the Danish sustainable food tech company:
  * - Board members
- * - Consultants  
+ * - Consultants
  * - Advisors
  * - External contractors
  * - Business partners
  */
 
-import dotenv from 'dotenv';
 import chalk from 'chalk';
+import dotenv from 'dotenv';
 
 // Load environment variables
 dotenv.config();
@@ -27,9 +27,9 @@ if (!supabaseUrl || !supabaseServiceKey) {
 }
 
 const headers = {
-  'apikey': supabaseServiceKey,
-  'Authorization': `Bearer ${supabaseServiceKey}`,
-  'Content-Type': 'application/json'
+  apikey: supabaseServiceKey,
+  Authorization: `Bearer ${supabaseServiceKey}`,
+  'Content-Type': 'application/json',
 };
 
 async function addHyggeAssociates() {
@@ -37,13 +37,18 @@ async function addHyggeAssociates() {
     console.log(chalk.blue('🤝 Adding associate people to Hygge & Hvidløg...'));
 
     // First, get the Hygge & Hvidløg client ID
-    const clientResponse = await fetch(`${supabaseUrl}/rest/v1/clients?select=id,legal_name&client_code=eq.hygge-hvidlog`, {
-      headers
-    });
+    const clientResponse = await fetch(
+      `${supabaseUrl}/rest/v1/clients?select=id,legal_name&client_code=eq.hygge-hvidlog`,
+      {
+        headers,
+      }
+    );
 
     if (!clientResponse.ok) {
       const errorText = await clientResponse.text();
-      console.error(chalk.red(`❌ Error fetching client: HTTP ${clientResponse.status} - ${errorText}`));
+      console.error(
+        chalk.red(`❌ Error fetching client: HTTP ${clientResponse.status} - ${errorText}`)
+      );
       return;
     }
 
@@ -73,8 +78,13 @@ async function addHyggeAssociates() {
         start_date: '2022-01-01',
         employment_type: null,
         work_location: 'remote',
-        skills: ['Corporate Governance', 'Sustainable Business', 'Food Industry', 'Strategic Planning'],
-        languages: ['Danish', 'English', 'German']
+        skills: [
+          'Corporate Governance',
+          'Sustainable Business',
+          'Food Industry',
+          'Strategic Planning',
+        ],
+        languages: ['Danish', 'English', 'German'],
       },
       {
         client_id: client.id,
@@ -91,9 +101,9 @@ async function addHyggeAssociates() {
         employment_type: null,
         work_location: 'remote',
         skills: ['Finance', 'Investment', 'Venture Capital', 'Food Tech'],
-        languages: ['Danish', 'English']
+        languages: ['Danish', 'English'],
       },
-      
+
       // Strategic Advisors
       {
         client_id: client.id,
@@ -109,8 +119,13 @@ async function addHyggeAssociates() {
         start_date: '2023-03-01',
         employment_type: null,
         work_location: 'remote',
-        skills: ['Sustainability', 'Environmental Science', 'Plant-based Nutrition', 'EU Regulations'],
-        languages: ['Swedish', 'Danish', 'English', 'Norwegian']
+        skills: [
+          'Sustainability',
+          'Environmental Science',
+          'Plant-based Nutrition',
+          'EU Regulations',
+        ],
+        languages: ['Swedish', 'Danish', 'English', 'Norwegian'],
       },
       {
         client_id: client.id,
@@ -127,7 +142,7 @@ async function addHyggeAssociates() {
         employment_type: null,
         work_location: 'hybrid',
         skills: ['Food Technology', 'Biotechnology', 'Innovation Management', 'R&D Strategy'],
-        languages: ['Norwegian', 'English', 'Danish']
+        languages: ['Norwegian', 'English', 'Danish'],
       },
 
       // Consultants
@@ -146,7 +161,7 @@ async function addHyggeAssociates() {
         employment_type: null,
         work_location: 'hybrid',
         skills: ['Brand Strategy', 'Digital Marketing', 'Sustainable Branding', 'Nordic Markets'],
-        languages: ['Danish', 'English', 'Swedish']
+        languages: ['Danish', 'English', 'Swedish'],
       },
       {
         client_id: client.id,
@@ -163,7 +178,7 @@ async function addHyggeAssociates() {
         employment_type: null,
         work_location: 'remote',
         skills: ['Supply Chain', 'Logistics', 'Procurement', 'Sustainable Sourcing'],
-        languages: ['Danish', 'English', 'Dutch']
+        languages: ['Danish', 'English', 'Dutch'],
       },
 
       // External Contractors
@@ -182,7 +197,7 @@ async function addHyggeAssociates() {
         employment_type: null,
         work_location: 'remote',
         skills: ['DevOps', 'Cloud Infrastructure', 'Kubernetes', 'CI/CD', 'Security'],
-        languages: ['Swedish', 'English', 'Finnish']
+        languages: ['Swedish', 'English', 'Finnish'],
       },
       {
         client_id: client.id,
@@ -199,7 +214,7 @@ async function addHyggeAssociates() {
         employment_type: null,
         work_location: 'office',
         skills: ['Food Safety', 'Quality Control', 'HACCP', 'EU Food Regulations'],
-        languages: ['Danish', 'English', 'German']
+        languages: ['Danish', 'English', 'German'],
       },
 
       // Business Partners
@@ -218,7 +233,7 @@ async function addHyggeAssociates() {
         employment_type: null,
         work_location: 'hybrid',
         skills: ['Partnership Development', 'Business Development', 'Nordic Markets', 'Retail'],
-        languages: ['Swedish', 'Danish', 'English', 'Norwegian']
+        languages: ['Swedish', 'Danish', 'English', 'Norwegian'],
       },
       {
         client_id: client.id,
@@ -235,8 +250,8 @@ async function addHyggeAssociates() {
         employment_type: null,
         work_location: 'remote',
         skills: ['Food Science', 'Research', 'Innovation', 'Academic Collaboration'],
-        languages: ['Norwegian', 'English', 'Danish']
-      }
+        languages: ['Norwegian', 'English', 'Danish'],
+      },
     ];
 
     console.log(chalk.yellow(`📝 Adding ${associatesData.length} associates...`));
@@ -249,20 +264,33 @@ async function addHyggeAssociates() {
           method: 'POST',
           headers: {
             ...headers,
-            'Prefer': 'return=minimal'
+            Prefer: 'return=minimal',
           },
-          body: JSON.stringify(associate)
+          body: JSON.stringify(associate),
         });
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.error(chalk.red(`❌ Error adding ${associate.first_name} ${associate.last_name}: HTTP ${response.status} - ${errorText}`));
+          console.error(
+            chalk.red(
+              `❌ Error adding ${associate.first_name} ${associate.last_name}: HTTP ${response.status} - ${errorText}`
+            )
+          );
         } else {
-          console.log(chalk.green(`✅ Added ${associate.first_name} ${associate.last_name} (${associate.associate_status})`));
+          console.log(
+            chalk.green(
+              `✅ Added ${associate.first_name} ${associate.last_name} (${associate.associate_status})`
+            )
+          );
           successCount++;
         }
       } catch (error) {
-        console.error(chalk.red(`❌ Error adding ${associate.first_name} ${associate.last_name}:`, error.message));
+        console.error(
+          chalk.red(
+            `❌ Error adding ${associate.first_name} ${associate.last_name}:`,
+            error.message
+          )
+        );
       }
     }
 
@@ -277,22 +305,27 @@ async function addHyggeAssociates() {
 
     // Verify the additions
     console.log(chalk.blue('\n🔍 Verifying associates...'));
-    
-    const verifyResponse = await fetch(`${supabaseUrl}/rest/v1/people?select=first_name,last_name,position,associate_status&client_id=eq.${client.id}&associate_status=not.is.null&order=associate_status,first_name`, {
-      headers
-    });
+
+    const verifyResponse = await fetch(
+      `${supabaseUrl}/rest/v1/people?select=first_name,last_name,position,associate_status&client_id=eq.${client.id}&associate_status=not.is.null&order=associate_status,first_name`,
+      {
+        headers,
+      }
+    );
 
     if (!verifyResponse.ok) {
       const errorText = await verifyResponse.text();
-      console.error(chalk.red(`❌ Error verifying associates: HTTP ${verifyResponse.status} - ${errorText}`));
+      console.error(
+        chalk.red(`❌ Error verifying associates: HTTP ${verifyResponse.status} - ${errorText}`)
+      );
       return;
     }
 
     const associates = await verifyResponse.json();
-    
+
     if (associates && associates.length > 0) {
       console.log(chalk.green(`\n✅ Found ${associates.length} associates in database:`));
-      
+
       const groupedAssociates = associates.reduce((groups, assoc) => {
         const status = assoc.associate_status;
         if (!groups[status]) groups[status] = [];
@@ -302,14 +335,15 @@ async function addHyggeAssociates() {
 
       Object.entries(groupedAssociates).forEach(([status, people]) => {
         console.log(chalk.cyan(`\n   ${status.replace('_', ' ').toUpperCase()}:`));
-        people.forEach(person => {
-          console.log(chalk.gray(`     • ${person.first_name} ${person.last_name} - ${person.position}`));
+        people.forEach((person) => {
+          console.log(
+            chalk.gray(`     • ${person.first_name} ${person.last_name} - ${person.position}`)
+          );
         });
       });
     }
 
     console.log(chalk.green('\n🎉 Associate people successfully added to Hygge & Hvidløg!'));
-
   } catch (error) {
     console.error(chalk.red('❌ Unexpected error:'), error);
     process.exit(1);

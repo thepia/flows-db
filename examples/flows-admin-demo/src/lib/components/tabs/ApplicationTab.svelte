@@ -1,10 +1,10 @@
 <script lang="ts">
-import { createEventDispatcher } from 'svelte';
-import { UserPlus } from 'lucide-svelte';
-import { Button } from '$lib/components/ui/button';
 import OffboardingDashboard from '$lib/components/offboarding/OffboardingDashboard.svelte';
-import { invitations, employees } from '$lib/stores/data';
+import { Button } from '$lib/components/ui/button';
+import { employees, invitations } from '$lib/stores/data';
 import type { Application } from '$lib/types';
+import { UserPlus } from 'lucide-svelte';
+import { createEventDispatcher } from 'svelte';
 
 export let app: Application;
 

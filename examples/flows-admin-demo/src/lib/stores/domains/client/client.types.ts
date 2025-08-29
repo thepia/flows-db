@@ -27,7 +27,7 @@ export interface ClientStore extends ClientState {
   // Derived stores
   availableClients: Client[];
   clientsByTier: Record<string, Client[]>;
-  
+
   // Actions
   actions: ClientActions;
 }

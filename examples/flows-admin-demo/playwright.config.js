@@ -17,25 +17,25 @@ export default defineConfig({
   reporter: [
     ['html', { outputFolder: 'playwright-report' }],
     ['json', { outputFile: 'test-results/results.json' }],
-    ['junit', { outputFile: 'test-results/junit.xml' }]
+    ['junit', { outputFile: 'test-results/junit.xml' }],
   ],
   /* Shared settings for all the projects below. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: 'http://localhost:5173',
-    
+
     /* Collect trace when retrying the failed test. */
     trace: 'on-first-retry',
-    
+
     /* Screenshot on failure */
     screenshot: 'only-on-failure',
-    
+
     /* Video on failure */
     video: 'retain-on-failure',
-    
+
     /* Navigation timeout */
     navigationTimeout: 30000,
-    
+
     /* Action timeout */
     actionTimeout: 10000,
   },
@@ -92,10 +92,10 @@ export default defineConfig({
 
   /* Test output directory */
   outputDir: 'test-results/',
-  
+
   /* Test timeout */
   timeout: 30000,
-  
+
   /* Expect timeout */
   expect: {
     timeout: 5000,

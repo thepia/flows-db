@@ -1,8 +1,8 @@
 <script lang="ts">
 import { Badge } from '$lib/components/ui/badge';
 import { Button } from '$lib/components/ui/button';
-import EmployeeStatusBadge from './EmployeeStatusBadge.svelte';
 import { onMount } from 'svelte';
+import EmployeeStatusBadge from './EmployeeStatusBadge.svelte';
 
 export let employee;
 export let compact = false;
@@ -10,7 +10,14 @@ export let enrollment = null;
 export let onSelect = null;
 
 onMount(() => {
-  console.log('EmployeeCard mounted for', employee.id, 'onSelect:', typeof onSelect, 'onSelect value:', onSelect);
+  console.log(
+    'EmployeeCard mounted for',
+    employee.id,
+    'onSelect:',
+    typeof onSelect,
+    'onSelect value:',
+    onSelect
+  );
 });
 
 function getCompletionColor(percentage) {

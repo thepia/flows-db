@@ -13,9 +13,9 @@ export default defineConfig({
   workers: 1, // Single worker for consistent screenshots
   reporter: [
     ['html', { outputFolder: 'playwright-report' }],
-    ['json', { outputFile: 'test-results/results.json' }]
+    ['json', { outputFile: 'test-results/results.json' }],
   ],
-  
+
   use: {
     // Base URL for flows-admin-demo
     baseURL: process.env.DEMO_BASE_URL || 'http://localhost:5173',
@@ -52,7 +52,7 @@ export default defineConfig({
 
   // Test output directory
   outputDir: 'test-results/',
-  
+
   // Expect timeout
   expect: {
     timeout: 10000,

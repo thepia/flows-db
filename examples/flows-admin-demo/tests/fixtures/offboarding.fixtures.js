@@ -20,7 +20,7 @@ export const mockOffboardingTemplates = [
     requires_manager_approval: true,
     requires_hr_approval: false,
     requires_security_review: false,
-    created_at: '2024-01-15T10:00:00Z'
+    created_at: '2024-01-15T10:00:00Z',
   },
   {
     id: 'template-002',
@@ -38,7 +38,7 @@ export const mockOffboardingTemplates = [
     requires_manager_approval: true,
     requires_hr_approval: true,
     requires_security_review: true,
-    created_at: '2024-02-01T14:30:00Z'
+    created_at: '2024-02-01T14:30:00Z',
   },
   {
     id: 'template-003',
@@ -56,8 +56,8 @@ export const mockOffboardingTemplates = [
     requires_manager_approval: true,
     requires_hr_approval: false,
     requires_security_review: false,
-    created_at: '2024-03-10T09:15:00Z'
-  }
+    created_at: '2024-03-10T09:15:00Z',
+  },
 ];
 
 export const mockOffboardingProcesses = [
@@ -77,7 +77,7 @@ export const mockOffboardingProcesses = [
     overdue_tasks: 1,
     total_tasks: 12,
     completed_tasks: 5,
-    created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+    created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: 'process-002',
@@ -95,7 +95,7 @@ export const mockOffboardingProcesses = [
     overdue_tasks: 0,
     total_tasks: 15,
     completed_tasks: 0,
-    created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+    created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: 'process-003',
@@ -113,8 +113,8 @@ export const mockOffboardingProcesses = [
     overdue_tasks: 0,
     total_tasks: 12,
     completed_tasks: 12,
-    created_at: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString()
-  }
+    created_at: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
+  },
 ];
 
 export const mockOffboardingTasks = [
@@ -132,7 +132,7 @@ export const mockOffboardingTasks = [
     actual_hours: 0.5,
     task_order: 1,
     dependencies: [],
-    documents_required: ['Equipment Checklist', 'Return Receipt']
+    documents_required: ['Equipment Checklist', 'Return Receipt'],
   },
   {
     id: 'task-002',
@@ -148,7 +148,7 @@ export const mockOffboardingTasks = [
     actual_hours: 2,
     task_order: 2,
     dependencies: ['task-001'],
-    documents_required: ['Knowledge Transfer Template', 'Technical Documentation']
+    documents_required: ['Knowledge Transfer Template', 'Technical Documentation'],
   },
   {
     id: 'task-003',
@@ -164,7 +164,7 @@ export const mockOffboardingTasks = [
     actual_hours: 0,
     task_order: 3,
     dependencies: ['task-002'],
-    documents_required: ['Access Revocation Form']
+    documents_required: ['Access Revocation Form'],
   },
   {
     id: 'task-004',
@@ -181,8 +181,8 @@ export const mockOffboardingTasks = [
     task_order: 4,
     dependencies: [],
     documents_required: ['Exit Interview Form', 'Feedback Survey'],
-    blocked_reason: 'Waiting for employee availability'
-  }
+    blocked_reason: 'Waiting for employee availability',
+  },
 ];
 
 export const mockOffboardingMetrics = {
@@ -194,7 +194,7 @@ export const mockOffboardingMetrics = {
   avgCompletionDays: 12,
   totalProcesses: 48,
   overdue: 1,
-  pendingApproval: 1
+  pendingApproval: 1,
 };
 
 export const mockEmployees = [
@@ -204,7 +204,7 @@ export const mockEmployees = [
     email: 'john.smith@company.com',
     department: 'Engineering',
     position: 'Senior Software Engineer',
-    status: 'active'
+    status: 'active',
   },
   {
     id: 'emp-002',
@@ -212,7 +212,7 @@ export const mockEmployees = [
     email: 'sarah.johnson@company.com',
     department: 'Sales',
     position: 'Account Manager',
-    status: 'offboarding'
+    status: 'offboarding',
   },
   {
     id: 'emp-003',
@@ -220,33 +220,33 @@ export const mockEmployees = [
     email: 'mike.wilson@company.com',
     department: 'Marketing',
     position: 'Marketing Specialist',
-    status: 'terminated'
-  }
+    status: 'terminated',
+  },
 ];
 
 export const mockApiResponses = {
   '/api/offboarding/templates': {
     data: mockOffboardingTemplates,
     success: true,
-    total: mockOffboardingTemplates.length
+    total: mockOffboardingTemplates.length,
   },
   '/api/offboarding/processes': {
     data: mockOffboardingProcesses,
     success: true,
-    total: mockOffboardingProcesses.length
+    total: mockOffboardingProcesses.length,
   },
   '/api/offboarding/tasks': {
     data: mockOffboardingTasks,
     success: true,
-    total: mockOffboardingTasks.length
+    total: mockOffboardingTasks.length,
   },
   '/api/offboarding/metrics': {
     data: mockOffboardingMetrics,
-    success: true
+    success: true,
   },
   '/api/employees': {
     data: mockEmployees,
     success: true,
-    total: mockEmployees.length
-  }
+    total: mockEmployees.length,
+  },
 };

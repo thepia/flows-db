@@ -1,7 +1,7 @@
 <script lang="ts">
+import { goto } from '$app/navigation';
 import SettingsPanel from '$lib/components/settings/SettingsPanel.svelte';
 import { ArrowLeft, Settings } from 'lucide-svelte';
-import { goto } from '$app/navigation';
 </script>
 
 <svelte:head>

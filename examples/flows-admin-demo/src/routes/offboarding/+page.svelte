@@ -6,19 +6,22 @@ import { employees, loading } from '$lib/stores/data';
 import { Plus, UserMinus, Users } from 'lucide-svelte';
 
 // Filter employees who are leaving (status: previous) or in offboarding process
-$: offboardingEmployees = $employees.filter(emp => 
-  emp.status === 'previous' || emp.status === 'other'
+$: offboardingEmployees = $employees.filter(
+  (emp) => emp.status === 'previous' || emp.status === 'other'
 );
 
-$: activeEmployees = $employees.filter(emp => emp.status === 'active').length;
-$: departmentStats = $employees.reduce((acc, emp) => {
-  if (!acc[emp.department]) acc[emp.department] = { total: 0, offboarding: 0 };
-  acc[emp.department].total++;
-  if (emp.status === 'previous' || emp.status === 'other') {
-    acc[emp.department].offboarding++;
-  }
-  return acc;
-}, {} as Record<string, { total: number; offboarding: number }>);
+$: activeEmployees = $employees.filter((emp) => emp.status === 'active').length;
+$: departmentStats = $employees.reduce(
+  (acc, emp) => {
+    if (!acc[emp.department]) acc[emp.department] = { total: 0, offboarding: 0 };
+    acc[emp.department].total++;
+    if (emp.status === 'previous' || emp.status === 'other') {
+      acc[emp.department].offboarding++;
+    }
+    return acc;
+  },
+  {} as Record<string, { total: number; offboarding: number }>
+);
 </script>
 
 <svelte:head>

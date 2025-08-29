@@ -1,25 +1,16 @@
 <script lang="ts">
+import { Badge } from '$lib/components/ui/badge';
 import { Button } from '$lib/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
-import { Badge } from '$lib/components/ui/badge';
 import { Input } from '$lib/components/ui/input';
 import { Label } from '$lib/components/ui/label';
-// import { 
-//   Select, 
-//   SelectContent, 
-//   SelectItem, 
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
 //   SelectTrigger
 // } from '$lib/components/ui/select';
-import { 
-  Clock, 
-  Users, 
-  FileText, 
-  Settings, 
-  Plus, 
-  Edit, 
-  Copy,
-  Filter
-} from 'lucide-svelte';
+import { Clock, Copy, Edit, FileText, Filter, Plus, Settings, Users } from 'lucide-svelte';
 
 // Props
 export let templates = [];
@@ -35,40 +26,37 @@ let filterType = 'all';
 let selectedTemplate = null;
 
 // Filter templates based on search and filters
-$: filteredTemplates = templates.filter(template => {
+$: filteredTemplates = templates.filter((template) => {
   let matches = true;
-  
+
   // Search filter
   if (searchTerm) {
-    matches = matches && (
-      template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      template.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      template.department?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    matches =
+      matches &&
+      (template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        template.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        template.department?.toLowerCase().includes(searchTerm.toLowerCase()));
   }
-  
+
   // Department filter
   if (filterDepartment !== 'all') {
-    matches = matches && (
-      filterDepartment === 'company_wide' ? 
-        template.template_type === 'company_wide' : 
-        template.department === filterDepartment
-    );
+    matches =
+      matches &&
+      (filterDepartment === 'company_wide'
+        ? template.template_type === 'company_wide'
+        : template.department === filterDepartment);
   }
-  
+
   // Type filter
   if (filterType !== 'all') {
     matches = matches && template.template_type === filterType;
   }
-  
+
   return matches;
 });
 
 // Get unique departments from templates
-$: departments = [...new Set(templates
-  .filter(t => t.department)
-  .map(t => t.department)
-)];
+$: departments = [...new Set(templates.filter((t) => t.department).map((t) => t.department))];
 
 // Get complexity color
 function getComplexityColor(score) {
@@ -81,10 +69,14 @@ function getComplexityColor(score) {
 // Get template type badge variant
 function getTypeVariant(type) {
   switch (type) {
-    case 'company_wide': return 'default';
-    case 'department_specific': return 'secondary';
-    case 'role_specific': return 'outline';
-    default: return 'destructive';
+    case 'company_wide':
+      return 'default';
+    case 'department_specific':
+      return 'secondary';
+    case 'role_specific':
+      return 'outline';
+    default:
+      return 'destructive';
   }
 }
 

@@ -9,24 +9,24 @@ import '@testing-library/jest-dom/vitest';
 vi.mock('$app/environment', () => ({
   browser: true,
   building: false,
-  dev: true
+  dev: true,
 }));
 
 vi.mock('$app/navigation', () => ({
   goto: vi.fn().mockResolvedValue(true),
-  invalidateAll: vi.fn().mockResolvedValue(true)
+  invalidateAll: vi.fn().mockResolvedValue(true),
 }));
 
 vi.mock('$app/stores', () => ({
   page: {
-    subscribe: vi.fn(() => () => {})
+    subscribe: vi.fn(() => () => {}),
   },
   navigating: {
-    subscribe: vi.fn(() => () => {})
+    subscribe: vi.fn(() => () => {}),
   },
   updated: {
-    subscribe: vi.fn(() => () => {})
-  }
+    subscribe: vi.fn(() => () => {}),
+  },
 }));
 
 // Mock Supabase
@@ -70,8 +70,8 @@ vi.mock('$lib/supabase', () => ({
     geojson: vi.fn().mockResolvedValue({ data: null, error: null }),
     explain: vi.fn().mockResolvedValue({ data: null, error: null }),
     rollback: vi.fn().mockResolvedValue({ data: null, error: null }),
-    returns: vi.fn().mockReturnThis()
-  }
+    returns: vi.fn().mockReturnThis(),
+  },
 }));
 
 // Mock error reporting
@@ -81,14 +81,14 @@ vi.mock('$lib/config/errorReporting', () => ({
   getAdminErrorReportingConfig: vi.fn().mockResolvedValue({
     enabled: true,
     serverType: 'mock-server',
-    environment: 'test'
+    environment: 'test',
   }),
-  flushAdminErrorReports: vi.fn().mockResolvedValue(undefined)
+  flushAdminErrorReports: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('$lib/utils/errorReporter', () => ({
   reportAdminError: vi.fn().mockResolvedValue(undefined),
-  getAdminErrorReportQueueSize: vi.fn().mockReturnValue(0)
+  getAdminErrorReportQueueSize: vi.fn().mockReturnValue(0),
 }));
 
 // Mock orchestrator
@@ -98,18 +98,18 @@ vi.mock('$lib/orchestrators/demo-client-switcher', () => ({
     switchClientContext: vi.fn().mockResolvedValue(true),
     loadTFCData: vi.fn().mockResolvedValue(true),
     loadPeopleData: vi.fn().mockResolvedValue(true),
-    getAvailableClients: vi.fn().mockResolvedValue([])
-  }
+    getAvailableClients: vi.fn().mockResolvedValue([]),
+  },
 }));
 
 // Global test setup
 beforeEach(() => {
   // Reset all mocks before each test
   vi.clearAllMocks();
-  
+
   // Setup DOM environment
   document.body.innerHTML = '';
-  
+
   // Mock window.location
   Object.defineProperty(window, 'location', {
     value: {
@@ -120,11 +120,11 @@ beforeEach(() => {
       href: 'http://localhost:5174/',
       search: '',
       pathname: '/',
-      hash: ''
+      hash: '',
     },
-    writable: true
+    writable: true,
   });
-  
+
   // Mock localStorage
   const mockLocalStorage = {
     getItem: vi.fn(() => null),
@@ -132,30 +132,30 @@ beforeEach(() => {
     removeItem: vi.fn(),
     clear: vi.fn(),
     key: vi.fn(),
-    length: 0
+    length: 0,
   };
   Object.defineProperty(window, 'localStorage', {
     value: mockLocalStorage,
-    writable: true
+    writable: true,
   });
-  
+
   // Mock crypto for JWT operations
   Object.defineProperty(window, 'crypto', {
     value: {
       subtle: {
-        digest: vi.fn().mockResolvedValue(new ArrayBuffer(32))
-      }
+        digest: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
+      },
     },
-    writable: true
+    writable: true,
   });
-  
+
   // Mock TextEncoder/TextDecoder
   global.TextEncoder = vi.fn().mockImplementation(() => ({
-    encode: vi.fn().mockReturnValue(new Uint8Array([1, 2, 3, 4]))
+    encode: vi.fn().mockReturnValue(new Uint8Array([1, 2, 3, 4])),
   }));
-  
+
   global.TextDecoder = vi.fn().mockImplementation(() => ({
-    decode: vi.fn().mockReturnValue('decoded-string')
+    decode: vi.fn().mockReturnValue('decoded-string'),
   }));
 });
 

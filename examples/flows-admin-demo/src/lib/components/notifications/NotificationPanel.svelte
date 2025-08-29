@@ -1,9 +1,9 @@
 <script lang="ts">
-import { onMount, onDestroy } from 'svelte';
 import { notificationService } from '$lib/services/NotificationService';
 import type { Notification, NotificationFilter, NotificationStats } from '$lib/types/notifications';
+import { Archive, Bell, Check, CheckCheck, Filter, Search, X } from 'lucide-svelte';
+import { onDestroy, onMount } from 'svelte';
 import NotificationItem from './NotificationItem.svelte';
-import { Check, CheckCheck, Archive, X, Filter, Search, Bell } from 'lucide-svelte';
 
 export let isOpen = false;
 export let onClose: (() => void) | undefined = undefined;
@@ -19,144 +19,145 @@ let unsubscribeStats: (() => void) | null = null;
 
 // Filter options
 const statusOptions = [
-	{ value: 'unread', label: 'Unread' },
-	{ value: 'read', label: 'Read' },
-	{ value: 'archived', label: 'Archived' }
+  { value: 'unread', label: 'Unread' },
+  { value: 'read', label: 'Read' },
+  { value: 'archived', label: 'Archived' },
 ];
 
 const typeOptions = [
-	{ value: 'onboarding_reminder', label: 'Onboarding' },
-	{ value: 'document_review', label: 'Document Review' },
-	{ value: 'task_assignment', label: 'Task Assignment' },
-	{ value: 'deadline_reminder', label: 'Deadline' },
-	{ value: 'system_alert', label: 'System Alert' }
+  { value: 'onboarding_reminder', label: 'Onboarding' },
+  { value: 'document_review', label: 'Document Review' },
+  { value: 'task_assignment', label: 'Task Assignment' },
+  { value: 'deadline_reminder', label: 'Deadline' },
+  { value: 'system_alert', label: 'System Alert' },
 ];
 
 const priorityOptions = [
-	{ value: 'urgent', label: 'Urgent' },
-	{ value: 'high', label: 'High' },
-	{ value: 'medium', label: 'Medium' },
-	{ value: 'low', label: 'Low' }
+  { value: 'urgent', label: 'Urgent' },
+  { value: 'high', label: 'High' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'low', label: 'Low' },
 ];
 
-$: filteredNotifications = notifications.filter(notification => {
-	const matchesSearch = !searchTerm || 
-		notification.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-		notification.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
-		notification.from.name.toLowerCase().includes(searchTerm.toLowerCase());
-	
-	return matchesSearch;
+$: filteredNotifications = notifications.filter((notification) => {
+  const matchesSearch =
+    !searchTerm ||
+    notification.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    notification.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    notification.from.name.toLowerCase().includes(searchTerm.toLowerCase());
+
+  return matchesSearch;
 });
 
 onMount(async () => {
-	await loadNotifications();
-	await loadStats();
-	
-	// Subscribe to real-time updates
-	unsubscribeNotifications = notificationService.subscribe((newNotification) => {
-		notifications = [newNotification, ...notifications];
-	});
-	
-	unsubscribeStats = notificationService.subscribeToStats((newStats) => {
-		stats = newStats;
-	});
+  await loadNotifications();
+  await loadStats();
+
+  // Subscribe to real-time updates
+  unsubscribeNotifications = notificationService.subscribe((newNotification) => {
+    notifications = [newNotification, ...notifications];
+  });
+
+  unsubscribeStats = notificationService.subscribeToStats((newStats) => {
+    stats = newStats;
+  });
 });
 
 onDestroy(() => {
-	if (unsubscribeNotifications) unsubscribeNotifications();
-	if (unsubscribeStats) unsubscribeStats();
+  if (unsubscribeNotifications) unsubscribeNotifications();
+  if (unsubscribeStats) unsubscribeStats();
 });
 
 async function loadNotifications() {
-	try {
-		loading = true;
-		notifications = await notificationService.getNotifications(activeFilters);
-	} catch (error) {
-		console.error('Error loading notifications:', error);
-	} finally {
-		loading = false;
-	}
+  try {
+    loading = true;
+    notifications = await notificationService.getNotifications(activeFilters);
+  } catch (error) {
+    console.error('Error loading notifications:', error);
+  } finally {
+    loading = false;
+  }
 }
 
 async function loadStats() {
-	try {
-		stats = await notificationService.getStats(activeFilters);
-	} catch (error) {
-		console.error('Error loading notification stats:', error);
-	}
+  try {
+    stats = await notificationService.getStats(activeFilters);
+  } catch (error) {
+    console.error('Error loading notification stats:', error);
+  }
 }
 
 async function markAllAsRead() {
-	try {
-		await notificationService.markAllAsRead(activeFilters);
-		await loadNotifications();
-		await loadStats();
-	} catch (error) {
-		console.error('Error marking all as read:', error);
-	}
+  try {
+    await notificationService.markAllAsRead(activeFilters);
+    await loadNotifications();
+    await loadStats();
+  } catch (error) {
+    console.error('Error marking all as read:', error);
+  }
 }
 
 async function archiveAll() {
-	try {
-		await notificationService.archiveAll(activeFilters);
-		await loadNotifications();
-		await loadStats();
-	} catch (error) {
-		console.error('Error archiving all:', error);
-	}
+  try {
+    await notificationService.archiveAll(activeFilters);
+    await loadNotifications();
+    await loadStats();
+  } catch (error) {
+    console.error('Error archiving all:', error);
+  }
 }
 
 async function handleNotificationAction(notification: Notification, action: string) {
-	try {
-		switch (action) {
-			case 'mark-read':
-				await notificationService.markAsRead(notification.id);
-				break;
-			case 'mark-unread':
-				await notificationService.markAsUnread(notification.id);
-				break;
-			case 'archive':
-				await notificationService.archiveNotification(notification.id);
-				break;
-			case 'dismiss':
-				await notificationService.dismissNotification(notification.id);
-				break;
-		}
-		await loadNotifications();
-		await loadStats();
-	} catch (error) {
-		console.error('Error handling notification action:', error);
-	}
+  try {
+    switch (action) {
+      case 'mark-read':
+        await notificationService.markAsRead(notification.id);
+        break;
+      case 'mark-unread':
+        await notificationService.markAsUnread(notification.id);
+        break;
+      case 'archive':
+        await notificationService.archiveNotification(notification.id);
+        break;
+      case 'dismiss':
+        await notificationService.dismissNotification(notification.id);
+        break;
+    }
+    await loadNotifications();
+    await loadStats();
+  } catch (error) {
+    console.error('Error handling notification action:', error);
+  }
 }
 
 function applyFilters() {
-	loadNotifications();
-	loadStats();
+  loadNotifications();
+  loadStats();
 }
 
 function clearFilters() {
-	activeFilters = {};
-	searchTerm = '';
-	showFilters = false;
-	loadNotifications();
-	loadStats();
+  activeFilters = {};
+  searchTerm = '';
+  showFilters = false;
+  loadNotifications();
+  loadStats();
 }
 
 function handleClose() {
-	if (onClose) {
-		onClose();
-	}
+  if (onClose) {
+    onClose();
+  }
 }
 
 // Generate demo data if no notifications exist
 async function generateDemoData() {
-	try {
-		await notificationService.generateDemoNotifications(15);
-		await loadNotifications();
-		await loadStats();
-	} catch (error) {
-		console.error('Error generating demo data:', error);
-	}
+  try {
+    await notificationService.generateDemoNotifications(15);
+    await loadNotifications();
+    await loadStats();
+  } catch (error) {
+    console.error('Error generating demo data:', error);
+  }
 }
 </script>
 

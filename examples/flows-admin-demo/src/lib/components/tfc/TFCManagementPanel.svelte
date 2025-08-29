@@ -1,8 +1,15 @@
 <script lang="ts">
-import { onMount } from 'svelte';
-import { supabase } from '$lib/supabase';
 import LoadingAnimation from '$lib/components/shared/LoadingAnimation.svelte';
-import { Plus, TrendingUp, CreditCard, Activity, ArrowUpRight, ArrowDownRight } from 'lucide-svelte';
+import { supabase } from '$lib/supabase';
+import {
+  Activity,
+  ArrowDownRight,
+  ArrowUpRight,
+  CreditCard,
+  Plus,
+  TrendingUp,
+} from 'lucide-svelte';
+import { onMount } from 'svelte';
 
 export let clientId: string;
 
@@ -15,151 +22,150 @@ let monthlyTrend = [];
 
 // Load TFC data
 async function loadTFCData() {
-	if (!clientId) return;
-	
-	loading = true;
-	try {
-		// Load TFC balance
-		const { data: balanceData } = await supabase
-			.from('tfc_client_balances')
-			.select('*')
-			.eq('client_id', clientId)
-			.single();
-		
-		tfcBalance = balanceData;
-		
-		// Load recent transactions (last 10)
-		const { data: transactionsData } = await supabase
-			.from('tfc_credit_transactions')
-			.select('*')
-			.eq('client_id', clientId)
-			.order('created_at', { ascending: false })
-			.limit(10);
-		
-		recentTransactions = transactionsData || [];
-		
-		// Load usage analytics by workflow type
-		const { data: usageData } = await supabase
-			.from('tfc_workflow_usage')
-			.select('workflow_type, department_category, credits_consumed, consumed_at')
-			.eq('client_id', clientId)
-			.gte('consumed_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()) // Last 30 days
-			.order('consumed_at', { ascending: false });
-		
-		// Process usage analytics
-		if (usageData) {
-			const analytics = {};
-			usageData.forEach(usage => {
-				const key = `${usage.workflow_type}-${usage.department_category}`;
-				if (!analytics[key]) {
-					analytics[key] = {
-						workflow_type: usage.workflow_type,
-						department: usage.department_category,
-						count: 0,
-						credits: 0
-					};
-				}
-				analytics[key].count += 1;
-				analytics[key].credits += usage.credits_consumed;
-			});
-			usageAnalytics = Object.values(analytics).slice(0, 6);
-		}
-		
-		// Calculate monthly trend (last 6 months)
-		const monthlyData = {};
-		recentTransactions.forEach(transaction => {
-			const date = new Date(transaction.created_at);
-			const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-			
-			if (!monthlyData[monthKey]) {
-				monthlyData[monthKey] = { month: monthKey, purchases: 0, usage: 0 };
-			}
-			
-			if (transaction.transaction_type === 'purchase') {
-				monthlyData[monthKey].purchases += transaction.credit_amount;
-			} else if (transaction.transaction_type === 'usage') {
-				monthlyData[monthKey].usage += Math.abs(transaction.credit_amount);
-			}
-		});
-		
-		monthlyTrend = Object.values(monthlyData).slice(0, 6).reverse();
-		
-	} catch (error) {
-		console.error('Error loading TFC data:', error);
-	} finally {
-		loading = false;
-	}
+  if (!clientId) return;
+
+  loading = true;
+  try {
+    // Load TFC balance
+    const { data: balanceData } = await supabase
+      .from('tfc_client_balances')
+      .select('*')
+      .eq('client_id', clientId)
+      .single();
+
+    tfcBalance = balanceData;
+
+    // Load recent transactions (last 10)
+    const { data: transactionsData } = await supabase
+      .from('tfc_credit_transactions')
+      .select('*')
+      .eq('client_id', clientId)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    recentTransactions = transactionsData || [];
+
+    // Load usage analytics by workflow type
+    const { data: usageData } = await supabase
+      .from('tfc_workflow_usage')
+      .select('workflow_type, department_category, credits_consumed, consumed_at')
+      .eq('client_id', clientId)
+      .gte('consumed_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()) // Last 30 days
+      .order('consumed_at', { ascending: false });
+
+    // Process usage analytics
+    if (usageData) {
+      const analytics = {};
+      usageData.forEach((usage) => {
+        const key = `${usage.workflow_type}-${usage.department_category}`;
+        if (!analytics[key]) {
+          analytics[key] = {
+            workflow_type: usage.workflow_type,
+            department: usage.department_category,
+            count: 0,
+            credits: 0,
+          };
+        }
+        analytics[key].count += 1;
+        analytics[key].credits += usage.credits_consumed;
+      });
+      usageAnalytics = Object.values(analytics).slice(0, 6);
+    }
+
+    // Calculate monthly trend (last 6 months)
+    const monthlyData = {};
+    recentTransactions.forEach((transaction) => {
+      const date = new Date(transaction.created_at);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+      if (!monthlyData[monthKey]) {
+        monthlyData[monthKey] = { month: monthKey, purchases: 0, usage: 0 };
+      }
+
+      if (transaction.transaction_type === 'purchase') {
+        monthlyData[monthKey].purchases += transaction.credit_amount;
+      } else if (transaction.transaction_type === 'usage') {
+        monthlyData[monthKey].usage += Math.abs(transaction.credit_amount);
+      }
+    });
+
+    monthlyTrend = Object.values(monthlyData).slice(0, 6).reverse();
+  } catch (error) {
+    console.error('Error loading TFC data:', error);
+  } finally {
+    loading = false;
+  }
 }
 
 // Helper functions
 function formatCurrency(amount, currency = 'EUR') {
-	return `${currency} ${parseFloat(amount).toLocaleString()}`;
+  return `${currency} ${Number.parseFloat(amount).toLocaleString()}`;
 }
 
 function getTransactionIcon(type) {
-	return type === 'purchase' ? ArrowUpRight : ArrowDownRight;
+  return type === 'purchase' ? ArrowUpRight : ArrowDownRight;
 }
 
 function getTransactionColor(type) {
-	return type === 'purchase' ? 'text-green-600' : 'text-blue-600';
+  return type === 'purchase' ? 'text-green-600' : 'text-blue-600';
 }
 
 function formatDate(dateString) {
-	return new Date(dateString).toLocaleDateString();
+  return new Date(dateString).toLocaleDateString();
 }
 
 // Calculate time saved based on completed processes
 function calculateTimeSaved(totalUsed) {
-	if (!totalUsed) return '0 hours';
-	
-	// Time savings per process type (based on industry research):
-	// - Manual onboarding: 8-12 hours of HR/IT time per person
-	// - Manual offboarding: 6-10 hours of HR/IT time per person
-	// - Average: 9 hours saved per automated process
-	
-	const averageHoursSavedPerProcess = 9;
-	const totalHoursSaved = totalUsed * averageHoursSavedPerProcess;
-	
-	// Format based on scale
-	if (totalHoursSaved >= 1000) {
-		return `${Math.round(totalHoursSaved / 100) / 10}k hours`;
-	} else {
-		return `${totalHoursSaved.toLocaleString()} hours`;
-	}
+  if (!totalUsed) return '0 hours';
+
+  // Time savings per process type (based on industry research):
+  // - Manual onboarding: 8-12 hours of HR/IT time per person
+  // - Manual offboarding: 6-10 hours of HR/IT time per person
+  // - Average: 9 hours saved per automated process
+
+  const averageHoursSavedPerProcess = 9;
+  const totalHoursSaved = totalUsed * averageHoursSavedPerProcess;
+
+  // Format based on scale
+  if (totalHoursSaved >= 1000) {
+    return `${Math.round(totalHoursSaved / 100) / 10}k hours`;
+  } else {
+    return `${totalHoursSaved.toLocaleString()} hours`;
+  }
 }
 
 // Calculate detailed time savings with workflow breakdown
 function calculateDetailedTimeSavings(usageData) {
-	if (!usageData || usageData.length === 0) return null;
-	
-	const timeSavings = {
-		onboarding: { hours: 10, processes: 0 }, // 10 hours saved per onboarding
-		offboarding: { hours: 8, processes: 0 }   // 8 hours saved per offboarding
-	};
-	
-	usageData.forEach(usage => {
-		if (timeSavings[usage.workflow_type]) {
-			timeSavings[usage.workflow_type].processes += usage.count;
-		}
-	});
-	
-	const totalSaved = 
-		(timeSavings.onboarding.processes * timeSavings.onboarding.hours) +
-		(timeSavings.offboarding.processes * timeSavings.offboarding.hours);
-	
-	return {
-		total: totalSaved,
-		breakdown: timeSavings
-	};
+  if (!usageData || usageData.length === 0) return null;
+
+  const timeSavings = {
+    onboarding: { hours: 10, processes: 0 }, // 10 hours saved per onboarding
+    offboarding: { hours: 8, processes: 0 }, // 8 hours saved per offboarding
+  };
+
+  usageData.forEach((usage) => {
+    if (timeSavings[usage.workflow_type]) {
+      timeSavings[usage.workflow_type].processes += usage.count;
+    }
+  });
+
+  const totalSaved =
+    timeSavings.onboarding.processes * timeSavings.onboarding.hours +
+    timeSavings.offboarding.processes * timeSavings.offboarding.hours;
+
+  return {
+    total: totalSaved,
+    breakdown: timeSavings,
+  };
 }
 
 onMount(() => {
-	loadTFCData();
+  loadTFCData();
 });
 
 // Reactive updates when clientId changes
 $: if (clientId) {
-	loadTFCData();
+  loadTFCData();
 }
 </script>
 

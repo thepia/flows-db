@@ -1,8 +1,8 @@
 <script lang="ts">
-import { createEventDispatcher } from 'svelte';
-import { Button } from '$lib/components/ui/button';
 import ProcessList from '$lib/components/offboarding/ProcessList.svelte';
+import { Button } from '$lib/components/ui/button';
 import { Plus } from 'lucide-svelte';
+import { createEventDispatcher } from 'svelte';
 
 const dispatch = createEventDispatcher();
 

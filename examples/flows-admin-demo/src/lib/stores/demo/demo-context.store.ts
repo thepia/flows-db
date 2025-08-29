@@ -1,5 +1,5 @@
-import { writable, derived, get } from 'svelte/store';
 import { browser } from '$app/environment';
+import { derived, get, writable } from 'svelte/store';
 
 interface DemoContext {
   isDemoMode: boolean;
@@ -21,41 +21,43 @@ const initialState: DemoContext = {
   productionFeatures: {
     authentication: false,
     realTimeData: false,
-    fullDatasets: false
-  }
+    fullDatasets: false,
+  },
 };
 
 export const demoContext = writable<DemoContext>(initialState);
 
 // Derived stores for conditional logic
 export const isDemoMode = derived(demoContext, ($ctx) => $ctx.isDemoMode);
-export const shouldShowDemoFeatures = derived(demoContext, ($ctx) => 
-  $ctx.isDemoMode || $ctx.demoClient !== null
+export const shouldShowDemoFeatures = derived(
+  demoContext,
+  ($ctx) => $ctx.isDemoMode || $ctx.demoClient !== null
 );
-export const shouldGenerateDemoData = derived(demoContext, ($ctx) => 
-  $ctx.isDemoMode && !$ctx.demoDataGenerated
+export const shouldGenerateDemoData = derived(
+  demoContext,
+  ($ctx) => $ctx.isDemoMode && !$ctx.demoDataGenerated
 );
 
 // Actions that affect both demo and production
 export const demoActions = {
   switchToProduction() {
-    demoContext.update(ctx => ({
+    demoContext.update((ctx) => ({
       ...ctx,
       isDemoMode: false,
       productionFeatures: {
         authentication: true,
         realTimeData: true,
-        fullDatasets: true
-      }
+        fullDatasets: true,
+      },
     }));
   },
-  
+
   enableDemoMode(clientId: string) {
-    demoContext.update(ctx => ({
+    demoContext.update((ctx) => ({
       ...ctx,
       isDemoMode: true,
       demoClient: clientId,
-      demoDataGenerated: false
+      demoDataGenerated: false,
     }));
-  }
+  },
 };

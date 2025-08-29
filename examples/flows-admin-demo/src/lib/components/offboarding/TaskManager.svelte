@@ -1,33 +1,28 @@
 <script lang="ts">
+import { Badge } from '$lib/components/ui/badge';
 import { Button } from '$lib/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
-import { Badge } from '$lib/components/ui/badge';
-import { Progress } from '$lib/components/ui/progress';
-import { Textarea } from '$lib/components/ui/textarea';
 import { Input } from '$lib/components/ui/input';
 import { Label } from '$lib/components/ui/label';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger
-} from '$lib/components/ui/select';
-import { 
-  CheckCircle, 
-  Clock, 
-  AlertTriangle, 
-  User, 
-  Calendar,
-  FileText,
-  MessageSquare,
+import { Progress } from '$lib/components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
+import { Textarea } from '$lib/components/ui/textarea';
+import {
+  AlertTriangle,
   ArrowRight,
+  Calendar,
+  CheckCircle,
   CheckSquare,
-  Play,
-  Pause,
+  Clock,
+  Download,
   Edit,
+  FileText,
   Link,
+  MessageSquare,
+  Pause,
+  Play,
   Upload,
-  Download
+  User,
 } from 'lucide-svelte';
 
 // Props
@@ -46,17 +41,17 @@ let newNote = '';
 let showCompleted = true;
 
 // Filter tasks
-$: filteredTasks = tasks.filter(task => {
+$: filteredTasks = tasks.filter((task) => {
   if (!showCompleted && task.status === 'completed') return false;
   return true;
 });
 
 // Group tasks by status
 $: tasksByStatus = {
-  pending: filteredTasks.filter(t => t.status === 'pending'),
-  in_progress: filteredTasks.filter(t => t.status === 'in_progress'),
-  completed: filteredTasks.filter(t => t.status === 'completed'),
-  blocked: filteredTasks.filter(t => t.status === 'blocked')
+  pending: filteredTasks.filter((t) => t.status === 'pending'),
+  in_progress: filteredTasks.filter((t) => t.status === 'in_progress'),
+  completed: filteredTasks.filter((t) => t.status === 'completed'),
+  blocked: filteredTasks.filter((t) => t.status === 'blocked'),
 };
 
 // Get status info
@@ -78,23 +73,34 @@ function getStatusInfo(status) {
 // Get priority color
 function getPriorityColor(priority) {
   switch (priority) {
-    case 'urgent': return 'bg-red-100 text-red-800';
-    case 'high': return 'bg-orange-100 text-orange-800';
-    case 'medium': return 'bg-yellow-100 text-yellow-800';
-    case 'low': return 'bg-green-100 text-green-800';
-    default: return 'bg-gray-100 text-gray-800';
+    case 'urgent':
+      return 'bg-red-100 text-red-800';
+    case 'high':
+      return 'bg-orange-100 text-orange-800';
+    case 'medium':
+      return 'bg-yellow-100 text-yellow-800';
+    case 'low':
+      return 'bg-green-100 text-green-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
   }
 }
 
 // Get task type icon
 function getTaskTypeIcon(type) {
   switch (type) {
-    case 'access_revocation': return User;
-    case 'asset_recovery': return Download;
-    case 'documentation': return FileText;
-    case 'handover': return ArrowRight;
-    case 'approval': return CheckSquare;
-    default: return FileText;
+    case 'access_revocation':
+      return User;
+    case 'asset_recovery':
+      return Download;
+    case 'documentation':
+      return FileText;
+    case 'handover':
+      return ArrowRight;
+    case 'approval':
+      return CheckSquare;
+    default:
+      return FileText;
   }
 }
 
@@ -102,10 +108,10 @@ function getTaskTypeIcon(type) {
 function formatDate(dateString) {
   if (!dateString) return 'No due date';
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { 
-    month: 'short', 
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
     day: 'numeric',
-    year: date.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
+    year: date.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined,
   });
 }
 
@@ -133,7 +139,7 @@ async function handleTaskAction(task, action) {
 // Add note to task
 async function addNote(taskId) {
   if (!newNote.trim()) return;
-  
+
   await onAddNote(taskId, newNote.trim());
   newNote = '';
 }

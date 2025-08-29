@@ -1,7 +1,7 @@
-import { get } from 'svelte/store';
+import { loadingProgress } from '$lib/stores/data';
 import { clientStore } from '$lib/stores/domains/client/client.store';
 import { tfcStore } from '$lib/stores/domains/tfc/tfc.store';
-import { loadingProgress } from '$lib/stores/data';
+import { get } from 'svelte/store';
 
 /**
  * Central orchestrator for demo client switching
@@ -27,7 +27,7 @@ export class DemoClientSwitcher {
     }
 
     this.currentSwitchPromise = this.performClientSwitch(clientId);
-    
+
     try {
       await this.currentSwitchPromise;
     } finally {
@@ -40,41 +40,41 @@ export class DemoClientSwitcher {
    */
   private async performClientSwitch(clientId: string): Promise<void> {
     console.log(`[DemoClientSwitcher] Starting switch to client: ${clientId}`);
-    
+
     // Define all domains that need to be updated
     const switchSteps = [
       {
         name: 'Switching client context',
-        action: () => this.switchClientContext(clientId)
+        action: () => this.switchClientContext(clientId),
       },
       {
         name: 'Loading TFC data',
-        action: () => this.loadTFCData(clientId)
+        action: () => this.loadTFCData(clientId),
       },
       {
         name: 'Loading people data',
-        action: () => this.loadPeopleData(clientId)
+        action: () => this.loadPeopleData(clientId),
       },
       {
-        name: 'Loading process data', 
-        action: () => this.loadProcessData(clientId)
+        name: 'Loading process data',
+        action: () => this.loadProcessData(clientId),
       },
       {
         name: 'Loading invitation data',
-        action: () => this.loadInvitationData(clientId)
-      }
+        action: () => this.loadInvitationData(clientId),
+      },
     ];
 
     // Execute steps with progress feedback
     for (let i = 0; i < switchSteps.length; i++) {
       const step = switchSteps[i];
-      
+
       // Update global progress state
       loadingProgress.set({
         stage: step.name,
         current: i + 1,
         total: switchSteps.length,
-        message: `${step.name} for new client...`
+        message: `${step.name} for new client...`,
       });
 
       try {
@@ -82,7 +82,7 @@ export class DemoClientSwitcher {
         console.log(`[DemoClientSwitcher] ✅ ${step.name} completed`);
       } catch (error) {
         console.error(`[DemoClientSwitcher] ❌ ${step.name} failed:`, error);
-        
+
         // For demo mode, log errors but continue (graceful degradation)
         if (this.isDemo) {
           console.warn(`[DemoClientSwitcher] Continuing despite error in demo mode`);
@@ -97,7 +97,7 @@ export class DemoClientSwitcher {
       stage: '',
       current: 0,
       total: 0,
-      message: ''
+      message: '',
     });
 
     console.log(`[DemoClientSwitcher] ✅ Client switch to ${clientId} completed`);
@@ -108,15 +108,15 @@ export class DemoClientSwitcher {
    */
   private async switchClientContext(clientId: string): Promise<void> {
     await clientStore.actions.selectClient(clientId);
-    
+
     // Verify the switch was successful
     const currentClient = get(clientStore.currentClient);
     if (!currentClient || currentClient.client_id !== clientId) {
       throw new Error(`Failed to switch to client ${clientId}`);
     }
-    
+
     // Give the store bridge a moment to synchronize
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
 
   /**
@@ -152,7 +152,9 @@ export class DemoClientSwitcher {
     try {
       // When we create the process domain store, we'll use it here
       // For now, this is handled by the main page component
-      console.log(`[DemoClientSwitcher] Process data will be loaded by main component for ${clientId}`);
+      console.log(
+        `[DemoClientSwitcher] Process data will be loaded by main component for ${clientId}`
+      );
     } catch (error) {
       console.warn(`[DemoClientSwitcher] Process data loading failed for ${clientId}:`, error);
     }
@@ -165,7 +167,9 @@ export class DemoClientSwitcher {
     try {
       // When we create the invitation domain store, we'll use it here
       // For now, this is handled by the invitations page component
-      console.log(`[DemoClientSwitcher] Invitation data will be loaded by invitation component for ${clientId}`);
+      console.log(
+        `[DemoClientSwitcher] Invitation data will be loaded by invitation component for ${clientId}`
+      );
     } catch (error) {
       console.warn(`[DemoClientSwitcher] Invitation data loading failed for ${clientId}:`, error);
     }
@@ -176,11 +180,11 @@ export class DemoClientSwitcher {
    */
   private detectDemoMode(): boolean {
     if (typeof window === 'undefined') return false;
-    
+
     const hostname = window.location.hostname;
     const isDev = hostname === 'localhost' || hostname === '127.0.0.1';
     const isDemo = hostname.includes('demo') || window.location.search.includes('demo=true');
-    
+
     return isDev || isDemo;
   }
 
@@ -204,13 +208,13 @@ export class DemoClientSwitcher {
    */
   async getAvailableClients() {
     const clients = get(clientStore.clients);
-    
+
     // If no clients loaded yet, trigger loading
     if (!clients || clients.length === 0) {
       await clientStore.actions.loadAllClients();
       return get(clientStore.clients);
     }
-    
+
     return clients;
   }
 }

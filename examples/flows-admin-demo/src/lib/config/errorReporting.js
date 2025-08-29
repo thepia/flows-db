@@ -44,7 +44,7 @@ async function checkServerHealth(endpoint) {
       headers: { Accept: 'application/json' },
       signal: controller.signal,
     });
-    
+
     clearTimeout(timeoutId);
     return response.ok;
   } catch (error) {

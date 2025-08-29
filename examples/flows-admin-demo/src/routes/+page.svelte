@@ -1,9 +1,7 @@
 <script lang="ts">
-import { onMount } from 'svelte';
 import FloatingStatusButton from '$lib/components/FloatingStatusButton.svelte';
-import AppNavigation from '$lib/components/navigation/AppNavigation.svelte';
 import TabContentRouter from '$lib/components/TabContentRouter.svelte';
-import { supabase } from '$lib/supabase';
+import AppNavigation from '$lib/components/navigation/AppNavigation.svelte';
 import { getMockOffboardingData, getTasksForProcess } from '$lib/mockData/offboarding';
 import {
   applications,
@@ -13,12 +11,14 @@ import {
   loadDemoData,
   loading,
 } from '$lib/stores/data';
+import { supabase } from '$lib/supabase';
+import { onMount } from 'svelte';
 
 // Tab state
 let activeTab = 'people';
 
 // Reactive selectedApp calculation that updates when either activeTab or applications change
-$: selectedApp = $applications?.find(app => app.code === activeTab) || null;
+$: selectedApp = $applications?.find((app) => app.code === activeTab) || null;
 
 // Applications reactive logic with proper guards
 $: applicationsLoaded = $applications && Array.isArray($applications) && $applications.length > 0;
@@ -45,7 +45,7 @@ let processFilters = {
   search: '',
   department: null,
   priority: null,
-  template: null
+  template: null,
 };
 let showProcessList = false;
 
@@ -57,7 +57,7 @@ function applyProcessFilter(filterType, filterValue) {
     search: '',
     department: null,
     priority: null,
-    template: null
+    template: null,
   };
   processFilters[filterType] = filterValue;
   showProcessList = true;
@@ -70,27 +70,27 @@ function clearProcessFilters() {
     search: '',
     department: null,
     priority: null,
-    template: null
+    template: null,
   };
   showProcessList = false;
 }
 
 async function generateProcessData() {
   console.log('🔄 Starting process data generation...');
-  
+
   try {
     const { data: clientData, error: clientError } = await supabase
       .from('clients')
       .select('id, client_code')
       .eq('client_code', 'hygge-hvidlog')
       .single();
-      
+
     if (clientError) {
       console.error('❌ Error fetching client:', clientError);
       alert('Error: Could not find hygge-hvidlog client');
       return;
     }
-    
+
     if (!clientData) {
       console.error('❌ Hygge & Hvidløg client not found');
       alert('Error: hygge-hvidlog client not found in database');
@@ -107,9 +107,9 @@ async function generateProcessData() {
 
 async function loadAccountData() {
   if (!$client?.id) return;
-  
+
   loadingAccount = true;
-  
+
   try {
     // Load TFC balance, invoices, and contacts
     // Simplified for now - full implementation would be in AccountService
@@ -125,12 +125,12 @@ async function loadAccountData() {
 // Load data and metrics on mount
 onMount(async () => {
   await loadDemoData();
-  
+
   // Load offboarding mock data
   offboardingTemplates = getMockOffboardingData().templates;
   offboardingProcesses = getMockOffboardingData().processes;
   allProcesses = [...offboardingProcesses];
-  
+
   // Load metrics
   try {
     const metrics = await getClientMetrics();
@@ -138,7 +138,7 @@ onMount(async () => {
   } catch (error) {
     console.error('Error loading metrics:', error);
   }
-  
+
   // Load account data
   await loadAccountData();
 });
@@ -152,7 +152,7 @@ function handleTabChange(event) {
 // Application tab clicks
 $: {
   if (applicationsLoaded) {
-    const validTabs = ['people', 'processes', 'account', ...$applications.map(app => app.code)];
+    const validTabs = ['people', 'processes', 'account', ...$applications.map((app) => app.code)];
     if (!validTabs.includes(activeTab)) {
       activeTab = 'people';
     }

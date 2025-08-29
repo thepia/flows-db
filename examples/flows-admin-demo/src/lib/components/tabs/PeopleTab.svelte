@@ -1,23 +1,23 @@
 <script lang="ts">
-import { createEventDispatcher, onMount } from 'svelte';
-import { 
-  PeopleHeader, 
-  PeopleStatsCards, 
-  PeopleFilters, 
-  PeopleActiveFilters, 
-  PeopleGrid, 
-  PeopleLoadMore 
+import {
+  PeopleActiveFilters,
+  PeopleFilters,
+  PeopleGrid,
+  PeopleHeader,
+  PeopleLoadMore,
+  PeopleStatsCards,
 } from '$lib/components/people';
 import { client } from '$lib/stores/data';
-import { 
-  currentPeoplePage, 
-  peoplePagination, 
-  loadPeoplePage, 
-  searchPeople, 
+import {
+  currentPeoplePage,
+  getPeopleStatistics,
+  loadPeoplePage,
   nextPeoplePage,
+  peoplePagination,
   resetPeoplePagination,
-  getPeopleStatistics
+  searchPeople,
 } from '$lib/stores/pagination';
+import { createEventDispatcher, onMount } from 'svelte';
 
 const dispatch = createEventDispatcher();
 
@@ -57,19 +57,19 @@ $: {
 
 async function performSearch() {
   if (!$client?.id) return;
-  
+
   try {
     isSearching = true;
     const filters = getActiveFilters();
-    
+
     if (searchTerm.trim()) {
       // Perform database search with filters
       await searchPeople($client.id, searchTerm.trim(), filters);
     } else {
       // Load regular first page when search is cleared
       resetPeoplePagination();
-      await loadPeoplePage($client.id, 0, { 
-        filters 
+      await loadPeoplePage($client.id, 0, {
+        filters,
       });
     }
   } catch (error) {
@@ -82,12 +82,12 @@ async function performSearch() {
 // Convert UI filters to database filters
 function getActiveFilters() {
   const filters: Record<string, any> = {};
-  
+
   // Handle status filter first
   if (selectedStatus !== 'all') {
     filters.employment_status = selectedStatus;
   }
-  
+
   // Handle type filter (this might override status filter)
   if (selectedType === 'employee') {
     // Show people with employment status (not null) - use specific statuses
@@ -102,25 +102,25 @@ function getActiveFilters() {
     // TODO: Implement proper associate filtering in database
     filters._associate_filter = true; // Custom marker for associate filtering
   }
-  
+
   return filters;
 }
 
 // Handle filter changes by reloading data
 async function handleFilterChange() {
   if (!$client?.id) return;
-  
+
   try {
     const filters = getActiveFilters();
-    
+
     if (searchTerm.trim()) {
       // Re-run search with new filters
       await searchPeople($client.id, searchTerm.trim(), filters);
     } else {
       // Reload first page with new filters
       resetPeoplePagination();
-      await loadPeoplePage($client.id, 0, { 
-        filters 
+      await loadPeoplePage($client.id, 0, {
+        filters,
       });
     }
   } catch (error) {
@@ -133,13 +133,13 @@ let unfilteredStatistics = {
   totalPeople: 0,
   activeEmployees: 0,
   associates: 0,
-  futureEmployees: 0
+  futureEmployees: 0,
 };
 
 // Load unfiltered statistics (summary cards at top)
 async function loadUnfilteredStatistics() {
   if (!$client?.id) return;
-  
+
   try {
     // Get statistics without any filters - these are summary cards
     const stats = await getPeopleStatistics($client.id, {});

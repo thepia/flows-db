@@ -1,6 +1,6 @@
 /**
  * Navigation Contract
- * 
+ *
  * This contract defines the expected navigation behaviors for the flows-admin-demo app.
  * It serves as a single source of truth for navigation expectations and ensures
  * tests remain stable even when demo content changes.
@@ -16,8 +16,8 @@ export const NavigationContract = {
       defaultActive: true,
       content: {
         sections: ['dashboard-metrics', 'employee-directory', 'invitations-sidebar'],
-        actions: ['new-invitation']
-      }
+        actions: ['new-invitation'],
+      },
     },
     processes: {
       id: 'tab-processes',
@@ -26,8 +26,8 @@ export const NavigationContract = {
       defaultActive: false,
       content: {
         sections: ['processes-header', 'process-list'],
-        actions: ['new-process']
-      }
+        actions: ['new-process'],
+      },
     },
     // Dynamic tabs based on applications
     applications: {
@@ -40,14 +40,20 @@ export const NavigationContract = {
         content: {
           offboarding: {
             views: ['overview', 'templates', 'processes', 'tasks'],
-            defaultView: 'overview'
+            defaultView: 'overview',
           },
           generic: {
-            sections: ['app-header', 'app-metrics', 'app-features', 'app-config', 'app-invitations']
-          }
-        }
-      }
-    }
+            sections: [
+              'app-header',
+              'app-metrics',
+              'app-features',
+              'app-config',
+              'app-invitations',
+            ],
+          },
+        },
+      },
+    },
   },
 
   // Offboarding sub-navigation
@@ -61,29 +67,36 @@ export const NavigationContract = {
           'additional-stats',
           'action-required',
           'quick-filters',
-          'performance-insights'
+          'performance-insights',
         ],
         actions: {
           createOffboarding: {
             id: 'action-create-offboarding',
             label: 'Create Offboarding',
-            navigatesToView: 'templates'
+            navigatesToView: 'templates',
           },
           filterByStatus: {
             id: 'action-filter-status-{status}',
             navigatesToView: 'processes',
-            statuses: ['active', 'ending_soon', 'recent_completed', 'needs_attention', 'overdue', 'pending_approval']
+            statuses: [
+              'active',
+              'ending_soon',
+              'recent_completed',
+              'needs_attention',
+              'overdue',
+              'pending_approval',
+            ],
           },
           filterByTimeframe: {
             id: 'action-filter-timeframe-{timeframe}',
             navigatesToView: 'processes',
-            timeframes: ['ending_soon', 'recent_completed', 'this_month']
+            timeframes: ['ending_soon', 'recent_completed', 'this_month'],
           },
           viewProcess: {
             id: 'action-view-process',
-            navigatesToView: 'tasks'
-          }
-        }
+            navigatesToView: 'tasks',
+          },
+        },
       },
       templates: {
         id: 'offboarding-view-templates',
@@ -91,8 +104,8 @@ export const NavigationContract = {
         actions: {
           selectTemplate: 'action-select-template',
           createTemplate: 'action-create-template',
-          editTemplate: 'action-edit-template'
-        }
+          editTemplate: 'action-edit-template',
+        },
       },
       processes: {
         id: 'offboarding-view-processes',
@@ -100,14 +113,14 @@ export const NavigationContract = {
         actions: {
           selectProcess: {
             id: 'action-select-process',
-            navigatesToView: 'tasks'
+            navigatesToView: 'tasks',
           },
           createProcess: {
             id: 'action-create-process',
-            navigatesToView: 'templates'
+            navigatesToView: 'templates',
           },
-          updateProcessStatus: 'action-update-process-status'
-        }
+          updateProcessStatus: 'action-update-process-status',
+        },
       },
       tasks: {
         id: 'offboarding-view-tasks',
@@ -118,10 +131,10 @@ export const NavigationContract = {
           completeTask: 'action-complete-task',
           startTask: 'action-start-task',
           addNote: 'action-add-note',
-          uploadDocument: 'action-upload-document'
-        }
-      }
-    }
+          uploadDocument: 'action-upload-document',
+        },
+      },
+    },
   },
 
   // Dashboard navigation actions
@@ -130,74 +143,74 @@ export const NavigationContract = {
       activeProcesses: {
         id: 'metric-active-processes',
         clickAction: 'filterByStatus',
-        param: 'active'
+        param: 'active',
       },
       endingSoon: {
         id: 'metric-ending-soon',
         clickAction: 'filterByTimeframe',
-        param: 'ending_soon'
+        param: 'ending_soon',
       },
       recentlyCompleted: {
         id: 'metric-recently-completed',
         clickAction: 'filterByTimeframe',
-        param: 'recent_completed'
+        param: 'recent_completed',
       },
       needsAttention: {
         id: 'metric-needs-attention',
         clickAction: 'filterByStatus',
-        param: 'needs_attention'
-      }
+        param: 'needs_attention',
+      },
     },
     quickFilters: {
       overdueProcesses: {
         id: 'filter-overdue-processes',
         clickAction: 'filterByStatus',
-        param: 'overdue'
+        param: 'overdue',
       },
       pendingApprovals: {
         id: 'filter-pending-approvals',
         clickAction: 'filterByStatus',
-        param: 'pending_approval'
+        param: 'pending_approval',
       },
       thisMonthActivity: {
         id: 'filter-this-month',
         clickAction: 'filterByTimeframe',
-        param: 'this_month'
-      }
+        param: 'this_month',
+      },
     },
     actionableProcesses: {
       viewProcessButton: {
         id: 'action-view-process-{processId}',
-        clickAction: 'viewProcess'
+        clickAction: 'viewProcess',
       },
       viewAllButton: {
         id: 'action-view-all-needs-attention',
         clickAction: 'filterByStatus',
-        param: 'needs_attention'
-      }
-    }
+        param: 'needs_attention',
+      },
+    },
   },
 
   // State expectations
   stateExpectations: {
     tabSwitch: {
       preserves: ['selectedClient'],
-      resets: ['offboardingView', 'selectedTemplate', 'selectedProcess']
+      resets: ['offboardingView', 'selectedTemplate', 'selectedProcess'],
     },
     offboardingViewSwitch: {
       preserves: ['activeTab', 'selectedClient'],
       conditionallyPreserves: {
-        selectedProcess: ['when switching between processes and tasks']
-      }
+        selectedProcess: ['when switching between processes and tasks'],
+      },
     },
     navigation: {
       urlPatterns: {
         root: '/',
         withTab: '/?tab={tabId}',
         withOffboardingView: '/?tab={tabId}&view={viewId}',
-        withProcess: '/?tab={tabId}&view=tasks&processId={processId}'
-      }
-    }
+        withProcess: '/?tab={tabId}&view=tasks&processId={processId}',
+      },
+    },
   },
 
   // Test helpers
@@ -206,26 +219,28 @@ export const NavigationContract = {
     getViewButtonSelector: (viewId) => `[data-testid="${viewId}"]`,
     getActionSelector: (actionId) => `[data-testid="${actionId}"]`,
     getMetricCardSelector: (metricId) => `[data-testid="${metricId}"]`,
-    
+
     // Wait conditions
     waitForNavigation: async (page, expectedView) => {
       // Wait for view content to be visible
       await page.waitForSelector(`[data-testid="view-${expectedView}"]`, { state: 'visible' });
       // Wait for any loading states to complete
-      await page.waitForSelector('[data-testid="loading-indicator"]', { state: 'hidden' }).catch(() => {});
+      await page
+        .waitForSelector('[data-testid="loading-indicator"]', { state: 'hidden' })
+        .catch(() => {});
     },
-    
+
     // State verification
     verifyActiveTab: async (page, tabId) => {
       const activeTab = await page.locator(`[data-testid="${tabId}"][data-active="true"]`);
       await expect(activeTab).toBeVisible();
     },
-    
+
     verifyActiveView: async (page, viewId) => {
       const activeView = await page.locator(`[data-testid="${viewId}"][data-active="true"]`);
       await expect(activeView).toBeVisible();
-    }
-  }
+    },
+  },
 };
 
 // Export navigation paths for easy access in tests
@@ -235,7 +250,7 @@ export const NavigationPaths = {
   processesTab: () => '/?tab=processes',
   applicationTab: (appCode) => `/?tab=${appCode}`,
   offboardingView: (appCode, view) => `/?tab=${appCode}&view=${view}`,
-  offboardingProcess: (appCode, processId) => `/?tab=${appCode}&view=tasks&processId=${processId}`
+  offboardingProcess: (appCode, processId) => `/?tab=${appCode}&view=tasks&processId=${processId}`,
 };
 
 // Export navigation actions
@@ -244,22 +259,22 @@ export const NavigationActions = {
     await page.click(`[data-testid="${tabId}"]`);
     await NavigationContract.testHelpers.waitForNavigation(page, tabId);
   },
-  
+
   switchToProcesses: async (page) => {
     await page.click(`[data-testid="tab-processes"]`);
     await NavigationContract.testHelpers.waitForNavigation(page, 'processes');
   },
-  
+
   switchOffboardingView: async (page, viewId) => {
     await page.click(`[data-testid="offboarding-view-${viewId}"]`);
     await NavigationContract.testHelpers.waitForNavigation(page, viewId);
   },
-  
+
   clickMetricCard: async (page, metricId) => {
     await page.click(`[data-testid="${metricId}"]`);
   },
-  
+
   clickQuickFilter: async (page, filterId) => {
     await page.click(`[data-testid="${filterId}"]`);
-  }
+  },
 };

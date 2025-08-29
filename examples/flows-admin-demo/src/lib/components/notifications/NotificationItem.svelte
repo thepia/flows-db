@@ -1,20 +1,20 @@
 <script lang="ts">
 import type { Notification } from '$lib/types/notifications';
 import { formatDistanceToNow } from 'date-fns';
-import { 
-	AlertCircle, 
-	CheckCircle, 
-	Clock, 
-	FileText, 
-	Settings, 
-	User, 
-	Users,
-	MoreHorizontal,
-	Check,
-	Archive,
-	X,
-	Eye,
-	EyeOff
+import {
+  AlertCircle,
+  Archive,
+  Check,
+  CheckCircle,
+  Clock,
+  Eye,
+  EyeOff,
+  FileText,
+  MoreHorizontal,
+  Settings,
+  User,
+  Users,
+  X,
 } from 'lucide-svelte';
 
 export let notification: Notification;
@@ -24,31 +24,31 @@ let showActions = false;
 
 // Priority colors
 const priorityColors = {
-	urgent: 'border-red-500 bg-red-50',
-	high: 'border-orange-500 bg-orange-50',
-	medium: 'border-blue-500 bg-blue-50',
-	low: 'border-gray-300 bg-gray-50'
+  urgent: 'border-red-500 bg-red-50',
+  high: 'border-orange-500 bg-orange-50',
+  medium: 'border-blue-500 bg-blue-50',
+  low: 'border-gray-300 bg-gray-50',
 };
 
 const priorityTextColors = {
-	urgent: 'text-red-700',
-	high: 'text-orange-700',
-	medium: 'text-blue-700',
-	low: 'text-gray-700'
+  urgent: 'text-red-700',
+  high: 'text-orange-700',
+  medium: 'text-blue-700',
+  low: 'text-gray-700',
 };
 
 // Type icons
 const typeIcons = {
-	onboarding_reminder: User,
-	document_review: FileText,
-	task_assignment: CheckCircle,
-	process_update: Settings,
-	deadline_reminder: Clock,
-	system_alert: AlertCircle,
-	invitation_sent: Users,
-	completion_milestone: CheckCircle,
-	manager_action_required: User,
-	hr_review_needed: Users
+  onboarding_reminder: User,
+  document_review: FileText,
+  task_assignment: CheckCircle,
+  process_update: Settings,
+  deadline_reminder: Clock,
+  system_alert: AlertCircle,
+  invitation_sent: Users,
+  completion_milestone: CheckCircle,
+  manager_action_required: User,
+  hr_review_needed: Users,
 };
 
 $: isUnread = notification.status === 'unread';
@@ -56,24 +56,24 @@ $: timeAgo = formatDistanceToNow(new Date(notification.createdAt), { addSuffix: 
 $: TypeIcon = typeIcons[notification.type] || AlertCircle;
 
 function handleAction(action: string) {
-	if (onAction) {
-		onAction(action);
-	}
-	showActions = false;
+  if (onAction) {
+    onAction(action);
+  }
+  showActions = false;
 }
 
 function handlePrimaryAction() {
-	if (notification.actions && notification.actions.length > 0) {
-		const primaryAction = notification.actions.find(a => a.type === 'primary');
-		if (primaryAction?.href) {
-			window.location.href = primaryAction.href;
-		}
-	}
-	
-	// Mark as read when clicking
-	if (isUnread) {
-		handleAction('mark-read');
-	}
+  if (notification.actions && notification.actions.length > 0) {
+    const primaryAction = notification.actions.find((a) => a.type === 'primary');
+    if (primaryAction?.href) {
+      window.location.href = primaryAction.href;
+    }
+  }
+
+  // Mark as read when clicking
+  if (isUnread) {
+    handleAction('mark-read');
+  }
 }
 </script>
 

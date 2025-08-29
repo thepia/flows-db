@@ -1,15 +1,15 @@
 import { supabase } from '$lib/supabase';
-import type { 
-  Notification, 
-  NotificationFilter, 
-  NotificationStats, 
+import type {
   NotificationService as INotificationService,
-  NotificationStakeholder,
-  NotificationType,
-  NotificationPriority,
-  NotificationStatus,
+  Notification,
   NotificationDemoConfig,
-  NotificationEvent
+  NotificationEvent,
+  NotificationFilter,
+  NotificationPriority,
+  NotificationStakeholder,
+  NotificationStats,
+  NotificationStatus,
+  NotificationType,
 } from '$lib/types/notifications';
 
 class NotificationService implements INotificationService {
@@ -26,12 +26,13 @@ class NotificationService implements INotificationService {
     // Subscribe to notification changes via Supabase realtime
     this.realtimeChannel = supabase
       .channel('notifications')
-      .on('postgres_changes', 
-        { 
-          event: '*', 
-          schema: 'api', 
-          table: 'notifications' 
-        }, 
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'api',
+          table: 'notifications',
+        },
         (payload) => {
           this.handleRealtimeEvent(payload);
         }
@@ -42,7 +43,7 @@ class NotificationService implements INotificationService {
   private handleRealtimeEvent(payload: any) {
     // Handle real-time database changes
     console.log('Notification real-time event:', payload);
-    
+
     switch (payload.eventType) {
       case 'INSERT':
         this.notifySubscribers(this.mapDbToNotification(payload.new));
@@ -54,7 +55,7 @@ class NotificationService implements INotificationService {
         this.removeLocalNotification(payload.old.id);
         break;
     }
-    
+
     this.notifyStatsSubscribers();
   }
 
@@ -114,7 +115,7 @@ class NotificationService implements INotificationService {
       }
 
       const { data, error } = await query;
-      
+
       if (error) {
         console.error('Error fetching notifications:', error);
         return this.getFallbackNotifications(filter);
@@ -131,15 +132,15 @@ class NotificationService implements INotificationService {
 
   private getFallbackNotifications(filter?: NotificationFilter): Notification[] {
     // Return demo notifications if database is not available
-    return this.notifications.filter(notification => {
+    return this.notifications.filter((notification) => {
       if (!filter) return true;
-      
+
       if (filter.status && !filter.status.includes(notification.status)) return false;
       if (filter.type && !filter.type.includes(notification.type)) return false;
       if (filter.priority && !filter.priority.includes(notification.priority)) return false;
       if (filter.clientId && notification.clientId !== filter.clientId) return false;
       if (filter.applicationId && notification.applicationId !== filter.applicationId) return false;
-      
+
       return true;
     });
   }
@@ -154,13 +155,13 @@ class NotificationService implements INotificationService {
 
       if (error || !data) {
         console.error('Error fetching notification:', error);
-        return this.notifications.find(n => n.id === id) || null;
+        return this.notifications.find((n) => n.id === id) || null;
       }
 
       return this.mapDbToNotification(data);
     } catch (error) {
       console.error('Error in getNotification:', error);
-      return this.notifications.find(n => n.id === id) || null;
+      return this.notifications.find((n) => n.id === id) || null;
     }
   }
 
@@ -168,9 +169,9 @@ class NotificationService implements INotificationService {
     try {
       const { error } = await supabase
         .from('notifications')
-        .update({ 
+        .update({
           status: 'read',
-          read_at: new Date().toISOString()
+          read_at: new Date().toISOString(),
         })
         .eq('id', id);
 
@@ -190,9 +191,9 @@ class NotificationService implements INotificationService {
     try {
       const { error } = await supabase
         .from('notifications')
-        .update({ 
+        .update({
           status: 'unread',
-          read_at: null
+          read_at: null,
         })
         .eq('id', id);
 
@@ -211,9 +212,9 @@ class NotificationService implements INotificationService {
     try {
       const { error } = await supabase
         .from('notifications')
-        .update({ 
+        .update({
           status: 'archived',
-          archived_at: new Date().toISOString()
+          archived_at: new Date().toISOString(),
         })
         .eq('id', id);
 
@@ -248,35 +249,31 @@ class NotificationService implements INotificationService {
 
   async markAllAsRead(filter?: NotificationFilter): Promise<void> {
     const notifications = await this.getNotifications(filter);
-    const unreadIds = notifications
-      .filter(n => n.status === 'unread')
-      .map(n => n.id);
+    const unreadIds = notifications.filter((n) => n.status === 'unread').map((n) => n.id);
 
-    await Promise.all(unreadIds.map(id => this.markAsRead(id)));
+    await Promise.all(unreadIds.map((id) => this.markAsRead(id)));
   }
 
   async archiveAll(filter?: NotificationFilter): Promise<void> {
     const notifications = await this.getNotifications(filter);
-    const activeIds = notifications
-      .filter(n => n.status !== 'archived')
-      .map(n => n.id);
+    const activeIds = notifications.filter((n) => n.status !== 'archived').map((n) => n.id);
 
-    await Promise.all(activeIds.map(id => this.archiveNotification(id)));
+    await Promise.all(activeIds.map((id) => this.archiveNotification(id)));
   }
 
   async getStats(filter?: NotificationFilter): Promise<NotificationStats> {
     const notifications = await this.getNotifications(filter);
-    
+
     const stats: NotificationStats = {
       total: notifications.length,
-      unread: notifications.filter(n => n.status === 'unread').length,
+      unread: notifications.filter((n) => n.status === 'unread').length,
       byType: {} as Record<NotificationType, number>,
       byPriority: {} as Record<NotificationPriority, number>,
       byStatus: {} as Record<NotificationStatus, number>,
     };
 
     // Count by type
-    notifications.forEach(notification => {
+    notifications.forEach((notification) => {
       stats.byType[notification.type] = (stats.byType[notification.type] || 0) + 1;
       stats.byPriority[notification.priority] = (stats.byPriority[notification.priority] || 0) + 1;
       stats.byStatus[notification.status] = (stats.byStatus[notification.status] || 0) + 1;
@@ -307,10 +304,10 @@ class NotificationService implements INotificationService {
 
   async generateDemoNotifications(count: number = 25): Promise<Notification[]> {
     const demoNotifications = this.createDemoNotifications(count);
-    
+
     try {
       // Try to insert into database
-      const dbRecords = demoNotifications.map(notification => ({
+      const dbRecords = demoNotifications.map((notification) => ({
         id: notification.id,
         type: notification.type,
         title: notification.title,
@@ -329,9 +326,7 @@ class NotificationService implements INotificationService {
         application_id: notification.applicationId,
       }));
 
-      const { error } = await supabase
-        .from('notifications')
-        .upsert(dbRecords);
+      const { error } = await supabase.from('notifications').upsert(dbRecords);
 
       if (error) {
         console.error('Error inserting demo notifications:', error);
@@ -343,7 +338,7 @@ class NotificationService implements INotificationService {
     // Always update local state
     this.notifications = [...this.notifications, ...demoNotifications];
     this.notifyStatsSubscribers();
-    
+
     return demoNotifications;
   }
 
@@ -376,7 +371,9 @@ class NotificationService implements INotificationService {
       notifications.push(notification);
     }
 
-    return notifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return notifications.sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
   }
 
   private getDemoStakeholders(): NotificationStakeholder[] {
@@ -386,88 +383,101 @@ class NotificationService implements INotificationService {
         type: 'system',
         name: 'Flows System',
         email: 'system@flows.thepia.net',
-        avatar: '🤖'
+        avatar: '🤖',
       },
       {
         id: 'hr-manager',
         type: 'hr',
         name: 'Sarah Johnson',
         email: 'sarah.johnson@hyggehvidlog.dk',
-        avatar: '👩‍💼'
+        avatar: '👩‍💼',
       },
       {
         id: 'direct-manager',
         type: 'manager',
         name: 'Lars Nielsen',
         email: 'lars.nielsen@hyggehvidlog.dk',
-        avatar: '👨‍💼'
+        avatar: '👨‍💼',
       },
       {
         id: 'admin',
         type: 'admin',
         name: 'Admin User',
         email: 'admin@hyggehvidlog.dk',
-        avatar: '⚙️'
-      }
+        avatar: '⚙️',
+      },
     ];
   }
 
-  private generateRandomNotification(stakeholders: NotificationStakeholder[], createdAt: Date): Notification {
+  private generateRandomNotification(
+    stakeholders: NotificationStakeholder[],
+    createdAt: Date
+  ): Notification {
     const scenarios = [
       {
         type: 'onboarding_reminder' as NotificationType,
         title: 'Complete your onboarding checklist',
-        message: 'You have 3 pending items in your onboarding checklist. Please complete them by end of week.',
+        message:
+          'You have 3 pending items in your onboarding checklist. Please complete them by end of week.',
         priority: 'medium' as NotificationPriority,
-        from: stakeholders.find(s => s.type === 'hr')!,
+        from: stakeholders.find((s) => s.type === 'hr')!,
         actions: [
-          { id: 'view-checklist', label: 'View Checklist', type: 'primary' as const, href: '/onboarding' },
-          { id: 'remind-later', label: 'Remind Later', type: 'secondary' as const }
-        ]
+          {
+            id: 'view-checklist',
+            label: 'View Checklist',
+            type: 'primary' as const,
+            href: '/onboarding',
+          },
+          { id: 'remind-later', label: 'Remind Later', type: 'secondary' as const },
+        ],
       },
       {
         type: 'document_review' as NotificationType,
         title: 'Document ready for review',
         message: 'Employee handbook has been uploaded and is ready for your review and approval.',
         priority: 'high' as NotificationPriority,
-        from: stakeholders.find(s => s.type === 'manager')!,
+        from: stakeholders.find((s) => s.type === 'manager')!,
         actions: [
-          { id: 'review-doc', label: 'Review Document', type: 'primary' as const, href: '/documents' },
-          { id: 'delegate', label: 'Delegate Review', type: 'secondary' as const }
-        ]
+          {
+            id: 'review-doc',
+            label: 'Review Document',
+            type: 'primary' as const,
+            href: '/documents',
+          },
+          { id: 'delegate', label: 'Delegate Review', type: 'secondary' as const },
+        ],
       },
       {
         type: 'task_assignment' as NotificationType,
         title: 'New task assigned to you',
         message: 'Setup workspace and development environment for new team member.',
         priority: 'medium' as NotificationPriority,
-        from: stakeholders.find(s => s.type === 'manager')!,
+        from: stakeholders.find((s) => s.type === 'manager')!,
         actions: [
           { id: 'view-task', label: 'View Task', type: 'primary' as const, href: '/tasks' },
-          { id: 'update-status', label: 'Update Status', type: 'secondary' as const }
-        ]
+          { id: 'update-status', label: 'Update Status', type: 'secondary' as const },
+        ],
       },
       {
         type: 'deadline_reminder' as NotificationType,
         title: 'Deadline approaching',
-        message: 'Your probation review is due in 3 days. Please schedule a meeting with your manager.',
+        message:
+          'Your probation review is due in 3 days. Please schedule a meeting with your manager.',
         priority: 'high' as NotificationPriority,
-        from: stakeholders.find(s => s.type === 'system')!,
+        from: stakeholders.find((s) => s.type === 'system')!,
         actions: [
           { id: 'schedule-meeting', label: 'Schedule Meeting', type: 'primary' as const },
-          { id: 'extend-deadline', label: 'Request Extension', type: 'secondary' as const }
-        ]
+          { id: 'extend-deadline', label: 'Request Extension', type: 'secondary' as const },
+        ],
       },
       {
         type: 'system_alert' as NotificationType,
         title: 'System maintenance scheduled',
         message: 'The system will be unavailable for maintenance on Saturday from 2-4 AM.',
         priority: 'low' as NotificationPriority,
-        from: stakeholders.find(s => s.type === 'system')!,
-        actions: [
-          { id: 'view-schedule', label: 'View Schedule', type: 'secondary' as const }
-        ]
-      }
+        from: stakeholders.find((s) => s.type === 'system')!,
+        actions: [{ id: 'view-schedule', label: 'View Schedule', type: 'secondary' as const }],
+      },
     ];
 
     const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
@@ -482,15 +492,19 @@ class NotificationService implements INotificationService {
       status: isRead ? 'read' : 'unread',
       channels: ['in_app'],
       from: scenario.from,
-      to: [{ 
-        id: 'current-user',
-        type: 'employee' as const,
-        name: 'Current User',
-        email: 'user@hyggehvidlog.dk',
-        avatar: '👤'
-      }],
+      to: [
+        {
+          id: 'current-user',
+          type: 'employee' as const,
+          name: 'Current User',
+          email: 'user@hyggehvidlog.dk',
+          avatar: '👤',
+        },
+      ],
       createdAt: createdAt.toISOString(),
-      readAt: isRead ? new Date(createdAt.getTime() + Math.random() * 24 * 60 * 60 * 1000).toISOString() : undefined,
+      readAt: isRead
+        ? new Date(createdAt.getTime() + Math.random() * 24 * 60 * 60 * 1000).toISOString()
+        : undefined,
       expiresAt: new Date(createdAt.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
       actions: scenario.actions,
       metadata: {
@@ -503,7 +517,7 @@ class NotificationService implements INotificationService {
   }
 
   private updateLocalNotificationStatus(id: string, status: NotificationStatus) {
-    const notification = this.notifications.find(n => n.id === id);
+    const notification = this.notifications.find((n) => n.id === id);
     if (notification) {
       notification.status = status;
       if (status === 'read') {
@@ -515,7 +529,7 @@ class NotificationService implements INotificationService {
   }
 
   private updateLocalNotification(notification: Notification) {
-    const index = this.notifications.findIndex(n => n.id === notification.id);
+    const index = this.notifications.findIndex((n) => n.id === notification.id);
     if (index > -1) {
       this.notifications[index] = notification;
     } else {
@@ -524,7 +538,7 @@ class NotificationService implements INotificationService {
   }
 
   private removeLocalNotification(id: string) {
-    const index = this.notifications.findIndex(n => n.id === id);
+    const index = this.notifications.findIndex((n) => n.id === id);
     if (index > -1) {
       this.notifications.splice(index, 1);
     }
@@ -532,13 +546,13 @@ class NotificationService implements INotificationService {
 
   private notifySubscribers(notification?: Notification) {
     if (notification) {
-      this.subscribers.forEach(callback => callback(notification));
+      this.subscribers.forEach((callback) => callback(notification));
     }
   }
 
   private async notifyStatsSubscribers() {
     const stats = await this.getStats();
-    this.statsSubscribers.forEach(callback => callback(stats));
+    this.statsSubscribers.forEach((callback) => callback(stats));
   }
 
   // Cleanup

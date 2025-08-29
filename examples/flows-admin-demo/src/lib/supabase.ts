@@ -3,7 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 
 // Fallback values for demo environment
 const FALLBACK_URL = 'https://jstbkvkurjsopuwhlsvy.supabase.co';
-const FALLBACK_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzdGJrdmt1cmpzb3B1d2hsc3Z5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDk2NjU2OCwiZXhwIjoyMDY2NTQyNTY4fQ.vSSYVzitJDrQQYer1cW-SU_ZSEUtVyIOKsogHjy3h58';
+const FALLBACK_SERVICE_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzdGJrdmt1cmpzb3B1d2hsc3Z5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDk2NjU2OCwiZXhwIjoyMDY2NTQyNTY4fQ.vSSYVzitJDrQQYer1cW-SU_ZSEUtVyIOKsogHjy3h58';
 
 // Use Vite environment variables - these are loaded from the parent .env file
 // For browser, we need to use import.meta.env with VITE_ prefix
@@ -24,7 +25,7 @@ if (!browser) {
     url: supabaseUrl ? 'loaded' : 'missing',
     key: supabaseServiceKey ? 'loaded' : 'missing',
     envUrl: process.env.SUPABASE_URL ? 'available' : 'not available',
-    envKey: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'available' : 'not available'
+    envKey: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'available' : 'not available',
   });
 }
 

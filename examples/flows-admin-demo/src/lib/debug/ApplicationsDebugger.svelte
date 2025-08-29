@@ -3,81 +3,87 @@
   This component helps diagnose store behavior issues
 -->
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { applications, loadDemoData } from '$lib/stores/data';
-  import { initializeStoreDiagnostics, testApplicationsStore } from './store-diagnostics';
-  
-  let debugInfo = {
-    storeValue: null,
-    storeLength: 0,
-    subscriptionCount: 0,
-    reactiveCount: 0,
-    lastUpdate: null
+import { applications, loadDemoData } from '$lib/stores/data';
+import { onMount } from 'svelte';
+import { initializeStoreDiagnostics, testApplicationsStore } from './store-diagnostics';
+
+let debugInfo = {
+  storeValue: null,
+  storeLength: 0,
+  subscriptionCount: 0,
+  reactiveCount: 0,
+  lastUpdate: null,
+};
+
+let testResults = [];
+
+// Manual store value check
+function checkStoreValue() {
+  const value = $applications;
+  debugInfo = {
+    ...debugInfo,
+    storeValue: value,
+    storeLength: value?.length || 0,
+    lastUpdate: new Date().toISOString(),
   };
-  
-  let testResults = [];
-  
-  // Manual store value check
-  function checkStoreValue() {
-    const value = $applications;
-    debugInfo = {
-      ...debugInfo,
-      storeValue: value,
-      storeLength: value?.length || 0,
-      lastUpdate: new Date().toISOString()
-    };
-    console.log('🔍 [Debug] Manual store check:', value);
-  }
-  
-  // Test store subscription
-  function testSubscription() {
-    console.log('🧪 [Debug] Testing store subscription');
-    const unsubscribe = applications.subscribe(value => {
-      console.log('🧪 [Debug] Subscription triggered:', value);
-      testResults = [...testResults, {
+  console.log('🔍 [Debug] Manual store check:', value);
+}
+
+// Test store subscription
+function testSubscription() {
+  console.log('🧪 [Debug] Testing store subscription');
+  const unsubscribe = applications.subscribe((value) => {
+    console.log('🧪 [Debug] Subscription triggered:', value);
+    testResults = [
+      ...testResults,
+      {
         type: 'subscription',
         value: value,
-        timestamp: new Date().toISOString()
-      }];
-    });
-    
-    setTimeout(() => {
-      unsubscribe();
-      console.log('🧪 [Debug] Subscription test completed');
-    }, 5000);
-  }
-  
-  // Test reactive statement
-  $: {
-    debugInfo.reactiveCount++;
-    console.log('🔄 [Debug] Reactive statement triggered. Count:', debugInfo.reactiveCount);
-    console.log('🔄 [Debug] Applications in reactive:', $applications);
-    
-    testResults = [...testResults, {
+        timestamp: new Date().toISOString(),
+      },
+    ];
+  });
+
+  setTimeout(() => {
+    unsubscribe();
+    console.log('🧪 [Debug] Subscription test completed');
+  }, 5000);
+}
+
+// Test reactive statement
+$: {
+  debugInfo.reactiveCount++;
+  console.log('🔄 [Debug] Reactive statement triggered. Count:', debugInfo.reactiveCount);
+  console.log('🔄 [Debug] Applications in reactive:', $applications);
+
+  testResults = [
+    ...testResults,
+    {
       type: 'reactive',
       value: $applications,
       count: debugInfo.reactiveCount,
-      timestamp: new Date().toISOString()
-    }];
-  }
-  
-  // Test store behavior on mount
-  onMount(async () => {
-    console.log('🚀 [Debug] ApplicationsDebugger mounted');
-    
-    // Initialize diagnostics
-    const cleanup = initializeStoreDiagnostics();
-    
-    // Initial store check
-    checkStoreValue();
-    
-    // Test applications store
-    console.log('🧪 [Debug] Running applications store test');
-    const testResult = await testApplicationsStore();
-    console.log('🧪 [Debug] Test completed:', testResult);
-    
-    return cleanup;
-  });
+      timestamp: new Date().toISOString(),
+    },
+  ];
+}
+
+// Test store behavior on mount
+onMount(async () => {
+  console.log('🚀 [Debug] ApplicationsDebugger mounted');
+
+  // Initialize diagnostics
+  const cleanup = initializeStoreDiagnostics();
+
+  // Initial store check
+  checkStoreValue();
+
+  // Test applications store
+  console.log('🧪 [Debug] Running applications store test');
+  const testResult = await testApplicationsStore();
+  console.log('🧪 [Debug] Test completed:', testResult);
+
+  return cleanup;
+});
 </script>
 
 <div class="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm">

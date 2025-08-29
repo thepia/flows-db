@@ -1,21 +1,21 @@
 <script lang="ts">
+import { Badge } from '$lib/components/ui/badge';
 import { Button } from '$lib/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
-import { Badge } from '$lib/components/ui/badge';
-import { Progress } from '$lib/components/ui/progress';
 import { Input } from '$lib/components/ui/input';
 import { Label } from '$lib/components/ui/label';
-import { 
-  Search, 
-  Filter, 
-  Calendar, 
-  User, 
-  AlertTriangle, 
-  Clock, 
+import { Progress } from '$lib/components/ui/progress';
+import {
+  AlertTriangle,
+  Building2,
+  Calendar,
   CheckCircle,
-  X,
   ChevronRight,
-  Building2
+  Clock,
+  Filter,
+  Search,
+  User,
+  X,
 } from 'lucide-svelte';
 
 // Props
@@ -26,7 +26,7 @@ export let filters = {
   search: '',
   department: null,
   priority: null,
-  template: null
+  template: null,
 };
 export let onClearFilters = () => {};
 export let onProcessSelect = (process) => {};
@@ -42,78 +42,79 @@ function handleSearch() {
 }
 
 // Filter processes based on current filters
-$: filteredProcesses = processes.filter(process => {
+$: filteredProcesses = processes.filter((process) => {
   let matches = true;
-  
+
   // Search filter
   if (filters.search) {
     const search = filters.search.toLowerCase();
-    matches = matches && (
-      process.process_name?.toLowerCase().includes(search) ||
-      process.employee_name?.toLowerCase().includes(search) ||
-      process.employee_department?.toLowerCase().includes(search)
-    );
+    matches =
+      matches &&
+      (process.process_name?.toLowerCase().includes(search) ||
+        process.employee_name?.toLowerCase().includes(search) ||
+        process.employee_department?.toLowerCase().includes(search));
   }
-  
+
   // Status filter
   if (filters.status) {
     if (filters.status === 'needs_attention') {
-      matches = matches && (
-        process.status === 'pending_approval' || 
-        process.overdue_tasks > 0 ||
-        (process.target_completion_date && new Date(process.target_completion_date) <= new Date(Date.now() + 3 * 24 * 60 * 60 * 1000))
-      );
+      matches =
+        matches &&
+        (process.status === 'pending_approval' ||
+          process.overdue_tasks > 0 ||
+          (process.target_completion_date &&
+            new Date(process.target_completion_date) <=
+              new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)));
     } else {
       matches = matches && process.status === filters.status;
     }
   }
-  
+
   // Timeframe filter
   if (filters.timeframe) {
     const now = new Date();
     const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    
+
     switch (filters.timeframe) {
       case 'ending_soon':
-        matches = matches && (
-          process.status === 'active' && 
-          process.target_completion_date && 
-          new Date(process.target_completion_date) <= sevenDaysFromNow
-        );
+        matches =
+          matches &&
+          process.status === 'active' && process.target_completion_date &&
+          new Date(process.target_completion_date) <= sevenDaysFromNow;
         break;
       case 'recent_completed':
-        matches = matches && (
-          process.status === 'completed' && 
-          process.actual_completion_date && 
-          new Date(process.actual_completion_date) >= thirtyDaysAgo
-        );
+        matches =
+          matches &&
+          process.status === 'completed' && process.actual_completion_date &&
+          new Date(process.actual_completion_date) >= thirtyDaysAgo;
         break;
       case 'this_month':
         const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-        matches = matches && (
-          (process.actual_start_date && new Date(process.actual_start_date) >= thisMonthStart) ||
-          (process.actual_completion_date && new Date(process.actual_completion_date) >= thisMonthStart)
-        );
+        matches =
+          matches &&
+          ((process.actual_start_date && new Date(process.actual_start_date) >= thisMonthStart) ||
+            (process.actual_completion_date &&
+              new Date(process.actual_completion_date) >= thisMonthStart));
         break;
     }
   }
-  
+
   // Department filter
   if (filters.department) {
     matches = matches && process.employee_department === filters.department;
   }
-  
+
   // Priority filter
   if (filters.priority) {
     matches = matches && process.priority === filters.priority;
   }
-  
+
   // Template filter
   if (filters.template) {
     matches = matches && process.template_id === filters.template;
   }
-  
+
   return matches;
 });
 
@@ -152,17 +153,17 @@ function getPriorityColor(priority) {
 // Format date
 function formatDate(dateString) {
   if (!dateString) return 'Not set';
-  return new Date(dateString).toLocaleDateString('en-US', { 
-    month: 'short', 
+  return new Date(dateString).toLocaleDateString('en-US', {
+    month: 'short',
     day: 'numeric',
-    year: 'numeric'
+    year: 'numeric',
   });
 }
 
 // Get active filter description
 function getFilterDescription() {
   const activeFilters = [];
-  
+
   if (filters.status) {
     if (filters.status === 'needs_attention') {
       activeFilters.push('Needs Attention');
@@ -170,7 +171,7 @@ function getFilterDescription() {
       activeFilters.push(`Status: ${filters.status.replace('_', ' ')}`);
     }
   }
-  
+
   if (filters.timeframe) {
     switch (filters.timeframe) {
       case 'ending_soon':
@@ -184,31 +185,30 @@ function getFilterDescription() {
         break;
     }
   }
-  
+
   if (filters.search) {
     activeFilters.push(`Search: "${filters.search}"`);
   }
-  
+
   if (filters.department) {
     activeFilters.push(`Department: ${filters.department}`);
   }
-  
+
   if (filters.priority) {
     activeFilters.push(`Priority: ${filters.priority}`);
   }
-  
+
   if (filters.template) {
     activeFilters.push('Template-based');
   }
-  
+
   return activeFilters.join(', ') || 'All Processes';
 }
 
 // Get unique departments
-$: departments = [...new Set(processes
-  .filter(p => p.employee_department)
-  .map(p => p.employee_department)
-)];
+$: departments = [
+  ...new Set(processes.filter((p) => p.employee_department).map((p) => p.employee_department)),
+];
 </script>
 
 <div class="space-y-6" id="process-list-section">

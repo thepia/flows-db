@@ -1,21 +1,21 @@
 <script lang="ts">
+import { Badge } from '$lib/components/ui/badge';
 import { Button } from '$lib/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
-import { Badge } from '$lib/components/ui/badge';
 import { Progress } from '$lib/components/ui/progress';
-import { 
-  TrendingUp,
-  Clock,
-  CheckCircle,
-  AlertTriangle,
-  Calendar,
-  Target,
+import {
   Activity,
-  ChevronRight,
-  UserCheck,
-  Timer,
+  AlertTriangle,
   BarChart3,
-  UserMinus
+  Calendar,
+  CheckCircle,
+  ChevronRight,
+  Clock,
+  Target,
+  Timer,
+  TrendingUp,
+  UserCheck,
+  UserMinus,
 } from 'lucide-svelte';
 
 // Props
@@ -29,7 +29,7 @@ export let loading = false;
 
 // Calculate stats
 $: stats = calculateStats(processes, employees);
-$: actionableProcesses = processes.filter(p => needsUserAction(p)).slice(0, 5);
+$: actionableProcesses = processes.filter((p) => needsUserAction(p)).slice(0, 5);
 
 function calculateStats(processes, employees) {
   const now = new Date();
@@ -37,48 +37,51 @@ function calculateStats(processes, employees) {
   const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
   const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
 
-  const recentlyCompleted = processes.filter(p => 
-    p.status === 'completed' && 
-    p.actual_completion_date && 
-    new Date(p.actual_completion_date) >= thirtyDaysAgo
+  const recentlyCompleted = processes.filter(
+    (p) =>
+      p.status === 'completed' &&
+      p.actual_completion_date &&
+      new Date(p.actual_completion_date) >= thirtyDaysAgo
   );
 
-  const endingSoon = processes.filter(p => 
-    p.status === 'active' && 
-    p.target_completion_date && 
-    new Date(p.target_completion_date) <= sevenDaysFromNow
+  const endingSoon = processes.filter(
+    (p) =>
+      p.status === 'active' &&
+      p.target_completion_date &&
+      new Date(p.target_completion_date) <= sevenDaysFromNow
   );
 
-  const activeProcesses = processes.filter(p => p.status === 'active');
-  
-  const pastYearCompleted = processes.filter(p => 
-    p.status === 'completed' && 
-    p.actual_completion_date && 
-    new Date(p.actual_completion_date) >= oneYearAgo
+  const activeProcesses = processes.filter((p) => p.status === 'active');
+
+  const pastYearCompleted = processes.filter(
+    (p) =>
+      p.status === 'completed' &&
+      p.actual_completion_date &&
+      new Date(p.actual_completion_date) >= oneYearAgo
   );
 
-  const overdue = processes.filter(p => 
-    p.status === 'active' && 
-    p.target_completion_date && 
-    new Date(p.target_completion_date) < now
+  const overdue = processes.filter(
+    (p) =>
+      p.status === 'active' && p.target_completion_date && new Date(p.target_completion_date) < now
   );
 
-  const pendingApproval = processes.filter(p => p.status === 'pending_approval');
+  const pendingApproval = processes.filter((p) => p.status === 'pending_approval');
 
   // Calculate average completion time for recent processes
-  const completedWithDuration = recentlyCompleted.filter(p => 
-    p.actual_start_date && p.actual_completion_date
+  const completedWithDuration = recentlyCompleted.filter(
+    (p) => p.actual_start_date && p.actual_completion_date
   );
-  
-  const avgCompletionDays = completedWithDuration.length > 0 
-    ? Math.round(
-        completedWithDuration.reduce((sum, p) => {
-          const start = new Date(p.actual_start_date);
-          const end = new Date(p.actual_completion_date);
-          return sum + (end - start) / (1000 * 60 * 60 * 24);
-        }, 0) / completedWithDuration.length
-      )
-    : 0;
+
+  const avgCompletionDays =
+    completedWithDuration.length > 0
+      ? Math.round(
+          completedWithDuration.reduce((sum, p) => {
+            const start = new Date(p.actual_start_date);
+            const end = new Date(p.actual_completion_date);
+            return sum + (end - start) / (1000 * 60 * 60 * 24);
+          }, 0) / completedWithDuration.length
+        )
+      : 0;
 
   return {
     recentlyCompleted: recentlyCompleted.length,
@@ -88,7 +91,7 @@ function calculateStats(processes, employees) {
     overdue: overdue.length,
     pendingApproval: pendingApproval.length,
     avgCompletionDays,
-    totalProcesses: processes.length
+    totalProcesses: processes.length,
   };
 }
 
@@ -96,8 +99,9 @@ function needsUserAction(process) {
   return (
     process.status === 'pending_approval' ||
     (process.status === 'active' && process.overdue_tasks > 0) ||
-    (process.status === 'active' && process.target_completion_date && 
-     new Date(process.target_completion_date) <= new Date(Date.now() + 3 * 24 * 60 * 60 * 1000))
+    (process.status === 'active' &&
+      process.target_completion_date &&
+      new Date(process.target_completion_date) <= new Date(Date.now() + 3 * 24 * 60 * 60 * 1000))
   );
 }
 
@@ -111,9 +115,9 @@ function getUrgencyColor(process) {
 
 function formatDateShort(dateString) {
   if (!dateString) return 'Not set';
-  return new Date(dateString).toLocaleDateString('en-US', { 
-    month: 'short', 
-    day: 'numeric' 
+  return new Date(dateString).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
   });
 }
 
@@ -121,7 +125,9 @@ function getActionText(process) {
   if (process.status === 'pending_approval') return 'Needs approval';
   if (process.overdue_tasks > 0) return `${process.overdue_tasks} overdue tasks`;
   if (process.target_completion_date) {
-    const daysUntil = Math.ceil((new Date(process.target_completion_date) - new Date()) / (1000 * 60 * 60 * 24));
+    const daysUntil = Math.ceil(
+      (new Date(process.target_completion_date) - new Date()) / (1000 * 60 * 60 * 24)
+    );
     if (daysUntil <= 0) return 'Overdue';
     if (daysUntil <= 3) return `Due in ${daysUntil} days`;
   }

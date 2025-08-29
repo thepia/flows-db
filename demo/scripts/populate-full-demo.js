@@ -2,20 +2,20 @@
 
 /**
  * Full Demo Data Population Script
- * 
+ *
  * Creates comprehensive demo data matching the richness of the mock data
  * in the Svelte UI, including employees, enrollments, documents, and tasks.
  */
 
-import { Command } from 'commander';
-import { createClient } from '@supabase/supabase-js';
-import chalk from 'chalk';
-import ora from 'ora';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createClient } from '@supabase/supabase-js';
+import chalk from 'chalk';
+import { Command } from 'commander';
 import { config } from 'dotenv';
+import ora from 'ora';
 
 // Load environment variables
 config();
@@ -30,7 +30,9 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseServiceKey) {
-  console.error(chalk.red('❌ Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables'));
+  console.error(
+    chalk.red('❌ Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables')
+  );
   process.exit(1);
 }
 
@@ -41,26 +43,28 @@ async function apiCall(endpoint, method = 'GET', data = null) {
   const options = {
     method,
     headers: {
-      'apikey': supabaseServiceKey,
-      'Authorization': `Bearer ${supabaseServiceKey}`,
-      'Content-Type': 'application/json'
-    }
+      apikey: supabaseServiceKey,
+      Authorization: `Bearer ${supabaseServiceKey}`,
+      'Content-Type': 'application/json',
+    },
   };
-  
+
   if (data && (method === 'POST' || method === 'PATCH')) {
     options.body = JSON.stringify(data);
     if (method === 'POST') {
       options.headers['Prefer'] = 'return=representation';
     }
   }
-  
+
   const response = await fetch(`${supabaseUrl}/rest/v1/${endpoint}`, options);
-  
+
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`API call failed: ${method} ${endpoint} - HTTP ${response.status}: ${errorText}`);
+    throw new Error(
+      `API call failed: ${method} ${endpoint} - HTTP ${response.status}: ${errorText}`
+    );
   }
-  
+
   return method === 'DELETE' ? null : await response.json();
 }
 
@@ -71,15 +75,15 @@ async function getDemoClientAndApps() {
   const configPath = path.join(__dirname, '../config/client.json');
   const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
   const clientCode = config.client.client_code;
-  
+
   const clients = await apiCall(`clients?select=*&client_code=eq.${clientCode}`);
   if (!clients || clients.length === 0) {
     throw new Error('Demo client not found. Run demo:setup first.');
   }
-  
+
   const client = clients[0];
   const applications = await apiCall(`client_applications?select=*&client_id=eq.${client.id}`);
-  
+
   return { client, applications };
 }
 
@@ -103,7 +107,7 @@ async function createEmployees(clientId) {
       employment_type: 'full_time',
       work_location: 'hybrid',
       skills: ['JavaScript', 'TypeScript', 'React', 'Node.js', 'Payment APIs'],
-      languages: ['Danish', 'English', 'Swedish']
+      languages: ['Danish', 'English', 'Swedish'],
     },
     {
       person_code: 'emp-002',
@@ -120,7 +124,7 @@ async function createEmployees(clientId) {
       employment_type: 'full_time',
       work_location: 'office',
       skills: ['Product Strategy', 'Agile', 'Data Analysis', 'Financial Services', 'User Research'],
-      languages: ['Danish', 'English', 'Norwegian']
+      languages: ['Danish', 'English', 'Norwegian'],
     },
     {
       person_code: 'emp-003',
@@ -137,7 +141,7 @@ async function createEmployees(clientId) {
       employment_type: 'full_time',
       work_location: 'remote',
       skills: ['UX Design', 'Figma', 'User Research', 'Prototyping', 'Accessibility'],
-      languages: ['Swedish', 'English', 'Danish']
+      languages: ['Swedish', 'English', 'Danish'],
     },
     {
       person_code: 'emp-004',
@@ -155,19 +159,19 @@ async function createEmployees(clientId) {
       employment_type: 'full_time',
       work_location: 'hybrid',
       skills: ['Kubernetes', 'Docker', 'AWS', 'CI/CD', 'Infrastructure as Code'],
-      languages: ['Swedish', 'English']
-    }
+      languages: ['Swedish', 'English'],
+    },
   ];
-  
+
   const createdEmployees = [];
   for (const empData of employeesData) {
     const employee = await apiCall('people', 'POST', {
       ...empData,
-      client_id: clientId
+      client_id: clientId,
     });
     createdEmployees.push(employee[0]);
   }
-  
+
   return createdEmployees;
 }
 
@@ -183,7 +187,7 @@ async function createEmployeeEnrollments(employees) {
       completion_percentage: 100,
       mentor: 'Lars Nielsen',
       buddy_program: true,
-      last_activity: '2024-01-15T16:00:00Z'
+      last_activity: '2024-01-15T16:00:00Z',
     },
     {
       person_code: 'emp-002',
@@ -192,7 +196,7 @@ async function createEmployeeEnrollments(employees) {
       completion_percentage: 100,
       mentor: 'Maria Andersen',
       buddy_program: true,
-      last_activity: '2024-02-05T17:00:00Z'
+      last_activity: '2024-02-05T17:00:00Z',
     },
     {
       person_code: 'emp-003',
@@ -200,7 +204,7 @@ async function createEmployeeEnrollments(employees) {
       completion_percentage: 45,
       mentor: 'Peter Olsen',
       buddy_program: true,
-      last_activity: '2024-03-02T15:30:00Z'
+      last_activity: '2024-03-02T15:30:00Z',
     },
     {
       person_code: 'emp-004',
@@ -220,23 +224,23 @@ async function createEmployeeEnrollments(employees) {
       equipment_returned: true,
       access_revoked: true,
       final_payroll: true,
-      last_activity: '2024-03-15T17:00:00Z'
-    }
+      last_activity: '2024-03-15T17:00:00Z',
+    },
   ];
-  
+
   const createdEnrollments = [];
   for (const enrollData of enrollmentsData) {
-    const employee = employees.find(e => e.person_code === enrollData.person_code);
+    const employee = employees.find((e) => e.person_code === enrollData.person_code);
     if (!employee) continue;
-    
+
     const { person_code, ...enrollmentData } = enrollData;
     const enrollment = await apiCall('people_enrollments', 'POST', {
       ...enrollmentData,
-      employee_id: employee.id
+      employee_id: employee.id,
     });
     createdEnrollments.push(enrollment[0]);
   }
-  
+
   return createdEnrollments;
 }
 
@@ -255,7 +259,7 @@ async function createDocuments(employees) {
           employment_status: 'verified',
           uploaded_at: '2024-01-10T10:00:00Z',
           reviewed_at: '2024-01-12T14:30:00Z',
-          reviewed_by: 'HR Team'
+          reviewed_by: 'HR Team',
         },
         {
           name: 'ID Verification',
@@ -263,7 +267,7 @@ async function createDocuments(employees) {
           employment_status: 'verified',
           uploaded_at: '2024-01-10T10:30:00Z',
           reviewed_at: '2024-01-12T14:35:00Z',
-          reviewed_by: 'HR Team'
+          reviewed_by: 'HR Team',
         },
         {
           name: 'GDPR Consent',
@@ -271,9 +275,9 @@ async function createDocuments(employees) {
           employment_status: 'verified',
           uploaded_at: '2024-01-10T11:00:00Z',
           reviewed_at: '2024-01-12T15:00:00Z',
-          reviewed_by: 'Compliance Team'
-        }
-      ]
+          reviewed_by: 'Compliance Team',
+        },
+      ],
     },
     // Erik Larsen documents
     {
@@ -285,7 +289,7 @@ async function createDocuments(employees) {
           employment_status: 'verified',
           uploaded_at: '2024-01-25T11:00:00Z',
           reviewed_at: '2024-01-26T10:00:00Z',
-          reviewed_by: 'HR Team'
+          reviewed_by: 'HR Team',
         },
         {
           name: 'Financial Disclosure',
@@ -293,9 +297,9 @@ async function createDocuments(employees) {
           employment_status: 'verified',
           uploaded_at: '2024-01-25T12:00:00Z',
           reviewed_at: '2024-01-26T11:00:00Z',
-          reviewed_by: 'Compliance Team'
-        }
-      ]
+          reviewed_by: 'Compliance Team',
+        },
+      ],
     },
     // Sofia Berg documents
     {
@@ -305,15 +309,15 @@ async function createDocuments(employees) {
           name: 'Employment Contract',
           type: 'contract',
           employment_status: 'pending',
-          uploaded_at: '2024-02-25T14:00:00Z'
+          uploaded_at: '2024-02-25T14:00:00Z',
         },
         {
           name: 'Tax Forms',
           type: 'tax_form',
           employment_status: 'uploaded',
-          uploaded_at: '2024-02-26T09:30:00Z'
-        }
-      ]
+          uploaded_at: '2024-02-26T09:30:00Z',
+        },
+      ],
     },
     // Magnus Johansson documents
     {
@@ -325,7 +329,7 @@ async function createDocuments(employees) {
           employment_status: 'verified',
           uploaded_at: '2024-03-01T09:00:00Z',
           reviewed_at: '2024-03-01T14:00:00Z',
-          reviewed_by: 'HR Director'
+          reviewed_by: 'HR Director',
         },
         {
           name: 'Knowledge Transfer Document',
@@ -333,7 +337,7 @@ async function createDocuments(employees) {
           employment_status: 'verified',
           uploaded_at: '2024-03-10T16:00:00Z',
           reviewed_at: '2024-03-11T10:00:00Z',
-          reviewed_by: 'Lars Nielsen'
+          reviewed_by: 'Lars Nielsen',
         },
         {
           name: 'Equipment Return Receipt',
@@ -341,26 +345,26 @@ async function createDocuments(employees) {
           employment_status: 'verified',
           uploaded_at: '2024-03-14T12:00:00Z',
           reviewed_at: '2024-03-14T14:00:00Z',
-          reviewed_by: 'IT Department'
-        }
-      ]
-    }
+          reviewed_by: 'IT Department',
+        },
+      ],
+    },
   ];
-  
+
   const createdDocuments = [];
   for (const empDocs of documentsData) {
-    const employee = employees.find(e => e.person_code === empDocs.person_code);
+    const employee = employees.find((e) => e.person_code === empDocs.person_code);
     if (!employee) continue;
-    
+
     for (const docData of empDocs.documents) {
       const document = await apiCall('documents', 'POST', {
         ...docData,
-        employee_id: employee.id
+        employee_id: employee.id,
       });
       createdDocuments.push(document[0]);
     }
   }
-  
+
   return createdDocuments;
 }
 
@@ -381,7 +385,7 @@ async function createTasks(employees) {
           priority: 'high',
           assigned_by: 'IT Department',
           assigned_at: '2024-01-15T09:00:00Z',
-          completed_at: '2024-01-15T16:00:00Z'
+          completed_at: '2024-01-15T16:00:00Z',
         },
         {
           title: 'Payment Systems Training',
@@ -391,9 +395,9 @@ async function createTasks(employees) {
           priority: 'high',
           assigned_by: 'Product Team',
           assigned_at: '2024-01-16T09:00:00Z',
-          completed_at: '2024-01-18T17:00:00Z'
-        }
-      ]
+          completed_at: '2024-01-18T17:00:00Z',
+        },
+      ],
     },
     // Erik Larsen tasks
     {
@@ -407,7 +411,7 @@ async function createTasks(employees) {
           priority: 'medium',
           assigned_by: 'Product Team',
           assigned_at: '2024-02-01T09:00:00Z',
-          completed_at: '2024-02-05T17:00:00Z'
+          completed_at: '2024-02-05T17:00:00Z',
         },
         {
           title: 'Stakeholder Introductions',
@@ -417,9 +421,9 @@ async function createTasks(employees) {
           priority: 'medium',
           assigned_by: 'Maria Andersen',
           assigned_at: '2024-02-02T09:00:00Z',
-          completed_at: '2024-02-06T16:00:00Z'
-        }
-      ]
+          completed_at: '2024-02-06T16:00:00Z',
+        },
+      ],
     },
     // Sofia Berg tasks
     {
@@ -433,7 +437,7 @@ async function createTasks(employees) {
           priority: 'high',
           assigned_by: 'Design Team',
           assigned_at: '2024-03-01T09:00:00Z',
-          due_date: '2024-03-05T17:00:00Z'
+          due_date: '2024-03-05T17:00:00Z',
         },
         {
           title: 'Complete Company Handbook',
@@ -443,9 +447,9 @@ async function createTasks(employees) {
           priority: 'medium',
           assigned_by: 'HR Team',
           assigned_at: '2024-03-01T09:00:00Z',
-          due_date: '2024-03-10T17:00:00Z'
-        }
-      ]
+          due_date: '2024-03-10T17:00:00Z',
+        },
+      ],
     },
     // Magnus Johansson tasks
     {
@@ -459,7 +463,7 @@ async function createTasks(employees) {
           priority: 'high',
           assigned_by: 'Lars Nielsen',
           assigned_at: '2024-03-01T09:00:00Z',
-          completed_at: '2024-03-10T17:00:00Z'
+          completed_at: '2024-03-10T17:00:00Z',
         },
         {
           title: 'Access Revocation Audit',
@@ -469,26 +473,26 @@ async function createTasks(employees) {
           priority: 'high',
           assigned_by: 'Security Team',
           assigned_at: '2024-03-14T09:00:00Z',
-          completed_at: '2024-03-15T10:00:00Z'
-        }
-      ]
-    }
+          completed_at: '2024-03-15T10:00:00Z',
+        },
+      ],
+    },
   ];
-  
+
   const createdTasks = [];
   for (const empTasks of tasksData) {
-    const employee = employees.find(e => e.person_code === empTasks.person_code);
+    const employee = employees.find((e) => e.person_code === empTasks.person_code);
     if (!employee) continue;
-    
+
     for (const taskData of empTasks.tasks) {
       const task = await apiCall('tasks', 'POST', {
         ...taskData,
-        employee_id: employee.id
+        employee_id: employee.id,
       });
       createdTasks.push(task[0]);
     }
   }
-  
+
   return createdTasks;
 }
 
@@ -500,20 +504,20 @@ function generateJWTHash(employee, appCode) {
     iss: 'api.thepia.com',
     aud: 'flows.thepia.net',
     sub: `inv-${employee.person_code}-${Date.now()}`,
-    exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60), // 7 days
+    exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7 days
     iat: Math.floor(Date.now() / 1000),
     invitation: {
       invitee: {
         fullName: `${employee.first_name} ${employee.last_name}`,
         companyEmail: employee.company_email,
-        privateEmail: employee.company_email.replace('@nets.eu', '@gmail.com')
+        privateEmail: employee.company_email.replace('@nets.eu', '@gmail.com'),
       },
       position: employee.position,
       department: employee.department,
-      type: appCode
-    }
+      type: appCode,
+    },
   };
-  
+
   return crypto.createHash('sha256').update(JSON.stringify(jwtPayload)).digest('hex');
 }
 
@@ -522,29 +526,29 @@ function generateJWTHash(employee, appCode) {
  */
 async function createMatchingInvitations(clientId, applications, employees) {
   const appMap = {};
-  applications.forEach(app => {
+  applications.forEach((app) => {
     appMap[app.app_code] = app.id;
   });
-  
+
   const invitationsData = [
     {
       person_code: 'emp-003', // Sofia - pending onboarding
       app_code: 'onboarding',
       employment_status: 'sent',
-      permissions: ['document_upload', 'task_completion', 'training_access']
-    }
+      permissions: ['document_upload', 'task_completion', 'training_access'],
+    },
   ];
-  
+
   const createdInvitations = [];
   for (const invData of invitationsData) {
-    const employee = employees.find(e => e.person_code === invData.person_code);
+    const employee = employees.find((e) => e.person_code === invData.person_code);
     const appId = appMap[invData.app_code];
-    
+
     if (!employee || !appId) continue;
-    
+
     const jwtHash = generateJWTHash(employee, invData.app_code);
-    const expiresAt = new Date(Date.now() + (7 * 24 * 60 * 60 * 1000));
-    
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
     const invitation = await apiCall('invitations', 'POST', {
       client_id: clientId,
       app_id: appId,
@@ -552,7 +556,7 @@ async function createMatchingInvitations(clientId, applications, employees) {
       permissions: invData.permissions,
       restrictions: {
         max_sessions: 5,
-        person_code: employee.person_code
+        person_code: employee.person_code,
       },
       employment_status: invData.status,
       expires_at: expiresAt.toISOString(),
@@ -561,13 +565,13 @@ async function createMatchingInvitations(clientId, applications, employees) {
         employee_id: employee.id,
         person_code: employee.person_code,
         department: employee.department,
-        demo_invitation: true
-      }
+        demo_invitation: true,
+      },
     });
-    
+
     createdInvitations.push(invitation[0]);
   }
-  
+
   return createdInvitations;
 }
 
@@ -576,37 +580,37 @@ async function createMatchingInvitations(clientId, applications, employees) {
  */
 async function populateFullDemo(options = {}) {
   const spinner = ora('Populating comprehensive demo data...').start();
-  
+
   try {
     // Get demo client and applications
     spinner.text = 'Getting demo client and applications...';
     const { client, applications } = await getDemoClientAndApps();
-    
+
     // Create employees
     spinner.text = 'Creating employees...';
     const employees = await createEmployees(client.id);
     spinner.succeed(`Created ${employees.length} employees`);
-    
+
     // Create employee enrollments
     spinner.start('Creating employee enrollments...');
     const enrollments = await createEmployeeEnrollments(employees);
     spinner.succeed(`Created ${enrollments.length} employee enrollments`);
-    
+
     // Create documents
     spinner.start('Creating documents...');
     const documents = await createDocuments(employees);
     spinner.succeed(`Created ${documents.length} documents`);
-    
+
     // Create tasks
     spinner.start('Creating tasks...');
     const tasks = await createTasks(employees);
     spinner.succeed(`Created ${tasks.length} tasks`);
-    
+
     // Create matching invitations
     spinner.start('Creating matching invitations...');
     const invitations = await createMatchingInvitations(client.id, applications, employees);
     spinner.succeed(`Created ${invitations.length} matching invitations`);
-    
+
     // Display summary
     console.log(chalk.green.bold('\\n✅ Full demo data population completed!\\n'));
     console.log(chalk.cyan('📊 Created Data Summary:'));
@@ -616,18 +620,17 @@ async function populateFullDemo(options = {}) {
     console.log(`   Documents:    ${chalk.white(documents.length)}`);
     console.log(`   Tasks:        ${chalk.white(tasks.length)}`);
     console.log(`   Invitations:  ${chalk.white(invitations.length)}`);
-    
+
     console.log(chalk.cyan('\\n👥 Employees Created:'));
-    employees.forEach(emp => {
+    employees.forEach((emp) => {
       console.log(`   • ${emp.first_name} ${emp.last_name} (${emp.position}) - ${emp.status}`);
     });
-    
+
     console.log(chalk.yellow('\\n🔗 Next Steps:'));
     console.log(`   1. Verify data: Check Supabase dashboard api schema`);
     console.log(`   2. Launch demo: ${chalk.green('pnpm run demo:admin')}`);
     console.log(`   3. Update UI to use real data instead of mocks`);
     console.log('');
-    
   } catch (error) {
     spinner.fail(`Demo population failed: ${error.message}`);
     console.error(chalk.red(error.stack));

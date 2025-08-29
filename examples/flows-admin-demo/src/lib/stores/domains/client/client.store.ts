@@ -1,7 +1,7 @@
-import { writable, derived, get } from 'svelte/store';
 import { browser } from '$app/environment';
+import { derived, get, writable } from 'svelte/store';
 import { ClientService } from './client.service';
-import type { Client, ClientState, ClientActions } from './client.types';
+import type { Client, ClientActions, ClientState } from './client.types';
 
 // Service instance
 const clientService = new ClientService();
@@ -11,7 +11,7 @@ const state = writable<ClientState>({
   clients: [],
   currentClient: null,
   loading: false,
-  error: null
+  error: null,
 });
 
 // Derived stores for computed values
@@ -21,44 +21,45 @@ export const loading = derived(state, ($state) => $state.loading);
 export const error = derived(state, ($state) => $state.error);
 
 // Derived computed stores
-export const availableClients = derived(
-  clients, 
-  ($clients) => $clients.filter(c => c.status === 'active')
+export const availableClients = derived(clients, ($clients) =>
+  $clients.filter((c) => c.status === 'active')
 );
 
-export const clientsByTier = derived(
-  clients,
-  ($clients) => {
-    return $clients.reduce((acc, client) => {
+export const clientsByTier = derived(clients, ($clients) => {
+  return $clients.reduce(
+    (acc, client) => {
       if (!acc[client.tier]) acc[client.tier] = [];
       acc[client.tier].push(client);
       return acc;
-    }, {} as Record<string, Client[]>);
-  }
-);
+    },
+    {} as Record<string, Client[]>
+  );
+});
 
-export const isClientSelected = derived(
-  currentClient,
-  ($currentClient) => !!$currentClient
-);
+export const isClientSelected = derived(currentClient, ($currentClient) => !!$currentClient);
 
 // Actions
 const actions: ClientActions = {
   async loadAllClients() {
-    state.update(s => ({ ...s, loading: true, error: null }));
-    
+    state.update((s) => ({ ...s, loading: true, error: null }));
+
     try {
       const clients = await clientService.loadAllClients();
-      
-      state.update(s => ({ 
-        ...s, 
-        clients, 
-        loading: false 
+
+      state.update((s) => ({
+        ...s,
+        clients,
+        loading: false,
       }));
 
       // If we have a stored client selection but no current client, restore it
       const storedClientId = clientService.getStoredClientId();
-      console.log('[ClientStore] After loading clients, storedClientId:', storedClientId, 'currentClient:', get(currentClient));
+      console.log(
+        '[ClientStore] After loading clients, storedClientId:',
+        storedClientId,
+        'currentClient:',
+        get(currentClient)
+      );
       if (storedClientId && !get(currentClient)) {
         console.log('[ClientStore] Attempting to restore stored client:', storedClientId);
         try {
@@ -74,33 +75,31 @@ const actions: ClientActions = {
       } else {
         console.log('[ClientStore] Current client already set, not restoring from storage');
       }
-      
     } catch (error) {
-      state.update(s => ({ 
-        ...s, 
-        loading: false, 
-        error: error instanceof Error ? error.message : 'Failed to load clients' 
+      state.update((s) => ({
+        ...s,
+        loading: false,
+        error: error instanceof Error ? error.message : 'Failed to load clients',
       }));
     }
   },
 
   async selectClient(clientId: string) {
-    state.update(s => ({ ...s, loading: true, error: null }));
-    
+    state.update((s) => ({ ...s, loading: true, error: null }));
+
     try {
       const client = await clientService.switchToClient(clientId);
-      
-      state.update(s => ({ 
-        ...s, 
-        currentClient: client, 
-        loading: false 
+
+      state.update((s) => ({
+        ...s,
+        currentClient: client,
+        loading: false,
       }));
-      
     } catch (error) {
-      state.update(s => ({ 
-        ...s, 
-        loading: false, 
-        error: error instanceof Error ? error.message : 'Failed to select client' 
+      state.update((s) => ({
+        ...s,
+        loading: false,
+        error: error instanceof Error ? error.message : 'Failed to select client',
       }));
       throw error; // Re-throw for component error handling
     }
@@ -109,9 +108,9 @@ const actions: ClientActions = {
   async refreshCurrentClient() {
     const current = get(currentClient);
     if (!current) return;
-    
+
     await actions.selectClient(current.client_id);
-  }
+  },
 };
 
 // Auto-initialize when in browser
@@ -123,7 +122,7 @@ if (browser) {
 export const clientStore = {
   // State
   subscribe: state.subscribe,
-  
+
   // Derived values
   clients,
   currentClient,
@@ -132,9 +131,9 @@ export const clientStore = {
   availableClients,
   clientsByTier,
   isClientSelected,
-  
+
   // Actions
-  actions
+  actions,
 };
 
 // Export individual actions for convenience

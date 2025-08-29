@@ -1,6 +1,6 @@
-import { writable, derived } from 'svelte/store';
 import { ApplicationsService } from '$lib/services/ApplicationsService';
 import type { Application } from '$lib/types';
+import { derived, writable } from 'svelte/store';
 
 // Core application state
 export const applications = writable<Application[]>([]);
@@ -13,13 +13,10 @@ export const applicationsLoaded = derived(
   ($applications) => Array.isArray($applications) && $applications.length > 0
 );
 
-export const applicationsByType = derived(
-  applications,
-  ($applications) => ({
-    onboarding: $applications.filter(app => app.type === 'onboarding'),
-    offboarding: $applications.filter(app => app.type === 'offboarding')
-  })
-);
+export const applicationsByType = derived(applications, ($applications) => ({
+  onboarding: $applications.filter((app) => app.type === 'onboarding'),
+  offboarding: $applications.filter((app) => app.type === 'offboarding'),
+}));
 
 /**
  * Applications store actions
@@ -31,7 +28,7 @@ export const applicationsActions = {
   async loadApplications(clientId: string) {
     applicationsLoading.set(true);
     applicationsError.set(null);
-    
+
     try {
       const apps = await ApplicationsService.loadApplications(clientId);
       applications.set(apps);
@@ -50,8 +47,8 @@ export const applicationsActions = {
    */
   findByCode(code: string): Application | null {
     let result: Application | null = null;
-    applications.subscribe(apps => {
-      result = apps.find(app => app.code === code) || null;
+    applications.subscribe((apps) => {
+      result = apps.find((app) => app.code === code) || null;
     })();
     return result;
   },
@@ -59,7 +56,10 @@ export const applicationsActions = {
   /**
    * Get application by type
    */
-  async getByType(clientId: string, type: 'onboarding' | 'offboarding'): Promise<Application | null> {
+  async getByType(
+    clientId: string,
+    type: 'onboarding' | 'offboarding'
+  ): Promise<Application | null> {
     return ApplicationsService.getApplicationByType(clientId, type);
   },
 
@@ -69,5 +69,5 @@ export const applicationsActions = {
   clear() {
     applications.set([]);
     applicationsError.set(null);
-  }
+  },
 };

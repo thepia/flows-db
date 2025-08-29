@@ -21,9 +21,9 @@ const typeOptions = [
 ];
 
 function clearAllFilters() {
-	searchTerm = '';
-	selectedStatus = 'all';
-	selectedType = 'all';
+  searchTerm = '';
+  selectedStatus = 'all';
+  selectedType = 'all';
 }
 
 $: hasActiveFilters = searchTerm || selectedStatus !== 'all' || selectedType !== 'all';

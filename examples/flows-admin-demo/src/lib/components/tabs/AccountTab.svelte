@@ -1,9 +1,9 @@
 <script lang="ts">
-import { createEventDispatcher } from 'svelte';
-import { FileText, Download } from 'lucide-svelte';
-import TFCManagementPanel from '$lib/components/tfc/TFCManagementPanel.svelte';
 import LoadingAnimation from '$lib/components/shared/LoadingAnimation.svelte';
+import TFCManagementPanel from '$lib/components/tfc/TFCManagementPanel.svelte';
 import { client } from '$lib/stores/data';
+import { Download, FileText } from 'lucide-svelte';
+import { createEventDispatcher } from 'svelte';
 
 const dispatch = createEventDispatcher();
 

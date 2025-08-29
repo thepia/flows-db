@@ -1,13 +1,13 @@
 /**
  * Pagination and Lazy Loading Store
- * 
+ *
  * Implements efficient pagination for people and processes to avoid N+1 queries
  * and improve performance with large datasets (1000+ records).
  */
 
-import { writable, derived, get } from 'svelte/store';
 import { supabase } from '$lib/supabase';
 import type { Person, ProcessSummary } from '$lib/types';
+import { derived, get, writable } from 'svelte/store';
 
 // Pagination configuration
 export const PAGINATION_CONFIG = {
@@ -28,7 +28,7 @@ export const peoplePagination = writable({
   loadedPages: new Set<number>(),
 });
 
-// Pagination state for processes  
+// Pagination state for processes
 export const processesPagination = writable({
   currentPage: 0,
   pageSize: PAGINATION_CONFIG.PROCESSES_PAGE_SIZE,
@@ -63,8 +63,8 @@ export const currentProcessesPage = derived(
  * Load a page of people with efficient bulk queries
  */
 export async function loadPeoplePage(
-  clientId: string, 
-  page: number, 
+  clientId: string,
+  page: number,
   options: {
     includeEnrollments?: boolean;
     search?: string;
@@ -76,16 +76,18 @@ export async function loadPeoplePage(
   const offset = page * pageSize;
 
   // Update loading state
-  peoplePagination.update(p => ({ ...p, isLoading: true }));
+  peoplePagination.update((p) => ({ ...p, isLoading: true }));
 
   try {
     // Helper function to apply filters to any query
     const applyFilters = (baseQuery: any) => {
       let filteredQuery = baseQuery;
-      
+
       // Apply search filter
       if (options.search) {
-        filteredQuery = filteredQuery.or(`first_name.ilike.%${options.search}%,last_name.ilike.%${options.search}%,company_email.ilike.%${options.search}%,department.ilike.%${options.search}%,position.ilike.%${options.search}%`);
+        filteredQuery = filteredQuery.or(
+          `first_name.ilike.%${options.search}%,last_name.ilike.%${options.search}%,company_email.ilike.%${options.search}%,department.ilike.%${options.search}%,position.ilike.%${options.search}%`
+        );
       }
 
       // Apply additional filters
@@ -105,20 +107,21 @@ export async function loadPeoplePage(
           }
         });
       }
-      
+
       return filteredQuery;
     };
 
     // Step 1: Get total count with filters applied (recalculate when filters/search change)
     let totalCount = pagination.totalCount;
-    const hasFiltersOrSearch = options.search || (options.filters && Object.keys(options.filters).length > 0);
-    
+    const hasFiltersOrSearch =
+      options.search || (options.filters && Object.keys(options.filters).length > 0);
+
     if (page === 0 || totalCount === 0 || hasFiltersOrSearch) {
       let countQuery = supabase
         .from('people')
         .select('*', { count: 'exact', head: true })
         .eq('client_id', clientId);
-      
+
       // Apply the same filters to count query
       countQuery = applyFilters(countQuery);
 
@@ -146,8 +149,8 @@ export async function loadPeoplePage(
 
     // Step 4: Optionally load enrollments in bulk (efficient way)
     if (options.includeEnrollments && people.length > 0) {
-      const personIds = people.map(p => p.id);
-      
+      const personIds = people.map((p) => p.id);
+
       // Single query to get all enrollments for this page
       const { data: enrollmentsData } = await supabase
         .from('people_enrollments')
@@ -155,11 +158,9 @@ export async function loadPeoplePage(
         .in('person_id', personIds);
 
       // Attach enrollment data to people
-      const enrollmentMap = new Map(
-        enrollmentsData?.map(e => [e.person_id, e]) || []
-      );
+      const enrollmentMap = new Map(enrollmentsData?.map((e) => [e.person_id, e]) || []);
 
-      people.forEach(person => {
+      people.forEach((person) => {
         const enrollment = enrollmentMap.get(person.id);
         if (enrollment) {
           person.enrollment = {
@@ -172,14 +173,14 @@ export async function loadPeoplePage(
     }
 
     // Step 5: Update stores
-    paginatedPeople.update(pages => {
+    paginatedPeople.update((pages) => {
       const newPages = new Map(pages);
       newPages.set(page, people);
       return newPages;
     });
 
     const totalPages = Math.ceil(totalCount / pageSize);
-    peoplePagination.update(p => ({
+    peoplePagination.update((p) => ({
       ...p,
       currentPage: page,
       totalCount,
@@ -191,10 +192,9 @@ export async function loadPeoplePage(
     }));
 
     return people;
-
   } catch (error) {
     console.error('Error loading people page:', error);
-    peoplePagination.update(p => ({ ...p, isLoading: false }));
+    peoplePagination.update((p) => ({ ...p, isLoading: false }));
     throw error;
   }
 }
@@ -214,7 +214,7 @@ export async function loadProcessesPage(
   const { pageSize } = pagination;
   const offset = page * pageSize;
 
-  processesPagination.update(p => ({ ...p, isLoading: true }));
+  processesPagination.update((p) => ({ ...p, isLoading: true }));
 
   try {
     // Get total count
@@ -255,14 +255,14 @@ export async function loadProcessesPage(
     const processes: ProcessSummary[] = processesData?.map(transformProcess) || [];
 
     // Update stores
-    paginatedProcesses.update(pages => {
+    paginatedProcesses.update((pages) => {
       const newPages = new Map(pages);
       newPages.set(page, processes);
       return newPages;
     });
 
     const totalPages = Math.ceil(totalCount / pageSize);
-    processesPagination.update(p => ({
+    processesPagination.update((p) => ({
       ...p,
       currentPage: page,
       totalCount,
@@ -274,10 +274,9 @@ export async function loadProcessesPage(
     }));
 
     return processes;
-
   } catch (error) {
     console.error('Error loading processes page:', error);
-    processesPagination.update(p => ({ ...p, isLoading: false }));
+    processesPagination.update((p) => ({ ...p, isLoading: false }));
     throw error;
   }
 }
@@ -315,18 +314,22 @@ export async function goToPeoplePage(clientId: string, page: number) {
 /**
  * Search people with pagination and filters
  */
-export async function searchPeople(clientId: string, searchTerm: string, filters?: Record<string, any>) {
+export async function searchPeople(
+  clientId: string,
+  searchTerm: string,
+  filters?: Record<string, any>
+) {
   // Reset to first page for new search
-  peoplePagination.update(p => ({ 
-    ...p, 
+  peoplePagination.update((p) => ({
+    ...p,
     currentPage: 0,
     totalCount: 0,
-    loadedPages: new Set()
+    loadedPages: new Set(),
   }));
-  
+
   // Clear existing data
   paginatedPeople.set(new Map());
-  
+
   // Load first page with search and filters
   return loadPeoplePage(clientId, 0, { search: searchTerm, filters });
 }
@@ -334,17 +337,22 @@ export async function searchPeople(clientId: string, searchTerm: string, filters
 /**
  * Get statistics for filtered people dataset
  */
-export async function getPeopleStatistics(clientId: string, options: {
-  search?: string;
-  filters?: Record<string, any>;
-} = {}) {
+export async function getPeopleStatistics(
+  clientId: string,
+  options: {
+    search?: string;
+    filters?: Record<string, any>;
+  } = {}
+) {
   try {
     // Helper function to apply filters (same as in loadPeoplePage)
     const applyFilters = (baseQuery: any) => {
       let filteredQuery = baseQuery;
-      
+
       if (options.search) {
-        filteredQuery = filteredQuery.or(`first_name.ilike.%${options.search}%,last_name.ilike.%${options.search}%,company_email.ilike.%${options.search}%,department.ilike.%${options.search}%,position.ilike.%${options.search}%`);
+        filteredQuery = filteredQuery.or(
+          `first_name.ilike.%${options.search}%,last_name.ilike.%${options.search}%,company_email.ilike.%${options.search}%,department.ilike.%${options.search}%,position.ilike.%${options.search}%`
+        );
       }
 
       if (options.filters) {
@@ -360,7 +368,7 @@ export async function getPeopleStatistics(clientId: string, options: {
           }
         });
       }
-      
+
       return filteredQuery;
     };
 
@@ -369,20 +377,20 @@ export async function getPeopleStatistics(clientId: string, options: {
       .from('people')
       .select('employment_status, associate_status')
       .eq('client_id', clientId);
-    
+
     const filteredQuery = applyFilters(baseQuery);
     const { data: peopleData, error } = await filteredQuery;
-    
+
     if (error) throw error;
-    
+
     // Calculate statistics from filtered results
     const stats = {
       totalPeople: peopleData?.length || 0,
-      activeEmployees: peopleData?.filter(p => p.employment_status === 'active').length || 0,
-      associates: peopleData?.filter(p => p.associate_status).length || 0,
-      futureEmployees: peopleData?.filter(p => p.employment_status === 'future').length || 0,
+      activeEmployees: peopleData?.filter((p) => p.employment_status === 'active').length || 0,
+      associates: peopleData?.filter((p) => p.associate_status).length || 0,
+      futureEmployees: peopleData?.filter((p) => p.employment_status === 'future').length || 0,
     };
-    
+
     return stats;
   } catch (error) {
     console.error('Error getting people statistics:', error);
@@ -461,6 +469,6 @@ function transformProcess(data: any): ProcessSummary {
 
 function calculateProgress(tasks: any[]): number {
   if (tasks.length === 0) return 0;
-  const completed = tasks.filter(t => t.status === 'completed').length;
+  const completed = tasks.filter((t) => t.status === 'completed').length;
   return Math.round((completed / tasks.length) * 100);
 }

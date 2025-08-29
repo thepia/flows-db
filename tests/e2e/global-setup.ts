@@ -1,20 +1,20 @@
-import { chromium, FullConfig } from '@playwright/test';
-import { spawn, ChildProcess } from 'child_process';
+import { type ChildProcess, spawn } from 'child_process';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { type FullConfig, chromium } from '@playwright/test';
 
 let demoServer: ChildProcess | null = null;
 
 async function globalSetup(config: FullConfig) {
   console.log('🚀 Starting flows-admin-demo server for screenshot capture...');
-  
+
   // Create output directories
   const outputDirs = [
     '/Volumes/Projects/Thepia/thepia.com/src/assets/flows-demo',
     '/Volumes/Projects/Thepia/thepia.com/src/assets/flows-demo/desktop',
-    '/Volumes/Projects/Thepia/thepia.com/src/assets/flows-demo/tablet'
+    '/Volumes/Projects/Thepia/thepia.com/src/assets/flows-demo/tablet',
   ];
-  
+
   for (const dir of outputDirs) {
     try {
       await fs.mkdir(dir, { recursive: true });
@@ -27,11 +27,11 @@ async function globalSetup(config: FullConfig) {
   // Start the flows-admin-demo server
   return new Promise<void>((resolve, reject) => {
     console.log('🔧 Starting flows-admin-demo server...');
-    
+
     demoServer = spawn('pnpm', ['--filter', 'flows-admin-demo', 'dev'], {
       stdio: ['pipe', 'pipe', 'pipe'],
       cwd: process.cwd(),
-      env: { ...process.env }
+      env: { ...process.env },
     });
 
     let serverReady = false;
@@ -44,14 +44,18 @@ async function globalSetup(config: FullConfig) {
     demoServer.stdout?.on('data', (data) => {
       const output = data.toString();
       console.log(`[Demo Server] ${output}`);
-      
+
       // Look for server ready indicators
-      if (output.includes('Local:') || output.includes('localhost:5173') || output.includes('ready in')) {
+      if (
+        output.includes('Local:') ||
+        output.includes('localhost:5173') ||
+        output.includes('ready in')
+      ) {
         if (!serverReady) {
           serverReady = true;
           clearTimeout(timeout);
           console.log('✅ Demo server is ready!');
-          
+
           // Wait a bit more for full initialization
           setTimeout(() => {
             resolve();

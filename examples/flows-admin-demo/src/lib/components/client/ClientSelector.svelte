@@ -1,6 +1,6 @@
 <script lang="ts">
-import { Building2, RefreshCw, AlertCircle } from 'lucide-svelte';
 import { clientStore } from '$lib/stores/domains/client/client.store';
+import { AlertCircle, Building2, RefreshCw } from 'lucide-svelte';
 
 // Extract what we need from the store
 const { clients, currentClient, loading, error, availableClients, actions } = clientStore;
@@ -12,16 +12,18 @@ let isChanging = false;
 async function handleClientChange(event: Event) {
   const target = event.target as HTMLSelectElement;
   const clientId = target.value;
-  
+
   if (!clientId || clientId === $currentClient?.client_id) return;
-  
+
   try {
     isChanging = true;
     await actions.selectClient(clientId);
     // Emit custom event for parent components to react
-    dispatchEvent(new CustomEvent('clientChanged', { 
-      detail: { clientId } 
-    }));
+    dispatchEvent(
+      new CustomEvent('clientChanged', {
+        detail: { clientId },
+      })
+    );
   } catch (error) {
     console.error('Failed to switch client:', error);
     // Reset select to previous value

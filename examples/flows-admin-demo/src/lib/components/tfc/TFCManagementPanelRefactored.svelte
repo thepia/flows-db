@@ -1,22 +1,30 @@
 <script lang="ts">
-import { Plus, TrendingUp, CreditCard, Activity, ArrowUpRight, ArrowDownRight, RefreshCw } from 'lucide-svelte';
 import LoadingAnimation from '$lib/components/shared/LoadingAnimation.svelte';
 import { tfcStore } from '$lib/stores/domains/tfc/tfc.store';
+import {
+  Activity,
+  ArrowDownRight,
+  ArrowUpRight,
+  CreditCard,
+  Plus,
+  RefreshCw,
+  TrendingUp,
+} from 'lucide-svelte';
 
 export let clientId: string;
 
 // Extract reactive stores
-const { 
-  balance, 
-  transactions, 
-  usageAnalytics, 
-  loading, 
+const {
+  balance,
+  transactions,
+  usageAnalytics,
+  loading,
   error,
   timeSavings,
   formattedTimeSaved,
   utilizationPercentage,
   isLowBalance,
-  isCriticalBalance 
+  isCriticalBalance,
 } = tfcStore;
 
 // Load data when client changes
@@ -26,7 +34,7 @@ $: if (clientId) {
 
 // Helper functions (pure, no side effects)
 function formatCurrency(amount: number, currency = 'EUR'): string {
-  return `${currency} ${parseFloat(amount.toString()).toLocaleString()}`;
+  return `${currency} ${Number.parseFloat(amount.toString()).toLocaleString()}`;
 }
 
 function getTransactionIcon(type: string) {
@@ -54,7 +62,7 @@ function handlePurchaseTFC() {
 }
 
 function handleViewReport() {
-  // Emit event for parent to handle  
+  // Emit event for parent to handle
   dispatchEvent(new CustomEvent('view-report'));
 }
 

@@ -57,9 +57,9 @@ $: if (
   $settings.selectedClient !== lastLoadedClientId
 ) {
   lastLoadedClientId = $settings.selectedClient;
-  
+
   // Find the client by code to get the database ID
-  const clientToLoad = $clients.find(c => c.code === $settings.selectedClient);
+  const clientToLoad = $clients.find((c) => c.code === $settings.selectedClient);
   if (clientToLoad) {
     loadClientData(clientToLoad.id).catch((error) => {
       console.error('Failed to load selected client data:', error);

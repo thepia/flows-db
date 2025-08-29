@@ -13,24 +13,24 @@ export function setupTestEnvironment() {
     value: {
       hostname: 'localhost',
       search: '',
-      href: 'http://localhost:5174'
+      href: 'http://localhost:5174',
     },
-    writable: true
+    writable: true,
   });
 
   // Mock crypto for JWT generation
   Object.defineProperty(window, 'crypto', {
     value: {
       subtle: {
-        digest: vi.fn().mockResolvedValue(new ArrayBuffer(32))
-      }
+        digest: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
+      },
     },
-    writable: true
+    writable: true,
   });
 
   // Mock TextEncoder
   global.TextEncoder = vi.fn().mockImplementation(() => ({
-    encode: vi.fn().mockReturnValue(new Uint8Array([1, 2, 3, 4]))
+    encode: vi.fn().mockReturnValue(new Uint8Array([1, 2, 3, 4])),
   }));
 
   // Mock console methods to reduce noise in tests
@@ -61,7 +61,7 @@ export function createMockClient(overrides: Partial<any> = {}) {
     status: 'active',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    ...overrides
+    ...overrides,
   };
 }
 
@@ -74,20 +74,20 @@ export function createMockClients() {
       client_id: 'hygge-hvidlog',
       client_code: 'hygge-hvidlog',
       legal_name: 'Hygge & Hvidløg ApS',
-      industry: 'Food & Beverage'
+      industry: 'Food & Beverage',
     }),
     createMockClient({
       client_id: 'meridian-brands',
       client_code: 'meridian-brands',
       legal_name: 'Meridian Brands International',
-      industry: 'Consumer Goods'
+      industry: 'Consumer Goods',
     }),
     createMockClient({
       client_id: 'nets-demo',
       client_code: 'nets-demo',
       legal_name: 'Nets Demo Corporation',
-      industry: 'Financial Services'
-    })
+      industry: 'Financial Services',
+    }),
   ];
 }
 
@@ -95,7 +95,7 @@ export function createMockClients() {
  * Wait for async operations to complete
  */
 export function waitForAsync(ms: number = 0) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -106,7 +106,7 @@ export function mockSupabaseResponse(data: any, error: any = null) {
     data,
     error,
     status: error ? 400 : 200,
-    statusText: error ? 'Bad Request' : 'OK'
+    statusText: error ? 'Bad Request' : 'OK',
   };
 }
 
@@ -115,7 +115,7 @@ export function mockSupabaseResponse(data: any, error: any = null) {
  */
 export function createMockLocalStorage() {
   let store: Record<string, string> = {};
-  
+
   return {
     getItem: vi.fn((key: string) => store[key] || null),
     setItem: vi.fn((key: string, value: string) => {
@@ -130,6 +130,6 @@ export function createMockLocalStorage() {
     key: vi.fn((index: number) => Object.keys(store)[index] || null),
     get length() {
       return Object.keys(store).length;
-    }
+    },
   };
 }
