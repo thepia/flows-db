@@ -103,7 +103,7 @@ SELECT api.mark_invitation_email_failed(
 class InvitationEmailService {
   async resendInvitation(invitationId: string, reason: string): Promise<void> {
     // Trigger N8N webhook for manual resend
-    const response = await fetch(`${N8N_WEBHOOK_URL}/resend-invitation`, {
+    const response = await fetch(`${N8N_BASE_URL}/resend-invitation`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -121,7 +121,7 @@ class InvitationEmailService {
   
   async sendFollowup(invitationId: string, customMessage?: string): Promise<void> {
     // Trigger immediate follow-up email
-    const response = await fetch(`${N8N_WEBHOOK_URL}/send-followup`, {
+    const response = await fetch(`${N8N_BASE_URL}/send-followup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -439,3 +439,64 @@ interface EmailStatusDashboard {
 4. 🔄 Advanced personalization
 
 This architecture provides a robust, scalable email notification system that handles both automatic cadence and manual interventions while maintaining complete audit trails in the database.
+
+---
+
+## 🚀 RECOMMENDED ARCHITECTURE EVOLUTION
+
+> **Note**: The above architecture documents the initial email-specific approach. For production implementation, we recommend evolving to a **Unified Notification Queue Architecture** that handles all notification types (email, SMS, push, Discord) through a single N8N workflow to optimize N8N Cloud pricing and workflow limits.
+
+### **Queue-Based Notification Architecture**
+
+**Core Concept**: Replace multiple notification workflows with a single database-driven notification queue processor that handles all delivery methods through one N8N workflow.
+
+**Key Benefits**:
+- ✅ **N8N Optimization**: Single workflow for all notifications (fits within 5-workflow Starter plan limit)
+- ✅ **Unified Status Management**: All retry logic, timing, and error handling in database
+- ✅ **Admin Simplification**: Approval becomes simple status change + notification record creation
+- ✅ **Scalable**: Add new notification types by inserting database records
+- ✅ **Cost Effective**: Minimize active N8N workflows while maximizing functionality
+
+### **Implementation Approach**
+
+**Database Schema Extension**:
+```sql
+-- Option A: Extend existing invitations table
+ALTER TABLE api.invitations ADD COLUMN IF NOT EXISTS 
+  notification_status VARCHAR(50) DEFAULT 'email_pending',
+  email_attempts INTEGER DEFAULT 0,
+  email_next_attempt TIMESTAMP WITH TIME ZONE,
+  last_email_error TEXT;
+
+-- Option B: Central notifications table (future evolution)
+CREATE TABLE api.notifications (
+  notification_type VARCHAR(50), -- 'invitation_email', 'approval_sms', etc.
+  reference_id UUID, -- Points to invitations.id or other source
+  delivery_method VARCHAR(20), -- 'email', 'sms', 'push', 'discord'
+  status VARCHAR(50) DEFAULT 'pending',
+  attempt_count INTEGER DEFAULT 0,
+  send_after TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+**N8N Workflow Evolution**:
+- **Single "Notification Processor"** workflow with timer trigger (every 5 minutes)
+- **Manual trigger** for immediate processing from admin interface  
+- **Database queries** to fetch pending notifications across all types
+- **Routing logic** to handle email, SMS, push, Discord delivery methods
+- **Status updates** back to database after delivery attempts
+
+**Admin Interface Changes**:
+- **Approval flow**: Simple status change + notification record creation
+- **Manual notification trigger**: Button to immediately process notification queue
+- **Notification monitoring**: View pending/failed notifications across all types
+
+### **Migration Path**
+
+1. **Phase 1**: Extend invitations table with notification status fields
+2. **Phase 2**: Build unified N8N Notification Processor workflow  
+3. **Phase 3**: Modify admin approval flow to use queue pattern
+4. **Phase 4**: Add SMS, push, Discord notification types
+5. **Phase 5**: Optional migration to central notifications table
+
+This evolution maintains all the robust features documented above while optimizing for N8N Cloud constraints and providing a foundation for multi-channel notifications.

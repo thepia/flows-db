@@ -1,389 +1,136 @@
-# @thepia/flows-db
+# Thepia Flows Database
 
-Multi-client database management for Thepia Flows applications. This repository contains database schemas, migrations, client management scripts, and infrastructure templates for managing Supabase-based multi-tenant architecture.
+Multi-tenant database management system for Thepia's client workflow applications.
 
-## 🎯 Overview
+## Quick Start
 
-**flows-db** provides the complete database infrastructure for managing multiple client installations of Thepia Flows applications with:
-
-- **Multi-client data isolation** via Row-Level Security (RLS)
-- **JWT-based invitation system** with encrypted PII storage
-- **Client provisioning automation** and management scripts
-- **Supabase schema management** and migration tools
-- **GDPR-compliant architecture** with minimal PII storage
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-1. **GitHub Package Access**: This repository uses GitHub packages. Set up your token:
-   ```bash
-   export NODE_AUTH_TOKEN=your_github_token_here
-   ```
-   Or add it to your shell profile (.bashrc, .zshrc, etc.)
-
-2. **Environment Variables**: Copy and configure:
-   ```bash
-   cp .env.example .env  # Configure your Supabase credentials
-   ```
-
-## 🏗️ Architecture
-
-### Multi-Client Strategy
-- **Single Supabase project** with RLS-based client isolation
-- **Client-specific storage buckets** for asset segregation
-- **Encrypted JWT invitations** to minimize database PII storage
-- **Automated client provisioning** with email-based setup
-
-### Security Model
-- All client data isolated via `client_id` column and RLS policies
-- Personal information encrypted in JWT tokens, not stored in database
-- Only Thepia staff have direct Supabase access
-- Comprehensive audit trails for all operations
-
-## 📁 Repository Structure
-
-```
-flows-db/
-├── README.md                    # This file
-├── package.json                 # Node.js tooling and scripts
-├── 
-├── schemas/                     # Database schema definitions
-│   ├── 01_clients.sql          # Client registry table
-│   ├── 02_applications.sql     # Client application configurations  
-│   ├── 03_invitations.sql      # Invitation metadata (no PII)
-│   ├── 04_audit_events.sql     # Audit trail tables
-│   └── 05_rls_policies.sql     # Row-Level Security policies
-│
-├── migrations/                  # Database migration scripts
-│   ├── 001_initial_setup.sql   # Initial schema creation
-│   ├── 002_add_client_tiers.sql
-│   └── migration-template.sql
-│
-├── scripts/                     # Management and automation scripts
-│   ├── setup-client.js         # New client provisioning
-│   ├── manage-invitations.js   # Invitation management
-│   ├── health-check.js         # Database health monitoring
-│   ├── backup-restore.js       # Backup and restore utilities
-│   └── analytics.js            # Usage analytics and reporting
-│
-├── templates/                   # Client setup templates
-│   ├── client-config.json      # Client configuration template
-│   ├── app-config.json         # Application configuration template
-│   ├── rls-policies.sql        # RLS policy templates
-│   └── storage-buckets.sql     # Storage bucket setup templates
-│
-├── docs/                        # Documentation
-│   ├── SETUP_GUIDE.md          # Complete setup instructions
-│   ├── CLIENT_ONBOARDING.md    # Client onboarding process
-│   ├── API_REFERENCE.md        # Database API documentation
-│   ├── SECURITY.md             # Security implementation details
-│   └── TROUBLESHOOTING.md      # Common issues and solutions
-│
-├── tests/                       # Test suites
-│   ├── schema.test.js          # Schema validation tests
-│   ├── rls.test.js             # RLS policy tests  
-│   ├── client-setup.test.js    # Client provisioning tests
-│   └── integration.test.js     # End-to-end integration tests
-│
-└── config/                      # Configuration files
-    ├── supabase.example.env     # Environment variables template
-    ├── database.config.js       # Database connection config
-    └── client-tiers.json        # Client tier definitions
-```
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js 18+ and pnpm
-- Supabase account and project
-- Access to thepia.net DNS management
-
-### Setup
-```bash
-# Clone the repository
-git clone https://github.com/thepia/flows-db.git
-cd flows-db
-
-# Install dependencies
-pnpm install
-
-# Copy environment template
-cp config/supabase.example.env .env
-
-# Edit environment variables
-# SUPABASE_URL=your-project-url
-# SUPABASE_ANON_KEY=your-anon-key
-# SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-# JWT_SECRET=your-jwt-secret
-
-# Initialize database schema
-pnpm run db:init
-
-# Run health check
-pnpm run health-check
-```
-
-### Add Your First Client
-```bash
-# Provision new client
-pnpm run client:create \
-  --client-code="acme" \
-  --legal-name="Acme Corporation" \
-  --domain="acme-corp.thepia.net" \
-  --region="EU"
-
-# Verify client setup
-pnpm run client:status acme
-```
-
-## 📊 Database Schema
-
-### Core Tables
-
-#### `clients` - Master Client Registry
-- **Purpose**: Central registry of all client installations
-- **Key Fields**: `client_code`, `legal_name`, `domain`, `tier`, `region`
-- **Security**: RLS enabled, staff-only access
-
-#### `client_applications` - App Configurations
-- **Purpose**: Application configurations per client
-- **Key Fields**: `client_id`, `app_code`, `configuration`, `features`
-- **Security**: Client-isolated via RLS policies
-
-#### `invitations` - Invitation Metadata
-- **Purpose**: Invitation tracking without PII storage
-- **Key Fields**: `invitation_code`, `jwt_token_hash`, `status`
-- **Security**: No PII stored - all personal data encrypted in JWT
-
-### Security Features
-- **Row-Level Security (RLS)** on all client tables
-- **Encrypted JWT tokens** containing invitation PII
-- **Client-specific storage buckets** for file isolation
-- **Comprehensive audit trails** for all operations
-
-## 🔐 Invitation System
-
-### JWT-Based Architecture
-```typescript
-// Invitation JWT contains encrypted PII
-interface InvitationJWT {
-  // Standard claims
-  iss: 'api.thepia.com';
-  aud: 'flows.thepia.net';
-  sub: string; // invitation_id
-  
-  // Encrypted invitation data
-  invitation: {
-    invitee: {
-      fullName: string;    // ENCRYPTED
-      companyEmail: string; // ENCRYPTED  
-      privateEmail: string; // ENCRYPTED
-    };
-    permissions: string[];
-    restrictions: object;
-  };
-}
-```
-
-### Benefits
-- **Zero PII in database** - all personal data in encrypted JWT
-- **Stateless validation** - no database lookup for basic checks
-- **Tamper-proof** - JWT signature prevents modification
-- **Automatic expiration** - data expires with token
-
-## 🛠️ Management Scripts
-
-### Client Management
-```bash
-# Create new client
-pnpm run client:create --config client-config.json
-
-# Update client configuration  
-pnpm run client:update acme --tier pro
-
-# Deactivate client
-pnpm run client:deactivate acme
-
-# Generate client analytics
-pnpm run client:analytics acme --month 2025-01
-```
-
-### Invitation Management
-```bash
-# Create invitation
-pnpm run invitation:create \
-  --client acme \
-  --app offboarding \
-  --invitee "john.doe@acme.com" \
-  --expires-in 7d
-
-# Validate invitation
-pnpm run invitation:validate <jwt-token>
-
-# List active invitations
-pnpm run invitation:list --client acme --status pending
-
-# Cleanup expired invitations
-pnpm run invitation:cleanup
-```
-
-### Database Maintenance
-```bash
-# Health check
-pnpm run health-check
-
-# Create backup
-pnpm run backup:create --client acme
-
-# Restore from backup
-pnpm run backup:restore backup-2025-01-15.sql
-
-# Run schema migrations
-pnpm run migrate:up
-
-# Generate usage report
-pnpm run analytics:usage --month 2025-01
-```
-
-## 📈 Monitoring & Analytics
-
-### Key Metrics
-- Client storage usage per bucket
-- Invitation creation and redemption rates  
-- API usage per client and application
-- Error rates and performance metrics
-- Database query performance
-
-### Alerting
-- Invitation expiration notifications
-- Storage quota warnings
-- Failed authentication attempts
-- Database performance degradation
-
-## 🔧 Configuration
-
-### Client Tiers
-```json
-{
-  "free": {
-    "maxUsers": 100,
-    "storageGB": 1,
-    "features": ["basic-auth", "invitations"]
-  },
-  "pro": {
-    "maxUsers": 1000, 
-    "storageGB": 10,
-    "features": ["basic-auth", "invitations", "analytics", "sso"]
-  }
-}
-```
-
-### Environment Variables
-```env
-# Supabase Configuration
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-
-# JWT Configuration  
-JWT_SECRET=your-jwt-secret-key
-JWT_ISSUER=api.thepia.com
-JWT_AUDIENCE=flows.thepia.net
-
-# Email Configuration
-SETUP_EMAIL_DOMAIN=thepia.net
-SETUP_EMAIL_PREFIX=installation
-
-# Storage Configuration
-STORAGE_BUCKET_PREFIX=client-assets
-```
-
-## 🧪 Testing
-
-### Test Suites
-```bash
-# Run all tests
-pnpm test
-
-# Test schema validation
-pnpm test:schema
-
-# Test RLS policies
-pnpm test:rls
-
-# Test client provisioning
-pnpm test:client-setup
-
-# Test invitation system
-pnpm test:invitations
-
-# Integration tests
-pnpm test:integration
-```
-
-### Test Client Setup
-```bash
-# Create test client for development
-pnpm run test:setup-client
-
-# Cleanup test data
-pnpm run test:cleanup
-
-# Reset test database
-pnpm run test:reset
-```
-
-## 📚 Documentation
-
-- **[Setup Guide](docs/SETUP_GUIDE.md)** - Complete installation and configuration
-- **[Client Onboarding](docs/CLIENT_ONBOARDING.md)** - Step-by-step client setup process  
-- **[API Reference](docs/API_REFERENCE.md)** - Database schema and API documentation
-- **[Security Guide](docs/SECURITY.md)** - Security implementation and best practices
-- **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
-
-### Architecture Documentation
-
-- **[Notifications System Architecture](https://github.com/thepia/thepia.com/blob/main/docs/flows/notifications-architecture.md)** - Comprehensive notification system recommendations for Flows platform applications
-
-## 🤝 Contributing
-
-### Development Setup
 ```bash
 # Clone and setup
 git clone https://github.com/thepia/flows-db.git
 cd flows-db
 pnpm install
 
-# Setup development database
-cp config/supabase.example.env .env.local
-pnpm run db:init:dev
+# Configure environment
+cp config/supabase.example.env .env
+# Edit .env with your Supabase credentials
 
-# Run tests
-pnpm test
+# Setup database
+pnpm db:migrate
 
-# Setup pre-commit hooks
-pnpm run setup:hooks
+# Create your first admin user
+# Run this in Supabase SQL editor:
+SELECT * FROM assign_thepia_staff_role('your-email@thepia.com', 'Initial admin');
 ```
 
-### Pull Request Process
-1. Create feature branch from `main`
-2. Add tests for new functionality
-3. Ensure all tests pass
-4. Update documentation
-5. Submit pull request
+## Architecture
 
-## 📄 License
+### Multi-Tenant Design
+- **Single database** with Row Level Security (RLS)
+- **Client isolation** via JWT claims and RLS policies
+- **Schema separation**: `api` (public), `internal` (private), `audit` (compliance)
 
-MIT License - see [LICENSE](LICENSE) file for details.
+### Role-Based Access Control
+- **`thepia_staff`** - Full cross-client access for Thepia employees
+- **`authenticated`** - Client-scoped access via JWT `client_id`/`client_code`
+- **`anon`** - Limited demo access
 
-## 🆘 Support
+### Security Features
+- JWT-based authentication with role claims
+- Row Level Security on all tables
+- Encrypted PII in invitation tokens
+- Comprehensive audit logging
+
+## Key Components
+
+### Client Management
+```bash
+# Create a new client
+pnpm client:create --client-code="acme" --legal-name="Acme Corp"
+
+# Setup demo environment
+pnpm demo:setup
+```
+
+### User Role Management
+```sql
+-- Assign admin role to a user
+SELECT * FROM assign_thepia_staff_role('user@example.com', 'Admin promotion');
+
+-- List all user roles
+SELECT * FROM list_user_roles();
+
+-- Remove user role
+SELECT * FROM remove_user_role('user@example.com');
+```
+
+### Invitations System
+- JWT-based invitations with encrypted PII
+- Email-based invitation delivery
+- Status tracking and analytics
+- Client-specific invitation management
+
+## Documentation
+
+- **[Setup Guide](docs/SETUP_GUIDE.md)** - Complete installation instructions
+- **[Role Architecture Decisions](docs/ROLE_ARCHITECTURE_DECISIONS.md)** - 📋 Complete architectural rationale and decisions
+- **[User Role Management](docs/USER_ROLE_MANAGEMENT.md)** - Role assignment and permissions
+- **[Schema Architecture](docs/SCHEMA_ARCHITECTURE.md)** - Database design and RLS policies
+- **[API Reference](docs/API_REFERENCE.md)** - Function and endpoint documentation
+
+## Development
+
+### Database Migrations
+```bash
+# Apply all schema files
+pnpm db:migrate
+
+# Apply specific schema
+psql -f schemas/22_user_role_management.sql
+
+# Reset database (careful!)
+pnpm db:reset
+```
+
+### Testing
+```bash
+# Run all tests
+pnpm test
+
+# Run specific test suite
+pnpm test:invitations
+pnpm test:clients
+pnpm test:roles
+```
+
+## Production Deployment
+
+### Environment Variables
+```env
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-key
+JWT_SECRET=your-jwt-secret
+```
+
+### Database Setup
+1. Apply all schema files in order: `00_*.sql` through `22_*.sql`
+2. Configure RLS policies and permissions
+3. Create initial admin user
+4. Test client creation and invitation flows
+
+### Security Checklist
+- [ ] RLS enabled on all tables
+- [ ] Service role key secured
+- [ ] JWT secrets rotated
+- [ ] Admin users properly assigned
+- [ ] Audit logging enabled
+
+## Support
 
 - **Issues**: [GitHub Issues](https://github.com/thepia/flows-db/issues)
-- **Documentation**: [docs/](docs/)
-- **Security**: security@thepia.com
-- **General**: support@thepia.com
+- **Documentation**: `/docs` directory
+- **Email**: tech@thepia.com
 
----
+## License
 
-**flows-db** - Secure, scalable, multi-client database infrastructure for Thepia Flows applications.
+Private - Thepia Technologies

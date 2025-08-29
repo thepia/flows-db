@@ -112,6 +112,27 @@ SET timezone = 'UTC';
 - Service role key has full access (keep secure)
 - Anon key only has limited access through RLS policies
 
+### 5. User Role Management
+After database setup, configure admin access:
+
+```sql
+-- Apply the user role management schema
+\i schemas/22_user_role_management.sql
+
+-- Assign thepia_staff role to your admin user
+SELECT * FROM assign_thepia_staff_role('your-admin-email@thepia.com', 'Initial admin setup');
+
+-- Verify role assignment
+SELECT * FROM list_user_roles();
+```
+
+**Role System:**
+- `thepia_staff` - Full cross-client access for Thepia employees
+- `authenticated` - Client-scoped access via JWT claims
+- `anon` - Limited demo access
+
+**For admin apps (like flows.thepia.net/admin):** Users need `thepia_staff` role to bypass RLS and see all data.
+
 ## 👥 Multi-Client Architecture
 
 ### Client Isolation Strategy
